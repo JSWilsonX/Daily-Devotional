@@ -21,6 +21,72 @@ const ai = new GoogleGenAI({
 
 app.use(express.json());
 
+// Helper to get correct high-quality cover images from egwwritings
+function getCorrectCover(id: string, title: string, defaultUrl: string): string {
+  const normalizedTitle = title.toLowerCase().replace(/[^a-z0-9]/g, "");
+  
+  const titleMapping: Record<string, string> = {
+    "ourhighcalling": "https://media2.egwwritings.org/covers/81_s.jpg",
+    "fromtheheart": "https://media2.egwwritings.org/covers/12210_s.jpg",
+    "theupwardlook": "https://media2.egwwritings.org/covers/147_s.jpg",
+    "thatimayknowhim": "https://media2.egwwritings.org/covers/126_s.jpg",
+    "reflectingchrist": "https://media2.egwwritings.org/covers/89_s.jpg",
+    "christtriumphant": "https://media2.egwwritings.org/covers/9_s.jpg",
+    "conflictandcourage": "https://media2.egwwritings.org/covers/17_s.jpg",
+    "godsamazinggrace": "https://media2.egwwritings.org/covers/33_s.jpg",
+    "inheavenlyplaces": "https://media2.egwwritings.org/covers/38_s.jpg",
+    "lifthimup": "https://media2.egwwritings.org/covers/44_s.jpg",
+    "maranatha": "https://media2.egwwritings.org/covers/74_s.jpg",
+    "mylifetoday": "https://media2.egwwritings.org/covers/79_s.jpg",
+    "ourfathercares": "https://media2.egwwritings.org/covers/80_s.jpg",
+    "tobelikejesus": "https://media2.egwwritings.org/covers/151_s.jpg",
+    "thefaithiliveby": "https://media2.egwwritings.org/covers/131_s.jpg",
+    "homewardbound": "https://media2.egwwritings.org/covers/12862_s.jpg",
+    "radiantreligion": "https://media2.egwwritings.org/covers/14039_s.jpg",
+    "sonsanddaughtersofgod": "https://media2.egwwritings.org/covers/102_s.jpg",
+    "thisdaywithgod": "https://media2.egwwritings.org/covers/149_s.jpg",
+    "withgodatdawn": "https://media2.egwwritings.org/covers/13940_s.jpg",
+    "yeshallreceivepower": "https://media2.egwwritings.org/covers/153_s.jpg",
+    "jesusnameaboveallnames": "https://media2.egwwritings.org/covers/14150_s.jpg"
+  };
+
+  if (titleMapping[normalizedTitle]) {
+    return titleMapping[normalizedTitle];
+  }
+
+  const idMapping: Record<string, string> = {
+    "ohc": "https://media2.egwwritings.org/covers/81_s.jpg",
+    "fth": "https://media2.egwwritings.org/covers/12210_s.jpg",
+    "ul": "https://media2.egwwritings.org/covers/147_s.jpg",
+    "tmk": "https://media2.egwwritings.org/covers/126_s.jpg",
+    "rc": "https://media2.egwwritings.org/covers/89_s.jpg",
+    "ct": "https://media2.egwwritings.org/covers/9_s.jpg",
+    "cc": "https://media2.egwwritings.org/covers/17_s.jpg",
+    "gag": "https://media2.egwwritings.org/covers/33_s.jpg",
+    "hp": "https://media2.egwwritings.org/covers/38_s.jpg",
+    "lhu": "https://media2.egwwritings.org/covers/44_s.jpg",
+    "mar": "https://media2.egwwritings.org/covers/74_s.jpg",
+    "mlt": "https://media2.egwwritings.org/covers/79_s.jpg",
+    "ofc": "https://media2.egwwritings.org/covers/80_s.jpg",
+    "tblj": "https://media2.egwwritings.org/covers/151_s.jpg",
+    "filb": "https://media2.egwwritings.org/covers/131_s.jpg",
+    "hb": "https://media2.egwwritings.org/covers/12862_s.jpg",
+    "rr": "https://media2.egwwritings.org/covers/14039_s.jpg",
+    "sdg": "https://media2.egwwritings.org/covers/102_s.jpg",
+    "tdg": "https://media2.egwwritings.org/covers/149_s.jpg",
+    "wgad": "https://media2.egwwritings.org/covers/13940_s.jpg",
+    "yrp": "https://media2.egwwritings.org/covers/153_s.jpg",
+    "jnaan": "https://media2.egwwritings.org/covers/14150_s.jpg"
+  };
+
+  const cleanId = id.toLowerCase().trim();
+  if (idMapping[cleanId]) {
+    return idMapping[cleanId];
+  }
+
+  return defaultUrl;
+}
+
 // List of standard fallback devotionals if scraping fails or is incomplete.
 // These are real daily features devotionals on whiteestate.org.
 const FALLBACK_DEVOTIONALS = [
@@ -28,91 +94,91 @@ const FALLBACK_DEVOTIONALS = [
     id: "mlt",
     title: "My Life Today",
     link: "https://whiteestate.org/devotional/mlt/",
-    cover: "https://whiteestate.org/images/books/mlt.jpg",
+    cover: "https://media2.egwwritings.org/covers/79_s.jpg",
     description: "Daily reflections on personal devotion, prayer, and Christian living."
   },
   {
     id: "ohc",
     title: "Our High Calling",
     link: "https://whiteestate.org/devotional/ohc/",
-    cover: "https://whiteestate.org/images/books/ohc.jpg",
+    cover: "https://media2.egwwritings.org/covers/81_s.jpg",
     description: "Reflections on our spiritual journey and high calling in Christ."
   },
   {
     id: "sdg",
     title: "Sons and Daughters of God",
     link: "https://whiteestate.org/devotional/sdg/",
-    cover: "https://whiteestate.org/images/books/sdg.jpg",
+    cover: "https://media2.egwwritings.org/covers/102_s.jpg",
     description: "Exploring the privileges, duties, and blessings of being God's children."
   },
   {
     id: "rc",
     title: "Reflecting Christ",
     link: "https://whiteestate.org/devotional/rc/",
-    cover: "https://whiteestate.org/images/books/rc.jpg",
+    cover: "https://media2.egwwritings.org/covers/89_s.jpg",
     description: "Daily thoughts on how to mirror Christ's character in everyday life."
   },
   {
     id: "cc",
     title: "Conflict and Courage",
     link: "https://whiteestate.org/devotional/cc/",
-    cover: "https://whiteestate.org/images/books/cc.jpg",
+    cover: "https://media2.egwwritings.org/covers/17_s.jpg",
     description: "Inspirational stories of biblical characters, their struggles, and victories."
   },
   {
     id: "mar",
     title: "Maranatha",
     link: "https://whiteestate.org/devotional/mar/",
-    cover: "https://whiteestate.org/images/books/mar.jpg",
+    cover: "https://media2.egwwritings.org/covers/74_s.jpg",
     description: "Daily meditations focusing on the second coming of Christ."
   },
   {
     id: "tmk",
     title: "That I May Know Him",
     link: "https://whiteestate.org/devotional/tmk/",
-    cover: "https://whiteestate.org/images/books/tmk.jpg",
+    cover: "https://media2.egwwritings.org/covers/126_s.jpg",
     description: "A devotional guide focusing on personal knowledge of Christ."
   },
   {
     id: "hp",
     title: "In Heavenly Places",
     link: "https://whiteestate.org/devotional/hp/",
-    cover: "https://whiteestate.org/images/books/hp.jpg",
+    cover: "https://media2.egwwritings.org/covers/38_s.jpg",
     description: "Thoughts on elevated Christian experiences and heavenly companionship."
   },
   {
     id: "gag",
     title: "God's Amazing Grace",
     link: "https://whiteestate.org/devotional/gag/",
-    cover: "https://whiteestate.org/images/books/gag.jpg",
+    cover: "https://media2.egwwritings.org/covers/33_s.jpg",
     description: "Comforting daily assurances of God's love, mercy, and sustaining grace."
   },
   {
     id: "tdg",
     title: "This Day With God",
     link: "https://whiteestate.org/devotional/tdg/",
-    cover: "https://whiteestate.org/images/books/tdg.jpg",
+    cover: "https://media2.egwwritings.org/covers/149_s.jpg",
     description: "Thought-provoking readings compiled from letters and diaries of Ellen G. White."
   },
   {
     id: "tblj",
     title: "To Be Like Jesus",
     link: "https://whiteestate.org/devotional/tblj/",
-    cover: "https://whiteestate.org/images/books/tblj.jpg",
+    cover: "https://media2.egwwritings.org/covers/151_s.jpg",
     description: "Practical daily counsel on Christian growth and character transformation."
   },
   {
     id: "yrp",
     title: "Ye Shall Receive Power",
     link: "https://whiteestate.org/devotional/yrp/",
-    cover: "https://whiteestate.org/images/books/yrp.jpg",
+    cover: "https://media2.egwwritings.org/covers/153_s.jpg",
     description: "Devoted entirely to the work and presence of the Holy Spirit."
   },
   {
     id: "lhu",
     title: "Lift Him Up",
     link: "https://whiteestate.org/devotional/lhu/",
-    cover: "https://whiteestate.org/images/books/lhu.jpg",
+    cover: "https://media2.egwwritings.org/covers/44_s.jpg",
     description: "Elevating the beauty and character of Jesus as our Saviour and Example."
   },
   {
@@ -133,7 +199,7 @@ const FALLBACK_DEVOTIONALS = [
     id: "ul",
     title: "The Upward Look",
     link: "https://whiteestate.org/devotional/ul/",
-    cover: "https://whiteestate.org/images/books/ul.jpg",
+    cover: "https://media2.egwwritings.org/covers/147_s.jpg",
     description: "Assurances and warnings drawn from personal correspondence to guide daily walk."
   }
 ];
@@ -245,7 +311,7 @@ app.get("/api/scrape-devotionals", async (req, res) => {
             id: devId,
             title,
             link: fullLink,
-            cover: coverUrl,
+            cover: getCorrectCover(devId, title, coverUrl),
             description
           });
         }
@@ -272,7 +338,7 @@ async function paraphraseDevotional(
   title: string,
   paragraphs: any[],
   profile: string
-): Promise<{ title: string; paragraphs: any[] }> {
+): Promise<{ title: string; paragraphs: any[]; warning?: string }> {
   try {
     if (!process.env.GEMINI_API_KEY) {
       console.warn("GEMINI_API_KEY is not defined. Skipping paraphrase step.");
@@ -352,50 +418,74 @@ ${profileInstruction}
 6. **Output Format**: You MUST return the output in JSON matching the input schema exactly, preserving all the paragraph IDs, their order, and their 'type' ('scripture' or 'body').
 `;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
-      contents: [
-        {
-          text: `Here is the original devotional content to paraphrase:\n\n${originalJson}`
-        }
-      ],
-      config: {
-        systemInstruction,
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            title: {
-              type: Type.STRING,
-              description: "The paraphrased title of the devotional entry"
-            },
-            paragraphs: {
-              type: Type.ARRAY,
-              description: "The list of paragraphs preserving their exact sequence, IDs, types, and containing the paraphrased content",
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  id: {
-                    type: Type.STRING,
-                    description: "The original id of the paragraph"
-                  },
-                  type: {
-                    type: Type.STRING,
-                    description: "The original type of the paragraph ('scripture' or 'body')"
-                  },
-                  text: {
-                    type: Type.STRING,
-                    description: "The paraphrased version of the paragraph text matching the requested profile"
-                  }
-                },
-                required: ["id", "type", "text"]
-              }
+    let response;
+    let lastError: any = null;
+    let delayMs = 1000;
+    const maxAttempts = 3;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        response = await ai.models.generateContent({
+          model: "gemini-3.5-flash",
+          contents: [
+            {
+              text: `Here is the original devotional content to paraphrase:\n\n${originalJson}`
             }
-          },
-          required: ["title", "paragraphs"]
+          ],
+          config: {
+            systemInstruction,
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                title: {
+                  type: Type.STRING,
+                  description: "The paraphrased title of the devotional entry"
+                },
+                paragraphs: {
+                  type: Type.ARRAY,
+                  description: "The list of paragraphs preserving their exact sequence, IDs, types, and containing the paraphrased content",
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      id: {
+                        type: Type.STRING,
+                        description: "The original id of the paragraph"
+                      },
+                      type: {
+                        type: Type.STRING,
+                        description: "The original type of the paragraph ('scripture' or 'body')"
+                      },
+                      text: {
+                        type: Type.STRING,
+                        description: "The paraphrased version of the paragraph text matching the requested profile"
+                      }
+                    },
+                    required: ["id", "type", "text"]
+                  }
+                }
+              },
+              required: ["title", "paragraphs"]
+            }
+          }
+        });
+        
+        // If successful, break out of retry loop
+        break;
+      } catch (err: any) {
+        lastError = err;
+        console.warn(`Gemini API call failed on attempt ${attempt}/${maxAttempts} for profile "${profile}" with error: ${err.message || err}`);
+        if (attempt < maxAttempts) {
+          console.log(`Waiting ${delayMs}ms before retrying...`);
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+          delayMs *= 2; // Exponential backoff
         }
       }
-    });
+    }
+
+    if (!response) {
+      throw lastError || new Error("Failed to generate content from Gemini after all retry attempts.");
+    }
 
     const responseText = response.text;
     if (responseText) {
@@ -407,11 +497,18 @@ ${profileInstruction}
     }
 
     console.warn("Invalid response structure from Gemini. Falling back to original content.");
-    return { title, paragraphs };
+    return { title, paragraphs, warning: "The AI response format was unexpected. Showing original text." };
 
   } catch (error: any) {
-    console.error(`Error during Gemini paraphrasing for profile ${profile}:`, error.message);
-    return { title, paragraphs };
+    const errMsg = error?.message || String(error);
+    console.error(`Error during Gemini paraphrasing for profile ${profile}:`, errMsg);
+    
+    let warning = "An error occurred during translation. Showing original text.";
+    if (errMsg.includes("429") || errMsg.toLowerCase().includes("quota") || errMsg.toLowerCase().includes("limit") || errMsg.toLowerCase().includes("exhausted")) {
+      warning = "The daily AI translation quota (20 requests/day for Gemini free tier) is currently fully exhausted. Displaying the original authentic text instead.";
+    }
+    
+    return { title, paragraphs, warning };
   }
 }
 
@@ -491,7 +588,8 @@ app.get("/api/fetch-devotional", async (req, res) => {
 
     return res.json({
       title: paraphrased.title,
-      paragraphs: paraphrased.paragraphs
+      paragraphs: paraphrased.paragraphs,
+      warning: paraphrased.warning
     });
 
   } catch (error: any) {

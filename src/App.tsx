@@ -52,6 +52,7 @@ interface DevotionalBlock {
 interface DevotionalContent {
   title: string;
   paragraphs: DevotionalBlock[];
+  warning?: string;
 }
 
 export const DEVOTIONAL_PROFILES = [
@@ -149,6 +150,73 @@ export const PROFILE_VOICE_CONFIGS: Record<string, VoiceProfile> = {
     genderPref: "any"
   }
 };
+
+const COVER_MAPPING: Record<string, string> = {
+  "ohc": "https://media2.egwwritings.org/covers/81_s.jpg",
+  "fth": "https://media2.egwwritings.org/covers/12210_s.jpg",
+  "ul": "https://media2.egwwritings.org/covers/147_s.jpg",
+  "tmk": "https://media2.egwwritings.org/covers/126_s.jpg",
+  "rc": "https://media2.egwwritings.org/covers/89_s.jpg",
+  "ct": "https://media2.egwwritings.org/covers/9_s.jpg",
+  "cc": "https://media2.egwwritings.org/covers/17_s.jpg",
+  "gag": "https://media2.egwwritings.org/covers/33_s.jpg",
+  "hp": "https://media2.egwwritings.org/covers/38_s.jpg",
+  "lhu": "https://media2.egwwritings.org/covers/44_s.jpg",
+  "mar": "https://media2.egwwritings.org/covers/74_s.jpg",
+  "mlt": "https://media2.egwwritings.org/covers/79_s.jpg",
+  "ofc": "https://media2.egwwritings.org/covers/80_s.jpg",
+  "tblj": "https://media2.egwwritings.org/covers/151_s.jpg",
+  "filb": "https://media2.egwwritings.org/covers/131_s.jpg",
+  "hb": "https://media2.egwwritings.org/covers/12862_s.jpg",
+  "rr": "https://media2.egwwritings.org/covers/14039_s.jpg",
+  "sdg": "https://media2.egwwritings.org/covers/102_s.jpg",
+  "tdg": "https://media2.egwwritings.org/covers/149_s.jpg",
+  "wgad": "https://media2.egwwritings.org/covers/13940_s.jpg",
+  "yrp": "https://media2.egwwritings.org/covers/153_s.jpg",
+  "jnaan": "https://media2.egwwritings.org/covers/14150_s.jpg"
+};
+
+function getCorrectCover(id: string, title: string, originalCover: string): string {
+  const cleanId = id.toLowerCase().trim();
+  if (COVER_MAPPING[cleanId]) {
+    return COVER_MAPPING[cleanId];
+  }
+  
+  const normalizedTitle = title.toLowerCase().replace(/[^a-z0-9]/g, "");
+  
+  const titleMapping: Record<string, string> = {
+    "ourhighcalling": "https://media2.egwwritings.org/covers/81_s.jpg",
+    "fromtheheart": "https://media2.egwwritings.org/covers/12210_s.jpg",
+    "theupwardlook": "https://media2.egwwritings.org/covers/147_s.jpg",
+    "thatimayknowhim": "https://media2.egwwritings.org/covers/126_s.jpg",
+    "reflectingchrist": "https://media2.egwwritings.org/covers/89_s.jpg",
+    "christtriumphant": "https://media2.egwwritings.org/covers/9_s.jpg",
+    "conflictandcourage": "https://media2.egwwritings.org/covers/17_s.jpg",
+    "godsamazinggrace": "https://media2.egwwritings.org/covers/33_s.jpg",
+    "inheavenlyplaces": "https://media2.egwwritings.org/covers/38_s.jpg",
+    "lifthimup": "https://media2.egwwritings.org/covers/44_s.jpg",
+    "maranatha": "https://media2.egwwritings.org/covers/74_s.jpg",
+    "mylifetoday": "https://media2.egwwritings.org/covers/79_s.jpg",
+    "ourfathercares": "https://media2.egwwritings.org/covers/80_s.jpg",
+    "tobelikejesus": "https://media2.egwwritings.org/covers/151_s.jpg",
+    "thefaithiliveby": "https://media2.egwwritings.org/covers/131_s.jpg",
+    "homewardbound": "https://media2.egwwritings.org/covers/12862_s.jpg",
+    "radiantreligion": "https://media2.egwwritings.org/covers/14039_s.jpg",
+    "sonsanddaughtersofgod": "https://media2.egwwritings.org/covers/102_s.jpg",
+    "thisdaywithgod": "https://media2.egwwritings.org/covers/149_s.jpg",
+    "withgodatdawn": "https://media2.egwwritings.org/covers/13940_s.jpg",
+    "yeshallreceivepower": "https://media2.egwwritings.org/covers/153_s.jpg",
+    "jesusnameaboveallnames": "https://media2.egwwritings.org/covers/14150_s.jpg"
+  };
+
+  for (const [key, value] of Object.entries(titleMapping)) {
+    if (normalizedTitle.includes(key) || key.includes(normalizedTitle)) {
+      return value;
+    }
+  }
+
+  return originalCover;
+}
 
 export default function App() {
   // Lists and selection
@@ -268,24 +336,20 @@ export default function App() {
     if (savedDevotionals) {
       try {
         let parsed = JSON.parse(savedDevotionals) as Devotional[];
-        let hasYSRP = false;
         parsed = parsed.map(d => {
+          let cleanId = d.id;
           if (d.id === "ysrp") {
-            hasYSRP = true;
-            return {
-              ...d,
-              id: "yrp",
-              link: d.link.replace("/ysrp", "/yrp"),
-              cover: d.cover.replace("ysrp.jpg", "yrp.jpg")
-            };
+            cleanId = "yrp";
           }
-          return d;
+          return {
+            ...d,
+            id: cleanId,
+            link: d.link.replace("/ysrp", "/yrp"),
+            cover: getCorrectCover(cleanId, d.title, d.cover)
+          };
         });
 
-        if (hasYSRP) {
-          localStorage.setItem("egw_devotionals_list", JSON.stringify(parsed));
-        }
-
+        localStorage.setItem("egw_devotionals_list", JSON.stringify(parsed));
         setDevotionals(parsed);
         setScrapeSource("local_cache");
         
@@ -420,14 +484,18 @@ export default function App() {
       const res = await fetch("/api/scrape-devotionals");
       const result = await res.json();
       if (result.success && result.data) {
-        setDevotionals(result.data);
+        const mappedData = result.data.map((d: Devotional) => ({
+          ...d,
+          cover: getCorrectCover(d.id, d.title, d.cover)
+        }));
+        setDevotionals(mappedData);
         setScrapeSource(result.source);
-        localStorage.setItem("egw_devotionals_list", JSON.stringify(result.data));
+        localStorage.setItem("egw_devotionals_list", JSON.stringify(mappedData));
         
         // Restore selection if matching
         const savedSelectedId = localStorage.getItem("egw_selected_devotional_id");
         if (savedSelectedId) {
-          const idx = result.data.findIndex((d: Devotional) => d.id === savedSelectedId);
+          const idx = mappedData.findIndex((d: Devotional) => d.id === savedSelectedId);
           if (idx !== -1) setSelectedIdx(idx);
         }
       }
@@ -977,6 +1045,18 @@ export default function App() {
             </div>
           ) : content ? (
             <article id="devotional-article" className="flex-1">
+              {content.warning && (
+                <div className={`mb-6 p-4 rounded-2xl border flex items-start space-x-3 text-xs leading-normal ${
+                  isSlate 
+                    ? "bg-amber-500/10 border-amber-500/20 text-amber-300" 
+                    : "bg-amber-50 border-amber-600/15 text-amber-950"
+                }`}>
+                  <Info size={16} className="shrink-0 mt-0.5 text-amber-500 animate-pulse" />
+                  <div>
+                    <span className="font-bold">AI Translation Note:</span> {content.warning}
+                  </div>
+                </div>
+              )}
               
               {/* Devotional Heading */}
               <header className="text-center mb-10 pb-8 border-b border-white/5">
@@ -1156,11 +1236,11 @@ export default function App() {
               : "bg-[#FFFDF9]/95 backdrop-blur-xl border-t border-amber-900/10"
           }`}
         >
-          <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="max-w-4xl mx-auto flex flex-row items-center justify-between gap-2 md:gap-4 flex-nowrap overflow-x-auto no-scrollbar">
             
-            {/* Left Column: Book Details */}
-            <div className="flex items-center space-x-3 w-full md:w-auto">
-              <div className={`w-11 h-15 rounded-lg overflow-hidden shadow-md flex-shrink-0 flex items-center justify-center border ${
+            {/* Left Column: Book Cover Image only */}
+            <div className="flex items-center justify-center flex-shrink-0">
+              <div className={`w-9 h-12 rounded-md overflow-hidden shadow-sm flex items-center justify-center border ${
                 isSlate ? "bg-slate-900 border-white/10" : "bg-amber-50 border-amber-900/10"
               }`}>
                 {devotionals[selectedIdx]?.cover ? (
@@ -1178,38 +1258,24 @@ export default function App() {
                   </span>
                 )}
               </div>
-              <div className="min-w-0 flex-1 md:flex-initial">
-                <p className={`text-[9px] uppercase font-mono tracking-widest font-bold ${isSlate ? "text-cyan-400" : "text-amber-800"}`}>
-                  {devotionals[selectedIdx]?.title || "Select a Book"}
-                </p>
-                <h4 className="font-display text-sm font-bold truncate max-w-[250px] text-balance">
-                  {content?.title || "No devotional active"}
-                </h4>
-                <p className={`text-[10px] mt-0.5 truncate max-w-[250px] font-mono ${subTextStyle}`}>
-                  {content && activeParagraphIdx !== -1 
-                    ? `PARAGRAPH // 0${activeParagraphIdx + 1} OF 0${content.paragraphs.length}`
-                    : "PLAYER IDLE"
-                  }
-                </p>
-              </div>
             </div>
 
             {/* Middle Column: Player Controls */}
-            <div className="flex flex-col items-center gap-2">
-              <div className="flex items-center space-x-4">
+            <div className="flex flex-row items-center gap-2 sm:gap-4 flex-grow justify-center min-w-0">
+              <div className="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
                 {/* Skip back */}
                 <button
                   id="btn-skip-backward"
                   onClick={skipBackward}
                   disabled={!content || activeParagraphIdx <= 0}
-                  className={`p-2 rounded-xl border transition-all ${
+                  className={`p-1.5 sm:p-2 rounded-lg border transition-all ${
                     isSlate 
                       ? "bg-slate-900/40 border-white/5 text-cyan-400 hover:bg-slate-800 disabled:opacity-25" 
                       : "bg-amber-50 border-amber-900/5 text-amber-800 hover:bg-amber-100 disabled:opacity-25"
                   }`}
                   title="Previous paragraph"
                 >
-                  <SkipBack size={15} />
+                  <SkipBack size={13} />
                 </button>
 
                 {/* Play / Pause Toggle with custom glow shadows */}
@@ -1218,28 +1284,28 @@ export default function App() {
                     id="btn-pause-speech"
                     onClick={pauseSpeech}
                     disabled={!content}
-                    className={`p-3 rounded-full shadow-lg transition-all transform hover:scale-105 disabled:opacity-25 ${
+                    className={`p-2 sm:p-2.5 rounded-full shadow-md transition-all transform hover:scale-105 disabled:opacity-25 ${
                       isSlate 
                         ? "bg-gradient-to-r from-cyan-400 to-blue-500 hover:opacity-95 text-white shadow-cyan-400/25" 
                         : "bg-amber-600 hover:bg-amber-700 text-white"
                     }`}
                     title="Pause speech synthesis"
                   >
-                    <Pause size={18} fill="currentColor" />
+                    <Pause size={15} fill="currentColor" />
                   </button>
                 ) : (
                   <button
                     id="btn-play-speech"
                     onClick={startSpeech}
                     disabled={!content}
-                    className={`p-3 rounded-full shadow-lg transition-all transform hover:scale-105 disabled:opacity-25 ${
+                    className={`p-2 sm:p-2.5 rounded-full shadow-md transition-all transform hover:scale-105 disabled:opacity-25 ${
                       isSlate 
                         ? "bg-gradient-to-r from-cyan-400 to-blue-600 hover:opacity-95 text-white shadow-cyan-500/20 glow-cyan" 
                         : "bg-amber-700 hover:bg-amber-800 text-white"
                     }`}
                     title="Play vocal stream"
                   >
-                    <Play size={18} fill="currentColor" />
+                    <Play size={15} fill="currentColor" />
                   </button>
                 )}
 
@@ -1248,14 +1314,14 @@ export default function App() {
                   id="btn-stop-speech"
                   onClick={stopSpeech}
                   disabled={!content || (!isPlaying && !isPaused && activeParagraphIdx === -1)}
-                  className={`p-2 rounded-xl border transition-all ${
+                  className={`p-1.5 sm:p-2 rounded-lg border transition-all ${
                     isSlate 
                       ? "bg-slate-900/40 border-white/5 text-red-400 hover:bg-red-500/10 disabled:opacity-25" 
                       : "bg-red-100 border-red-900/5 text-red-700 hover:bg-red-200 disabled:opacity-25"
                   }`}
                   title="Stop vocal stream"
                 >
-                  <Square size={13} fill="currentColor" />
+                  <Square size={11} fill="currentColor" />
                 </button>
 
                 {/* Skip forward */}
@@ -1263,24 +1329,24 @@ export default function App() {
                   id="btn-skip-forward"
                   onClick={skipForward}
                   disabled={!content || activeParagraphIdx === -1 || activeParagraphIdx >= (content?.paragraphs?.length || 0) - 1}
-                  className={`p-2 rounded-xl border transition-all ${
+                  className={`p-1.5 sm:p-2 rounded-lg border transition-all ${
                     isSlate 
                       ? "bg-slate-900/40 border-white/5 text-cyan-400 hover:bg-slate-800 disabled:opacity-25" 
                       : "bg-amber-50 border-amber-900/5 text-amber-800 hover:bg-amber-100 disabled:opacity-25"
                   }`}
                   title="Next paragraph"
                 >
-                  <SkipForward size={15} />
+                  <SkipForward size={13} />
                 </button>
               </div>
 
               {/* Progress track */}
               {content && content.paragraphs && content.paragraphs.length > 0 ? (
-                <div className="flex items-center space-x-2.5 w-60 sm:w-72">
-                  <span className="text-[9px] font-mono text-slate-400 w-5 text-right">
+                <div className="flex items-center space-x-1.5 sm:space-x-2.5 w-16 xs:w-28 sm:w-44 md:w-60 flex-shrink min-w-0">
+                  <span className="text-[9px] font-mono text-slate-400 w-4 sm:w-5 text-right flex-shrink-0">
                     {activeParagraphIdx !== -1 ? activeParagraphIdx + 1 : 0}
                   </span>
-                  <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden relative">
+                  <div className="flex-grow h-1 bg-white/10 rounded-full overflow-hidden relative min-w-[30px]">
                     <div 
                       className={`absolute top-0 bottom-0 left-0 transition-all duration-300 ${
                         isSlate ? "bg-cyan-400 shadow-[0_0_8px_#22d3ee]" : "bg-amber-600"
@@ -1292,28 +1358,28 @@ export default function App() {
                       }}
                     ></div>
                   </div>
-                  <span className="text-[9px] font-mono text-slate-400 w-5">
+                  <span className="text-[9px] font-mono text-slate-400 w-4 sm:w-5 flex-shrink-0">
                     {content.paragraphs.length}
                   </span>
                 </div>
               ) : (
-                <div className="flex items-center space-x-2.5 w-60 sm:w-72 opacity-30">
-                  <span className="text-[9px] font-mono text-slate-400 w-5 text-right">0</span>
-                  <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden relative">
+                <div className="flex items-center space-x-1.5 sm:space-x-2.5 w-16 xs:w-28 sm:w-44 md:w-60 opacity-30 flex-shrink min-w-0">
+                  <span className="text-[9px] font-mono text-slate-400 w-4 sm:w-5 text-right flex-shrink-0">0</span>
+                  <div className="flex-grow h-1 bg-white/10 rounded-full overflow-hidden relative min-w-[30px]">
                     <div className="absolute top-0 bottom-0 left-0 w-0"></div>
                   </div>
-                  <span className="text-[9px] font-mono text-slate-400 w-5">0</span>
+                  <span className="text-[9px] font-mono text-slate-400 w-4 sm:w-5 flex-shrink-0">0</span>
                 </div>
               )}
             </div>
 
             {/* Right Column: Speed / Voice Selection */}
-            <div className="flex flex-wrap items-center justify-end gap-3 w-full md:w-auto">
+            <div className="flex flex-row items-center gap-1.5 sm:gap-3 flex-shrink-0">
               
               {/* Voice presets dropdown */}
               {voices.length > 0 && (
-                <div className="flex items-center space-x-1.5">
-                  <Volume2 size={13} className={isSlate ? "text-cyan-400" : "text-amber-800"} />
+                <div className="flex items-center space-x-1 sm:space-x-1.5">
+                  <Volume2 size={12} className={isSlate ? "text-cyan-400" : "text-amber-800"} />
                   <select
                     id="voice-select"
                     value={selectedVoiceName}
@@ -1324,7 +1390,7 @@ export default function App() {
                       }
                     }}
                     disabled={!content}
-                    className={`text-xs rounded-lg border p-1.5 font-sans focus:ring-1 focus:ring-cyan-400 outline-none disabled:opacity-50 ${
+                    className={`text-[10px] sm:text-xs rounded-lg border p-1 sm:p-1.5 font-sans focus:ring-1 focus:ring-cyan-400 outline-none disabled:opacity-50 max-w-[80px] xs:max-w-[120px] ${
                       isSlate 
                         ? "bg-slate-900 border-white/10 text-slate-200 focus:border-cyan-400" 
                         : "bg-amber-50 border-amber-900/10 text-stone-800 focus:border-amber-600"
@@ -1340,8 +1406,8 @@ export default function App() {
               )}
 
               {/* Speed configuration */}
-              <div className="flex items-center space-x-1.5">
-                <span className={`text-[9px] font-mono uppercase tracking-wider font-bold ${isSlate ? "text-cyan-400" : "text-amber-800"}`}>Speed:</span>
+              <div className="flex items-center space-x-1 sm:space-x-1.5">
+                <span className={`text-[8px] sm:text-[9px] font-mono uppercase tracking-wider font-bold ${isSlate ? "text-cyan-400" : "text-amber-800"} hidden xs:inline`}>Speed:</span>
                 <select
                   id="rate-select"
                   value={String(speechRate)}
@@ -1353,7 +1419,7 @@ export default function App() {
                     }
                   }}
                   disabled={!content}
-                  className={`text-xs rounded-lg border p-1.5 font-mono focus:ring-1 focus:ring-cyan-400 outline-none disabled:opacity-50 ${
+                  className={`text-[10px] sm:text-xs rounded-lg border p-1 sm:p-1.5 font-mono focus:ring-1 focus:ring-cyan-400 outline-none disabled:opacity-50 ${
                     isSlate 
                       ? "bg-slate-900 border-white/10 text-slate-200 focus:border-cyan-400" 
                       : "bg-amber-50 border-amber-900/10 text-stone-800 focus:border-amber-600"
