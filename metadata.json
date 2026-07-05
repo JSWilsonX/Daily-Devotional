@@ -1,0 +1,6 @@
+{
+  "name": "Daily Devotionals Reader",
+  "description": "An elegant, interactive reader for Ellen G. White Daily Devotionals, featuring cover carousels, automated web synchronization, and speech audio playback.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
