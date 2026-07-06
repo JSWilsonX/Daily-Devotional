@@ -151,76 +151,373 @@ export const PROFILE_VOICE_CONFIGS: Record<string, VoiceProfile> = {
   }
 };
 
-const COVER_MAPPING: Record<string, string> = {
-  "ohc": "https://media2.egwwritings.org/covers/81_s.jpg",
-  "fth": "https://media2.egwwritings.org/covers/12210_s.jpg",
-  "ul": "https://media2.egwwritings.org/covers/147_s.jpg",
-  "tmk": "https://media2.egwwritings.org/covers/126_s.jpg",
-  "rc": "https://media2.egwwritings.org/covers/89_s.jpg",
-  "ct": "https://media2.egwwritings.org/covers/9_s.jpg",
-  "cc": "https://media2.egwwritings.org/covers/17_s.jpg",
-  "gag": "https://media2.egwwritings.org/covers/33_s.jpg",
-  "hp": "https://media2.egwwritings.org/covers/38_s.jpg",
-  "lhu": "https://media2.egwwritings.org/covers/44_s.jpg",
-  "mar": "https://media2.egwwritings.org/covers/74_s.jpg",
-  "mlt": "https://media2.egwwritings.org/covers/79_s.jpg",
-  "ofc": "https://media2.egwwritings.org/covers/80_s.jpg",
-  "tblj": "https://media2.egwwritings.org/covers/151_s.jpg",
-  "filb": "https://media2.egwwritings.org/covers/131_s.jpg",
-  "hb": "https://media2.egwwritings.org/covers/12862_s.jpg",
-  "rr": "https://media2.egwwritings.org/covers/14039_s.jpg",
-  "sdg": "https://media2.egwwritings.org/covers/102_s.jpg",
-  "tdg": "https://media2.egwwritings.org/covers/149_s.jpg",
-  "wgad": "https://media2.egwwritings.org/covers/13940_s.jpg",
-  "yrp": "https://media2.egwwritings.org/covers/153_s.jpg",
-  "jnaan": "https://media2.egwwritings.org/covers/14150_s.jpg"
-};
+export const dailyDevotionals = [
+  {
+    id: "ohc",
+    title: "Our High Calling",
+    cover: "https://media2.egwwritings.org/covers/81_s.jpg",
+    link: "https://whiteestate.org/devotional/ohc/",
+    description: "A classic devotional call to holiness, virtue, and a deeper commitment to Christ."
+  },
+  {
+    id: "fh",
+    title: "From the Heart",
+    cover: "https://media2.egwwritings.org/covers/12210_s.jpg",
+    link: "https://whiteestate.org/devotional/fh/",
+    description: "A collection of encouraging messages that gently guide readers closer to Jesus and His soon return."
+  },
+  {
+    id: "ul",
+    title: "The Upward Look",
+    cover: "https://media2.egwwritings.org/covers/147_s.jpg",
+    link: "https://whiteestate.org/devotional/ul/",
+    description: "These readings lift the heart heavenward and keep the focus fixed on Christ as our Savior and example."
+  },
+  {
+    id: "tmk",
+    title: "That I May Know Him",
+    cover: "https://media2.egwwritings.org/covers/126_s.jpg",
+    link: "https://whiteestate.org/devotional/tmk/",
+    description: "A devotional book that invites readers into a richer knowledge of God through personal and heartfelt messages."
+  },
+  {
+    id: "rc",
+    title: "Reflecting Christ",
+    cover: "https://media2.egwwritings.org/covers/89_s.jpg",
+    link: "https://whiteestate.org/devotional/rc/",
+    description: "A Christ-centered devotional that encourages believers to walk in the footsteps of Jesus."
+  },
+  {
+    id: "ctr",
+    title: "Christ Triumphant",
+    cover: "https://media2.egwwritings.org/covers/9_s.jpg",
+    link: "https://whiteestate.org/devotional/ctr/",
+    description: "These daily readings highlight God's power to overcome and triumph in the great controversy."
+  },
+  {
+    id: "cc",
+    title: "Conflict and Courage",
+    cover: "https://media2.egwwritings.org/covers/17_s.jpg",
+    link: "https://whiteestate.org/devotional/cc/",
+    description: "A devotional journey through salvation history that offers courage and hope for today."
+  },
+  {
+    id: "ag",
+    title: "God's Amazing Grace",
+    cover: "https://media2.egwwritings.org/covers/33_s.jpg",
+    link: "https://whiteestate.org/devotional/ag/",
+    description: "These readings invite readers to experience the serenity and strength that come from daily connection with God."
+  },
+  {
+    id: "hp",
+    title: "In Heavenly Places",
+    cover: "https://media2.egwwritings.org/covers/38_s.jpg",
+    link: "https://whiteestate.org/devotional/hp/",
+    description: "A devotional collection that draws readers into deeper fellowship with Christ and a fuller understanding of His character."
+  },
+  {
+    id: "lhu",
+    title: "Lift Him Up",
+    cover: "https://media2.egwwritings.org/covers/44_s.jpg",
+    link: "https://whiteestate.org/devotional/lhu/",
+    description: "These reflections focus on Jesus as Teacher, Healer, King, and Redeemer."
+  },
+  {
+    id: "mar",
+    title: "Maranatha",
+    cover: "https://media2.egwwritings.org/covers/74_s.jpg",
+    link: "https://whiteestate.org/devotional/mar/",
+    description: "A devotional centered on Christ's soon return and the hope of His glorious appearing."
+  },
+  {
+    id: "mlt",
+    title: "My Life Today",
+    cover: "https://media2.egwwritings.org/covers/79_s.jpg",
+    link: "https://whiteestate.org/devotional/mlt/",
+    description: "This devotional touches every part of the Christian life with a steady focus on God's fatherly love."
+  },
+  {
+    id: "ofc",
+    title: "Our Father Cares",
+    cover: "https://media2.egwwritings.org/covers/80_s.jpg",
+    link: "https://whiteestate.org/devotional/ofc/",
+    description: "A warm meditation on the Father's love and the comfort of being His child."
+  },
+  {
+    id: "blj",
+    title: "To Be Like Jesus",
+    cover: "https://media2.egwwritings.org/covers/151_s.jpg",
+    link: "https://whiteestate.org/devotional/blj/",
+    description: "These devotionals call believers into deeper fellowship with God and a life shaped by Christ's likeness."
+  },
+  {
+    id: "flb",
+    title: "The Faith I Live By",
+    cover: "https://media2.egwwritings.org/covers/131_s.jpg",
+    link: "https://whiteestate.org/devotional/flb/",
+    description: "A doctrine-centered devotional that strengthens faith through daily reflections on biblical truth."
+  },
+  {
+    id: "hb",
+    title: "Homeward Bound",
+    cover: "https://media2.egwwritings.org/covers/12862_s.jpg",
+    link: "https://whiteestate.org/devotional/hb/",
+    description: "These readings encourage surrender, victory in Christ, and hope as we journey homeward."
+  },
+  {
+    id: "rre",
+    title: "Radiant Religion",
+    cover: "https://media2.egwwritings.org/covers/14039_s.jpg",
+    link: "https://whiteestate.org/devotional/rre/",
+    description: "A foundational devotional collection that reflects the rich spiritual life of early Christian discipleship."
+  },
+  {
+    id: "sd",
+    title: "Sons and Daughters of God",
+    cover: "https://media2.egwwritings.org/covers/102_s.jpg",
+    link: "https://whiteestate.org/devotional/sd/",
+    description: "These reflections invite readers to pursue the highest standard of spiritual attainment in Christ."
+  },
+  {
+    id: "tdg",
+    title: "This Day With God",
+    cover: "https://media2.egwwritings.org/covers/149_s.jpg",
+    link: "https://whiteestate.org/devotional/tdg/",
+    description: "A devotional collection arranged by the day they were written, offering practical encouragement and counsel."
+  },
+  {
+    id: "wgd",
+    title: "With God at Dawn",
+    cover: "https://media2.egwwritings.org/covers/13940_s.jpg",
+    link: "https://whiteestate.org/devotional/wgd/",
+    description: "These daily readings begin the day with spiritual focus and renewed commitment to God."
+  },
+  {
+    id: "yrp",
+    title: "Ye Shall Receive Power",
+    cover: "https://media2.egwwritings.org/covers/153_s.jpg",
+    link: "https://whiteestate.org/devotional/yrp/",
+    description: "A devotional that highlights the promise and power of the Holy Spirit in everyday discipleship."
+  },
+  {
+    id: "jnn",
+    title: "Jesus, Name Above All Names",
+    cover: "https://media2.egwwritings.org/covers/14150_s.jpg",
+    link: "https://whiteestate.org/devotional/jnn/",
+    description: "This devotional explores the many names of Jesus and draws readers into deeper love for Him."
+  }
+];
 
-function getCorrectCover(id: string, title: string, originalCover: string): string {
-  const cleanId = id.toLowerCase().trim();
-  if (COVER_MAPPING[cleanId]) {
-    return COVER_MAPPING[cleanId];
+function numberToWords(n: number): string {
+  const ones = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
+  const tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
+  if (n < 20) return ones[n];
+  if (n < 100) {
+    const t = Math.floor(n / 10);
+    const r = n % 10;
+    return tens[t] + (r > 0 ? "-" + ones[r] : "");
+  }
+  if (n < 1000) {
+    const h = Math.floor(n / 100);
+    const r = n % 100;
+    return ones[h] + " hundred" + (r > 0 ? " " + numberToWords(r) : "");
+  }
+  return String(n);
+}
+
+function isSingleChapterBook(book: string): boolean {
+  const norm = book.toLowerCase().trim();
+  return norm.includes("obadiah") ||
+         norm.includes("philemon") ||
+         norm.includes("jude") ||
+         (norm.includes("john") && (norm.includes("2") || norm.includes("3") || norm.includes("second") || norm.includes("third") || norm.includes("ii") || norm.includes("iii")));
+}
+
+function verbalizeBook(book: string): string {
+  let b = book.trim();
+  b = b.replace(/\s+/g, " ");
+  
+  if (/^1\s+/i.test(b) || /^I\s+/i.test(b) || /^1st\s+/i.test(b)) {
+    b = "First " + b.replace(/^(?:1|I|1st)\s+/i, "");
+  } else if (/^2\s+/i.test(b) || /^II\s+/i.test(b) || /^2nd\s+/i.test(b)) {
+    b = "Second " + b.replace(/^(?:2|II|2nd)\s+/i, "");
+  } else if (/^3\s+/i.test(b) || /^III\s+/i.test(b) || /^3rd\s+/i.test(b)) {
+    b = "Third " + b.replace(/^(?:3|III|3rd)\s+/i, "");
+  } else if (/^1[a-zA-Z]/i.test(b)) {
+    b = "First " + b.substring(1);
+  } else if (/^2[a-zA-Z]/i.test(b)) {
+    b = "Second " + b.substring(1);
+  } else if (/^3[a-zA-Z]/i.test(b)) {
+    b = "Third " + b.substring(1);
   }
   
-  const normalizedTitle = title.toLowerCase().replace(/[^a-z0-9]/g, "");
+  b = b.replace(/\.$/, "");
   
-  const titleMapping: Record<string, string> = {
-    "ourhighcalling": "https://media2.egwwritings.org/covers/81_s.jpg",
-    "fromtheheart": "https://media2.egwwritings.org/covers/12210_s.jpg",
-    "theupwardlook": "https://media2.egwwritings.org/covers/147_s.jpg",
-    "thatimayknowhim": "https://media2.egwwritings.org/covers/126_s.jpg",
-    "reflectingchrist": "https://media2.egwwritings.org/covers/89_s.jpg",
-    "christtriumphant": "https://media2.egwwritings.org/covers/9_s.jpg",
-    "conflictandcourage": "https://media2.egwwritings.org/covers/17_s.jpg",
-    "godsamazinggrace": "https://media2.egwwritings.org/covers/33_s.jpg",
-    "inheavenlyplaces": "https://media2.egwwritings.org/covers/38_s.jpg",
-    "lifthimup": "https://media2.egwwritings.org/covers/44_s.jpg",
-    "maranatha": "https://media2.egwwritings.org/covers/74_s.jpg",
-    "mylifetoday": "https://media2.egwwritings.org/covers/79_s.jpg",
-    "ourfathercares": "https://media2.egwwritings.org/covers/80_s.jpg",
-    "tobelikejesus": "https://media2.egwwritings.org/covers/151_s.jpg",
-    "thefaithiliveby": "https://media2.egwwritings.org/covers/131_s.jpg",
-    "homewardbound": "https://media2.egwwritings.org/covers/12862_s.jpg",
-    "radiantreligion": "https://media2.egwwritings.org/covers/14039_s.jpg",
-    "sonsanddaughtersofgod": "https://media2.egwwritings.org/covers/102_s.jpg",
-    "thisdaywithgod": "https://media2.egwwritings.org/covers/149_s.jpg",
-    "withgodatdawn": "https://media2.egwwritings.org/covers/13940_s.jpg",
-    "yeshallreceivepower": "https://media2.egwwritings.org/covers/153_s.jpg",
-    "jesusnameaboveallnames": "https://media2.egwwritings.org/covers/14150_s.jpg"
+  const bookLower = b.toLowerCase();
+  if (bookLower.endsWith("gen") || bookLower.endsWith("gene")) return b.replace(/gen(?:e)?/i, "Genesis");
+  if (bookLower.endsWith("ex") || bookLower.endsWith("exod")) return b.replace(/ex(?:od)?/i, "Exodus");
+  if (bookLower.endsWith("lev")) return b.replace(/lev/i, "Leviticus");
+  if (bookLower.endsWith("num")) return b.replace(/num/i, "Numbers");
+  if (bookLower.endsWith("deut")) return b.replace(/deut/i, "Deuteronomy");
+  if (bookLower.endsWith("josh")) return b.replace(/josh/i, "Joshua");
+  if (bookLower.endsWith("judg")) return b.replace(/judg/i, "Judges");
+  if (bookLower.endsWith("sam")) return b.replace(/sam/i, "Samuel");
+  if (bookLower.endsWith("chron")) return b.replace(/chron/i, "Chronicles");
+  if (bookLower.endsWith("neh")) return b.replace(/neh/i, "Nehemiah");
+  if (bookLower.endsWith("est") || bookLower.endsWith("esth")) return b.replace(/esth?/i, "Esther");
+  if (bookLower.endsWith("psa") || bookLower.endsWith("psalms")) return b.replace(/psa(?:lms)?/i, "Psalm");
+  if (bookLower.endsWith("prov")) return b.replace(/prov/i, "Proverbs");
+  if (bookLower.endsWith("eccl")) return b.replace(/eccl/i, "Ecclesiastes");
+  if (bookLower.endsWith("song")) return b.replace(/song/i, "Song of Solomon");
+  if (bookLower.endsWith("isa")) return b.replace(/isa/i, "Isaiah");
+  if (bookLower.endsWith("jer")) return b.replace(/jer/i, "Jeremiah");
+  if (bookLower.endsWith("lam")) return b.replace(/lam/i, "Lamentations");
+  if (bookLower.endsWith("eze") || bookLower.endsWith("ezek")) return b.replace(/ezek?/i, "Ezekiel");
+  if (bookLower.endsWith("dan")) return b.replace(/dan/i, "Daniel");
+  if (bookLower.endsWith("hos")) return b.replace(/hos/i, "Hosea");
+  if (bookLower.endsWith("obad")) return b.replace(/obad/i, "Obadiah");
+  if (bookLower.endsWith("mic")) return b.replace(/mic/i, "Micah");
+  if (bookLower.endsWith("nah")) return b.replace(/nah/i, "Nahum");
+  if (bookLower.endsWith("hab")) return b.replace(/hab/i, "Habakkuk");
+  if (bookLower.endsWith("zeph")) return b.replace(/zeph/i, "Zephaniah");
+  if (bookLower.endsWith("hag")) return b.replace(/hag/i, "Haggai");
+  if (bookLower.endsWith("zech")) return b.replace(/zech/i, "Zechariah");
+  if (bookLower.endsWith("mal")) return b.replace(/mal/i, "Malachi");
+  if (bookLower.endsWith("matt")) return b.replace(/matt/i, "Matthew");
+  if (bookLower.endsWith("rom")) return b.replace(/rom/i, "Romans");
+  if (bookLower.endsWith("cor")) return b.replace(/cor/i, "Corinthians");
+  if (bookLower.endsWith("gal")) return b.replace(/gal/i, "Galatians");
+  if (bookLower.endsWith("eph")) return b.replace(/eph/i, "Ephesians");
+  if (bookLower.endsWith("phil")) return b.replace(/phil/i, "Philippians");
+  if (bookLower.endsWith("col")) return b.replace(/col/i, "Colossians");
+  if (bookLower.endsWith("thess")) return b.replace(/thess/i, "Thessalonians");
+  if (bookLower.endsWith("tim")) return b.replace(/tim/i, "Timothy");
+  if (bookLower.endsWith("philem")) return b.replace(/philem/i, "Philemon");
+  if (bookLower.endsWith("heb")) return b.replace(/heb/i, "Hebrews");
+  if (bookLower.endsWith("jas")) return b.replace(/jas/i, "James");
+  if (bookLower.endsWith("pet")) return b.replace(/pet/i, "Peter");
+  if (bookLower.endsWith("rev")) return b.replace(/rev/i, "Revelation");
+  
+  if (b.toLowerCase() === "psalms") {
+    b = "Psalm";
+  }
+  return b;
+}
+
+function verbalizeScripture(text: string): string {
+  if (!text) return text;
+
+  const BOOK_MATCH_LIST = [
+    "Genesis", "Gen", "Exodus", "Ex", "Leviticus", "Lev", "Numbers", "Num", "Deuteronomy", "Deut",
+    "Joshua", "Josh", "Judges", "Judg", "Ruth",
+    "Samuel", "Sam", "Kings", "Chronicles", "Chron", "Ezra", "Nehemiah", "Neh", "Esther", "Esth", "Job",
+    "Psalms", "Psalm", "Psa", "Proverbs", "Prov", "Ecclesiastes", "Eccl", "Song of Solomon", "Song",
+    "Isaiah", "Isa", "Jeremiah", "Jer", "Lamentations", "Lam", "Ezekiel", "Eze", "Daniel", "Dan",
+    "Hosea", "Hos", "Joel", "Amos", "Obadiah", "Obad", "Jonah", "Micah", "Mic", "Nahum", "Nah",
+    "Habakkuk", "Hab", "Zephaniah", "Zeph", "Haggai", "Hag", "Zechariah", "Zech", "Malachi", "Mal",
+    "Matthew", "Matt", "Mark", "Luke", "John", "Acts", "Romans", "Rom",
+    "Corinthians", "Cor", "Galatians", "Gal", "Ephesians", "Eph", "Philippians", "Phil", "Colossians", "Col",
+    "Thessalonians", "Thess", "Timothy", "Tim", "Titus", "Philemon", "Philem", "Hebrews", "Heb", "James", "Jas",
+    "Peter", "Pet", "Jude", "Revelation", "Rev"
+  ];
+
+  const sortedBookMatchList = [...BOOK_MATCH_LIST].sort((a, b) => b.length - a.length);
+  const bookPatternStr = `(?:(?:[123]|I{1,3}|First|Second|Third|first|second|third)\\s+)?(?:${sortedBookMatchList.map(b => b.replace(".", "\\.")).join("|")})`;
+
+  let result = text;
+
+  const getPrefixAndBook = (bookStr: string) => {
+    const vBook = verbalizeBook(bookStr);
+    const hasOrdinal = vBook.startsWith("First ") || vBook.startsWith("Second ") || vBook.startsWith("Third ");
+    return { vBook, hasOrdinal };
   };
 
-  for (const [key, value] of Object.entries(titleMapping)) {
-    if (normalizedTitle.includes(key) || key.includes(normalizedTitle)) {
-      return value;
-    }
-  }
+  const p1 = new RegExp(`\\b(${bookPatternStr})\\.?\\s+(\\d+)\\s*:\\s*(\\d+)\\s*[-—–]\\s*(\\d+)\\s*:\\s*(\\d+)\\b`, 'gi');
+  result = result.replace(p1, (match, book, c1, v1, c2, v2) => {
+    const { vBook, hasOrdinal } = getPrefixAndBook(book);
+    const ch1 = numberToWords(parseInt(c1));
+    const vr1 = numberToWords(parseInt(v1));
+    const ch2 = numberToWords(parseInt(c2));
+    const vr2 = numberToWords(parseInt(v2));
+    
+    const connector = hasOrdinal ? ", " : " ";
+    return `${vBook}${connector}chapter ${ch1}, verse ${vr1} through chapter ${ch2}, verse ${vr2}`;
+  });
 
-  return originalCover;
+  const p2 = new RegExp(`\\b(${bookPatternStr})\\.?\\s+(\\d+)\\s*:\\s*(\\d+)\\s*[-—–]\\s*(\\d+)\\b`, 'gi');
+  result = result.replace(p2, (match, book, c, v1, v2) => {
+    const { vBook, hasOrdinal } = getPrefixAndBook(book);
+    const ch = numberToWords(parseInt(c));
+    const vr1 = numberToWords(parseInt(v1));
+    const vr2 = numberToWords(parseInt(v2));
+
+    const isPsalm = vBook.toLowerCase() === "psalm";
+    if (isPsalm) {
+      return `${vBook} ${ch}, verses ${vr1} through ${vr2}`;
+    }
+
+    const connector = hasOrdinal ? ", " : " ";
+    return `${vBook}${connector}chapter ${ch}, verses ${vr1} through ${vr2}`;
+  });
+
+  const p3 = new RegExp(`\\b(${bookPatternStr})\\.?\\s+(\\d+)\\s*:\\s*(\\d+)\\b`, 'gi');
+  result = result.replace(p3, (match, book, c, v) => {
+    const { vBook, hasOrdinal } = getPrefixAndBook(book);
+    const ch = numberToWords(parseInt(c));
+    const vr = numberToWords(parseInt(v));
+
+    const isPsalm = vBook.toLowerCase() === "psalm";
+    if (isPsalm) {
+      return `${vBook} ${ch}, verse ${vr}`;
+    }
+
+    const connector = hasOrdinal ? ", " : " ";
+    return `${vBook}${connector}chapter ${ch}, verse ${vr}`;
+  });
+
+  const p4 = new RegExp(`\\b(${bookPatternStr})\\.?\\s+(\\d+)\\s*[-—–]\\s*(\\d+)\\b`, 'gi');
+  result = result.replace(p4, (match, book, num1, num2) => {
+    const { vBook, hasOrdinal } = getPrefixAndBook(book);
+    const n1 = numberToWords(parseInt(num1));
+    const n2 = numberToWords(parseInt(num2));
+
+    if (isSingleChapterBook(vBook)) {
+      return `${vBook} verses ${n1} through ${n2}`;
+    }
+
+    const isPsalm = vBook.toLowerCase() === "psalm";
+    if (isPsalm) {
+      return `Psalm ${n1} through ${n2}`;
+    }
+
+    const connector = hasOrdinal ? ", " : " ";
+    return `${vBook}${connector}chapters ${n1} through ${n2}`;
+  });
+
+  const p5 = new RegExp(`\\b(${bookPatternStr})\\.?\\s+(\\d+)\\b`, 'gi');
+  result = result.replace(p5, (match, book, num) => {
+    const { vBook, hasOrdinal } = getPrefixAndBook(book);
+    const n = numberToWords(parseInt(num));
+
+    if (isSingleChapterBook(vBook)) {
+      return `${vBook} verse ${n}`;
+    }
+
+    const isPsalm = vBook.toLowerCase() === "psalm";
+    if (isPsalm) {
+      return `${vBook} ${n}`;
+    }
+
+    const connector = hasOrdinal ? ", " : " ";
+    return `${vBook}${connector}chapter ${n}`;
+  });
+
+  return result;
 }
 
 export default function App() {
   // Lists and selection
-  const [devotionals, setDevotionals] = useState<Devotional[]>([]);
+  const [devotionals, setDevotionals] = useState<Devotional[]>(dailyDevotionals);
   const [selectedIdx, setSelectedIdx] = useState<number>(0);
   const [isScraping, setIsScraping] = useState<boolean>(false);
   const [scrapeSource, setScrapeSource] = useState<string>("local");
@@ -320,7 +617,6 @@ export default function App() {
 
   // Load devotionals and check localStorage
   useEffect(() => {
-    const savedDevotionals = localStorage.getItem("egw_devotionals_list");
     let savedSelectedId = localStorage.getItem("egw_selected_devotional_id");
     const savedTheme = localStorage.getItem("egw_theme");
     
@@ -333,34 +629,17 @@ export default function App() {
       setTheme(savedTheme as "cream" | "slate");
     }
 
-    if (savedDevotionals) {
-      try {
-        let parsed = JSON.parse(savedDevotionals) as Devotional[];
-        parsed = parsed.map(d => {
-          let cleanId = d.id;
-          if (d.id === "ysrp") {
-            cleanId = "yrp";
-          }
-          return {
-            ...d,
-            id: cleanId,
-            link: d.link.replace("/ysrp", "/yrp"),
-            cover: getCorrectCover(cleanId, d.title, d.cover)
-          };
-        });
-
-        localStorage.setItem("egw_devotionals_list", JSON.stringify(parsed));
-        setDevotionals(parsed);
-        setScrapeSource("local_cache");
-        
-        if (savedSelectedId) {
-          const idx = parsed.findIndex(d => d.id === savedSelectedId);
-          if (idx !== -1) setSelectedIdx(idx);
-        }
-      } catch (e) {
-        fetchDevotionals();
+    // Always use the updated static list of devotionals
+    setDevotionals(dailyDevotionals);
+    setScrapeSource("local");
+    
+    if (savedSelectedId) {
+      const idx = dailyDevotionals.findIndex(d => d.id === savedSelectedId);
+      if (idx !== -1) {
+        setSelectedIdx(idx);
       }
     } else {
+      // Fetch list dynamically just in case we have a service sync
       fetchDevotionals();
     }
   }, []);
@@ -484,23 +763,19 @@ export default function App() {
       const res = await fetch("/api/scrape-devotionals");
       const result = await res.json();
       if (result.success && result.data) {
-        const mappedData = result.data.map((d: Devotional) => ({
-          ...d,
-          cover: getCorrectCover(d.id, d.title, d.cover)
-        }));
-        setDevotionals(mappedData);
+        setDevotionals(result.data);
         setScrapeSource(result.source);
-        localStorage.setItem("egw_devotionals_list", JSON.stringify(mappedData));
+        localStorage.setItem("egw_devotionals_list", JSON.stringify(result.data));
         
         // Restore selection if matching
         const savedSelectedId = localStorage.getItem("egw_selected_devotional_id");
         if (savedSelectedId) {
-          const idx = mappedData.findIndex((d: Devotional) => d.id === savedSelectedId);
+          const idx = result.data.findIndex((d: Devotional) => d.id === savedSelectedId);
           if (idx !== -1) setSelectedIdx(idx);
         }
       }
     } catch (err) {
-      console.error("Error scraping devotionals:", err);
+      console.error("Error fetching devotionals:", err);
     } finally {
       setIsScraping(false);
     }
@@ -581,6 +856,9 @@ export default function App() {
     if (idx === 0) {
       speechText = `${content.title}. ${speechText}`;
     }
+
+    // Convert scripture references into naturally spoken text
+    speechText = verbalizeScripture(speechText);
 
     const utterance = new SpeechSynthesisUtterance(speechText);
     utteranceRef.current = utterance;

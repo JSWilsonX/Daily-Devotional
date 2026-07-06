@@ -87,120 +87,162 @@ function getCorrectCover(id: string, title: string, defaultUrl: string): string 
   return defaultUrl;
 }
 
-// List of standard fallback devotionals if scraping fails or is incomplete.
-// These are real daily features devotionals on whiteestate.org.
-const FALLBACK_DEVOTIONALS = [
-  {
-    id: "mlt",
-    title: "My Life Today",
-    link: "https://whiteestate.org/devotional/mlt/",
-    cover: "https://media2.egwwritings.org/covers/79_s.jpg",
-    description: "Daily reflections on personal devotion, prayer, and Christian living."
-  },
+// List of standard devotionals exactly as provided.
+// These are real daily feature devotionals on whiteestate.org with accurate covers, titles, and descriptions.
+const DEVOTIONALS_LIST = [
   {
     id: "ohc",
     title: "Our High Calling",
-    link: "https://whiteestate.org/devotional/ohc/",
     cover: "https://media2.egwwritings.org/covers/81_s.jpg",
-    description: "Reflections on our spiritual journey and high calling in Christ."
+    link: "https://whiteestate.org/devotional/ohc/",
+    description: "A classic devotional call to holiness, virtue, and a deeper commitment to Christ."
   },
   {
-    id: "sdg",
-    title: "Sons and Daughters of God",
-    link: "https://whiteestate.org/devotional/sdg/",
-    cover: "https://media2.egwwritings.org/covers/102_s.jpg",
-    description: "Exploring the privileges, duties, and blessings of being God's children."
-  },
-  {
-    id: "rc",
-    title: "Reflecting Christ",
-    link: "https://whiteestate.org/devotional/rc/",
-    cover: "https://media2.egwwritings.org/covers/89_s.jpg",
-    description: "Daily thoughts on how to mirror Christ's character in everyday life."
-  },
-  {
-    id: "cc",
-    title: "Conflict and Courage",
-    link: "https://whiteestate.org/devotional/cc/",
-    cover: "https://media2.egwwritings.org/covers/17_s.jpg",
-    description: "Inspirational stories of biblical characters, their struggles, and victories."
-  },
-  {
-    id: "mar",
-    title: "Maranatha",
-    link: "https://whiteestate.org/devotional/mar/",
-    cover: "https://media2.egwwritings.org/covers/74_s.jpg",
-    description: "Daily meditations focusing on the second coming of Christ."
-  },
-  {
-    id: "tmk",
-    title: "That I May Know Him",
-    link: "https://whiteestate.org/devotional/tmk/",
-    cover: "https://media2.egwwritings.org/covers/126_s.jpg",
-    description: "A devotional guide focusing on personal knowledge of Christ."
-  },
-  {
-    id: "hp",
-    title: "In Heavenly Places",
-    link: "https://whiteestate.org/devotional/hp/",
-    cover: "https://media2.egwwritings.org/covers/38_s.jpg",
-    description: "Thoughts on elevated Christian experiences and heavenly companionship."
-  },
-  {
-    id: "gag",
-    title: "God's Amazing Grace",
-    link: "https://whiteestate.org/devotional/gag/",
-    cover: "https://media2.egwwritings.org/covers/33_s.jpg",
-    description: "Comforting daily assurances of God's love, mercy, and sustaining grace."
-  },
-  {
-    id: "tdg",
-    title: "This Day With God",
-    link: "https://whiteestate.org/devotional/tdg/",
-    cover: "https://media2.egwwritings.org/covers/149_s.jpg",
-    description: "Thought-provoking readings compiled from letters and diaries of Ellen G. White."
-  },
-  {
-    id: "tblj",
-    title: "To Be Like Jesus",
-    link: "https://whiteestate.org/devotional/tblj/",
-    cover: "https://media2.egwwritings.org/covers/151_s.jpg",
-    description: "Practical daily counsel on Christian growth and character transformation."
-  },
-  {
-    id: "yrp",
-    title: "Ye Shall Receive Power",
-    link: "https://whiteestate.org/devotional/yrp/",
-    cover: "https://media2.egwwritings.org/covers/153_s.jpg",
-    description: "Devoted entirely to the work and presence of the Holy Spirit."
-  },
-  {
-    id: "lhu",
-    title: "Lift Him Up",
-    link: "https://whiteestate.org/devotional/lhu/",
-    cover: "https://media2.egwwritings.org/covers/44_s.jpg",
-    description: "Elevating the beauty and character of Jesus as our Saviour and Example."
-  },
-  {
-    id: "fw",
-    title: "Faith and Works",
-    link: "https://whiteestate.org/devotional/fw/",
-    cover: "https://whiteestate.org/images/books/fw.jpg",
-    description: "A balanced perspective on salvation, righteousness by faith, and Christian fruits."
-  },
-  {
-    id: "dbd",
-    title: "Darkness Before Dawn",
-    link: "https://whiteestate.org/devotional/dbd/",
-    cover: "https://whiteestate.org/images/books/dbd.jpg",
-    description: "Hope-filled insights for living in the final days of earth's history."
+    id: "fh",
+    title: "From the Heart",
+    cover: "https://media2.egwwritings.org/covers/12210_s.jpg",
+    link: "https://whiteestate.org/devotional/fh/",
+    description: "A collection of encouraging messages that gently guide readers closer to Jesus and His soon return."
   },
   {
     id: "ul",
     title: "The Upward Look",
-    link: "https://whiteestate.org/devotional/ul/",
     cover: "https://media2.egwwritings.org/covers/147_s.jpg",
-    description: "Assurances and warnings drawn from personal correspondence to guide daily walk."
+    link: "https://whiteestate.org/devotional/ul/",
+    description: "These readings lift the heart heavenward and keep the focus fixed on Christ as our Savior and example."
+  },
+  {
+    id: "tmk",
+    title: "That I May Know Him",
+    cover: "https://media2.egwwritings.org/covers/126_s.jpg",
+    link: "https://whiteestate.org/devotional/tmk/",
+    description: "A devotional book that invites readers into a richer knowledge of God through personal and heartfelt messages."
+  },
+  {
+    id: "rc",
+    title: "Reflecting Christ",
+    cover: "https://media2.egwwritings.org/covers/89_s.jpg",
+    link: "https://whiteestate.org/devotional/rc/",
+    description: "A Christ-centered devotional that encourages believers to walk in the footsteps of Jesus."
+  },
+  {
+    id: "ctr",
+    title: "Christ Triumphant",
+    cover: "https://media2.egwwritings.org/covers/9_s.jpg",
+    link: "https://whiteestate.org/devotional/ctr/",
+    description: "These daily readings highlight God's power to overcome and triumph in the great controversy."
+  },
+  {
+    id: "cc",
+    title: "Conflict and Courage",
+    cover: "https://media2.egwwritings.org/covers/17_s.jpg",
+    link: "https://whiteestate.org/devotional/cc/",
+    description: "A devotional journey through salvation history that offers courage and hope for today."
+  },
+  {
+    id: "ag",
+    title: "God's Amazing Grace",
+    cover: "https://media2.egwwritings.org/covers/33_s.jpg",
+    link: "https://whiteestate.org/devotional/ag/",
+    description: "These readings invite readers to experience the serenity and strength that come from daily connection with God."
+  },
+  {
+    id: "hp",
+    title: "In Heavenly Places",
+    cover: "https://media2.egwwritings.org/covers/38_s.jpg",
+    link: "https://whiteestate.org/devotional/hp/",
+    description: "A devotional collection that draws readers into deeper fellowship with Christ and a fuller understanding of His character."
+  },
+  {
+    id: "lhu",
+    title: "Lift Him Up",
+    cover: "https://media2.egwwritings.org/covers/44_s.jpg",
+    link: "https://whiteestate.org/devotional/lhu/",
+    description: "These reflections focus on Jesus as Teacher, Healer, King, and Redeemer."
+  },
+  {
+    id: "mar",
+    title: "Maranatha",
+    cover: "https://media2.egwwritings.org/covers/74_s.jpg",
+    link: "https://whiteestate.org/devotional/mar/",
+    description: "A devotional centered on Christ's soon return and the hope of His glorious appearing."
+  },
+  {
+    id: "mlt",
+    title: "My Life Today",
+    cover: "https://media2.egwwritings.org/covers/79_s.jpg",
+    link: "https://whiteestate.org/devotional/mlt/",
+    description: "This devotional touches every part of the Christian life with a steady focus on God's fatherly love."
+  },
+  {
+    id: "ofc",
+    title: "Our Father Cares",
+    cover: "https://media2.egwwritings.org/covers/80_s.jpg",
+    link: "https://whiteestate.org/devotional/ofc/",
+    description: "A warm meditation on the Father's love and the comfort of being His child."
+  },
+  {
+    id: "blj",
+    title: "To Be Like Jesus",
+    cover: "https://media2.egwwritings.org/covers/151_s.jpg",
+    link: "https://whiteestate.org/devotional/blj/",
+    description: "These devotionals call believers into deeper fellowship with God and a life shaped by Christ's likeness."
+  },
+  {
+    id: "flb",
+    title: "The Faith I Live By",
+    cover: "https://media2.egwwritings.org/covers/131_s.jpg",
+    link: "https://whiteestate.org/devotional/flb/",
+    description: "A doctrine-centered devotional that strengthens faith through daily reflections on biblical truth."
+  },
+  {
+    id: "hb",
+    title: "Homeward Bound",
+    cover: "https://media2.egwwritings.org/covers/12862_s.jpg",
+    link: "https://whiteestate.org/devotional/hb/",
+    description: "These readings encourage surrender, victory in Christ, and hope as we journey homeward."
+  },
+  {
+    id: "rre",
+    title: "Radiant Religion",
+    cover: "https://media2.egwwritings.org/covers/14039_s.jpg",
+    link: "https://whiteestate.org/devotional/rre/",
+    description: "A foundational devotional collection that reflects the rich spiritual life of early Christian discipleship."
+  },
+  {
+    id: "sd",
+    title: "Sons and Daughters of God",
+    cover: "https://media2.egwwritings.org/covers/102_s.jpg",
+    link: "https://whiteestate.org/devotional/sd/",
+    description: "These reflections invite readers to pursue the highest standard of spiritual attainment in Christ."
+  },
+  {
+    id: "tdg",
+    title: "This Day With God",
+    cover: "https://media2.egwwritings.org/covers/149_s.jpg",
+    link: "https://whiteestate.org/devotional/tdg/",
+    description: "A devotional collection arranged by the day they were written, offering practical encouragement and counsel."
+  },
+  {
+    id: "wgd",
+    title: "With God at Dawn",
+    cover: "https://media2.egwwritings.org/covers/13940_s.jpg",
+    link: "https://whiteestate.org/devotional/wgd/",
+    description: "These daily readings begin the day with spiritual focus and renewed commitment to God."
+  },
+  {
+    id: "yrp",
+    title: "Ye Shall Receive Power",
+    cover: "https://media2.egwwritings.org/covers/153_s.jpg",
+    link: "https://whiteestate.org/devotional/yrp/",
+    description: "A devotional that highlights the promise and power of the Holy Spirit in everyday discipleship."
+  },
+  {
+    id: "jnn",
+    title: "Jesus, Name Above All Names",
+    cover: "https://media2.egwwritings.org/covers/14150_s.jpg",
+    link: "https://whiteestate.org/devotional/jnn/",
+    description: "This devotional explores the many names of Jesus and draws readers into deeper love for Him."
   }
 ];
 
@@ -226,108 +268,15 @@ async function fetchWithTimeout(url: string, timeoutMs = 8000) {
 }
 
 /**
- * 1. Scrape devotionals list from whiteestate.org/devotional/
+ * 1. Scrape devotionals list from whiteestate.org/devotional/ - Optimized to return user-defined list
  */
 app.get("/api/scrape-devotionals", async (req, res) => {
   try {
-    console.log("Scraping devotionals list...");
-    const url = "https://whiteestate.org/devotional/";
-    const response = await fetchWithTimeout(url, 10000);
-    
-    if (!response.ok) {
-      console.warn(`Failed to fetch main page: ${response.status}. Using fallback database.`);
-      return res.json({ success: true, source: "fallback", data: FALLBACK_DEVOTIONALS });
-    }
-
-    const html = await response.text();
-    const scrapedList: any[] = [];
-
-    // Parse the table rows
-    // We search for <tr> tags and analyze their cells
-    const trRegex = /<tr[\s\S]*?>([\s\S]*?)<\/tr>/gi;
-    let trMatch;
-    
-    while ((trMatch = trRegex.exec(html)) !== null) {
-      const trContent = trMatch[1];
-      
-      // Look for anchor links matching devotional subpaths
-      const linkMatch = trContent.match(/href=["'](?:https:\/\/whiteestate\.org)?\/devotional\/([a-z]{2,5})\/?["']/i);
-      if (linkMatch) {
-        const devId = linkMatch[1].toLowerCase();
-        const fullLink = `https://whiteestate.org/devotional/${devId}/`;
-        
-        // Find image src in this row
-        const imgMatch = trContent.match(/src=["']([^"']*)["']/i);
-        let coverUrl = "";
-        if (imgMatch) {
-          coverUrl = imgMatch[1];
-          // Make absolute if relative
-          if (!coverUrl.startsWith("http")) {
-            coverUrl = new URL(coverUrl, "https://whiteestate.org/devotional/").toString();
-          }
-        } else {
-          // Attempt standard image format if scraping missed it
-          coverUrl = `https://whiteestate.org/images/books/${devId}.jpg`;
-        }
-
-        // Try to find Title in the cells.
-        // Usually, the cells are: 1st img/link, 2nd link, 3rd title, or just text in cells.
-        // Let's grab all text from cells in the row.
-        const tdRegex = /<td[\s\S]*?>([\s\S]*?)<\/td>/gi;
-        let tdMatch;
-        const cellTexts: string[] = [];
-        
-        while ((tdMatch = tdRegex.exec(trContent)) !== null) {
-          const text = tdMatch[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-          if (text) {
-            cellTexts.push(text);
-          }
-        }
-
-        // Match titles
-        let title = "";
-        if (cellTexts.length >= 3) {
-          title = cellTexts[2]; // Usually the third cell
-        } else if (cellTexts.length >= 2) {
-          title = cellTexts[1]; // Or the second cell if 2 cells
-        } else if (cellTexts.length === 1) {
-          title = cellTexts[0];
-        }
-
-        // Clean up title (remove URLs or links if any)
-        title = title.replace(/https?:\/\/[^\s]+/g, "").trim();
-
-        // If title is too short or missing, lookup from our list to make it complete!
-        const matchedFallback = FALLBACK_DEVOTIONALS.find(d => d.id === devId);
-        if (!title || title.length < 3) {
-          title = matchedFallback ? matchedFallback.title : devId.toUpperCase();
-        }
-
-        const description = matchedFallback ? matchedFallback.description : `Daily devotional readings from Ellen G. White.`;
-
-        // Check for duplicates
-        if (!scrapedList.some(d => d.id === devId)) {
-          scrapedList.push({
-            id: devId,
-            title,
-            link: fullLink,
-            cover: getCorrectCover(devId, title, coverUrl),
-            description
-          });
-        }
-      }
-    }
-
-    if (scrapedList.length > 0) {
-      console.log(`Successfully scraped ${scrapedList.length} devotionals!`);
-      return res.json({ success: true, source: "live", data: scrapedList });
-    } else {
-      console.warn("Scraped list was empty. Using fallback.");
-      return res.json({ success: true, source: "fallback", data: FALLBACK_DEVOTIONALS });
-    }
+    console.log("Serving user-defined static list of devotionals...");
+    return res.json({ success: true, source: "static", data: DEVOTIONALS_LIST });
   } catch (error: any) {
-    console.error("Scraping failed with error:", error.message);
-    return res.json({ success: true, source: "fallback", error: error.message, data: FALLBACK_DEVOTIONALS });
+    console.error("API failed with error:", error.message);
+    return res.json({ success: true, source: "static", error: error.message, data: DEVOTIONALS_LIST });
   }
 });
 
@@ -420,8 +369,8 @@ ${profileInstruction}
 
     let response;
     let lastError: any = null;
-    let delayMs = 1000;
-    const maxAttempts = 3;
+    let delayMs = 1500;
+    const maxAttempts = 4;
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
@@ -474,7 +423,17 @@ ${profileInstruction}
         break;
       } catch (err: any) {
         lastError = err;
-        console.warn(`Gemini API call failed on attempt ${attempt}/${maxAttempts} for profile "${profile}" with error: ${err.message || err}`);
+        let errMsg = err.message || String(err);
+        try {
+          const parsedErr = JSON.parse(errMsg);
+          if (parsedErr?.error?.message) {
+            errMsg = parsedErr.error.message;
+          }
+        } catch (e) {
+          // Not valid JSON, keep original
+        }
+        
+        console.warn(`Gemini API call failed on attempt ${attempt}/${maxAttempts} for profile "${profile}" with error: ${errMsg}`);
         if (attempt < maxAttempts) {
           console.log(`Waiting ${delayMs}ms before retrying...`);
           await new Promise((resolve) => setTimeout(resolve, delayMs));
@@ -500,12 +459,23 @@ ${profileInstruction}
     return { title, paragraphs, warning: "The AI response format was unexpected. Showing original text." };
 
   } catch (error: any) {
-    const errMsg = error?.message || String(error);
+    let errMsg = error?.message || String(error);
+    try {
+      const parsedErr = JSON.parse(errMsg);
+      if (parsedErr?.error?.message) {
+        errMsg = parsedErr.error.message;
+      }
+    } catch (e) {
+      // Not valid JSON
+    }
+    
     console.error(`Error during Gemini paraphrasing for profile ${profile}:`, errMsg);
     
     let warning = "An error occurred during translation. Showing original text.";
     if (errMsg.includes("429") || errMsg.toLowerCase().includes("quota") || errMsg.toLowerCase().includes("limit") || errMsg.toLowerCase().includes("exhausted")) {
       warning = "The daily AI translation quota (20 requests/day for Gemini free tier) is currently fully exhausted. Displaying the original authentic text instead.";
+    } else if (errMsg.includes("503") || errMsg.toLowerCase().includes("demand") || errMsg.toLowerCase().includes("temporary") || errMsg.toLowerCase().includes("unavailable") || errMsg.toLowerCase().includes("overloaded")) {
+      warning = "The Gemini AI service is currently experiencing high demand or is temporarily unavailable. Displaying the original authentic text instead.";
     }
     
     return { title, paragraphs, warning };
