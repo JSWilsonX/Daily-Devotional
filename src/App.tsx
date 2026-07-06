@@ -55,6 +55,7 @@ interface DevotionalContent {
   title: string;
   paragraphs: DevotionalBlock[];
   warning?: string;
+  isFallback?: boolean;
 }
 
 export const DEVOTIONAL_PROFILES = [
@@ -1376,24 +1377,37 @@ export default function App() {
                   {content.title}
                 </h2>
                 <div className="mt-3 flex flex-col items-center justify-center gap-2 select-none">
-                  <span className={`text-[9px] font-mono tracking-wider uppercase font-bold px-3 py-1 rounded-full flex items-center space-x-1 ${
-                    isSlate 
-                      ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/25" 
-                      : "bg-amber-600/10 text-amber-800 border border-amber-600/25"
-                  }`}>
-                    <Sparkles size={10} className="mr-1 animate-pulse" />
-                    <span>
-                      {DEVOTIONAL_PROFILES.find(p => p.id === selectedProfile)?.name || "Classic / Original"}
+                  {content.isFallback ? (
+                    <span className={`text-[9px] font-mono tracking-wider uppercase font-bold px-3 py-1 rounded-full flex items-center space-x-1 ${
+                      isSlate 
+                        ? "bg-amber-500/10 text-amber-400 border border-amber-500/25 animate-pulse" 
+                        : "bg-amber-600/10 text-amber-800 border border-amber-600/25 animate-pulse"
+                    }`}>
+                      <Info size={10} className="mr-1 text-amber-500 shrink-0 animate-pulse" />
+                      <span>Classic / Original</span>
                     </span>
-                  </span>
+                  ) : (
+                    <span className={`text-[9px] font-mono tracking-wider uppercase font-bold px-3 py-1 rounded-full flex items-center space-x-1 ${
+                      isSlate 
+                        ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/25" 
+                        : "bg-amber-600/10 text-amber-800 border border-amber-600/25"
+                    }`}>
+                      <Sparkles size={10} className="mr-1 animate-pulse" />
+                      <span>
+                        {DEVOTIONAL_PROFILES.find(p => p.id === selectedProfile)?.name || "Classic / Original"}
+                      </span>
+                    </span>
+                  )}
                   {(() => {
-                    const profile = DEVOTIONAL_PROFILES.find(p => p.id === selectedProfile);
+                    const profile = DEVOTIONAL_PROFILES.find(p => p.id === (content.isFallback ? "classic" : selectedProfile));
                     if (!profile) return null;
                     return (
                       <p className={`text-[11px] sm:text-xs max-w-md text-center font-sans font-medium px-4 ${
                         isSlate ? "text-slate-300" : "text-stone-700"
                       }`}>
-                        {profile.description}
+                        {content.isFallback 
+                          ? "This reading was automatically loaded in the authentic classic style due to a temporary AI service limit or error." 
+                          : profile.description}
                       </p>
                     );
                   })()}

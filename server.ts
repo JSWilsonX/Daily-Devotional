@@ -287,11 +287,11 @@ async function paraphraseDevotional(
   title: string,
   paragraphs: any[],
   profile: string
-): Promise<{ title: string; paragraphs: any[]; warning?: string }> {
+): Promise<{ title: string; paragraphs: any[]; warning?: string; isFallback?: boolean }> {
   try {
     if (!process.env.GEMINI_API_KEY) {
       console.warn("GEMINI_API_KEY is not defined. Skipping paraphrase step.");
-      return { title, paragraphs };
+      return { title, paragraphs, isFallback: true };
     }
 
     console.log(`Calling Gemini to paraphrase devotional in the "${profile}" profile style...`);
@@ -434,6 +434,24 @@ ${profileInstruction}
         }
         
         console.warn(`Gemini API call failed on attempt ${attempt}/${maxAttempts} for profile "${profile}" with error: ${errMsg}`);
+        
+        // Analyze error type to determine if we should fail fast
+        const lowerMsg = errMsg.toLowerCase();
+        const isQuotaExceeded = lowerMsg.includes("quota") || lowerMsg.includes("limit") || lowerMsg.includes("exhausted") || lowerMsg.includes("429");
+        const isAuthError = lowerMsg.includes("auth") || lowerMsg.includes("unauthorized") || lowerMsg.includes("api_key") || lowerMsg.includes("invalid key") || lowerMsg.includes("key is not valid") || lowerMsg.includes("403") || lowerMsg.includes("401");
+        const isSafetyError = lowerMsg.includes("safety") || lowerMsg.includes("block");
+        const isHighDemand = lowerMsg.includes("high demand") || lowerMsg.includes("overloaded") || lowerMsg.includes("temporary") || lowerMsg.includes("503");
+        
+        if (isQuotaExceeded || isAuthError || isSafetyError) {
+          console.warn(`Non-retryable error encountered (${errMsg}). Aborting retries immediately to fallback.`);
+          break;
+        }
+        
+        if (isHighDemand && attempt >= 2) {
+          console.warn(`High demand continues on attempt ${attempt}. Aborting retries to keep user experience responsive.`);
+          break;
+        }
+
         if (attempt < maxAttempts) {
           console.log(`Waiting ${delayMs}ms before retrying...`);
           await new Promise((resolve) => setTimeout(resolve, delayMs));
@@ -456,7 +474,7 @@ ${profileInstruction}
     }
 
     console.warn("Invalid response structure from Gemini. Falling back to original content.");
-    return { title, paragraphs, warning: "The AI response format was unexpected. Showing original text." };
+    return { title, paragraphs, warning: "The AI response format was unexpected. Showing original text.", isFallback: true };
 
   } catch (error: any) {
     let errMsg = error?.message || String(error);
@@ -478,7 +496,7 @@ ${profileInstruction}
       warning = "The Gemini AI service is currently experiencing high demand or is temporarily unavailable. Displaying the original authentic text instead.";
     }
     
-    return { title, paragraphs, warning };
+    return { title, paragraphs, warning, isFallback: true };
   }
 }
 
@@ -559,7 +577,8 @@ app.get("/api/fetch-devotional", async (req, res) => {
     return res.json({
       title: paraphrased.title,
       paragraphs: paraphrased.paragraphs,
-      warning: paraphrased.warning
+      warning: paraphrased.warning,
+      isFallback: paraphrased.isFallback
     });
 
   } catch (error: any) {
