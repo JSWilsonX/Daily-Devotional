@@ -27,6 +27,8 @@ import {
   Flame
 } from "lucide-react";
 import { BookCover } from "./components/BookCover";
+import { useTour, TourManager } from "./components/Tour";
+
 
 function getLocalDateString(date: Date): string {
   const yyyy = date.getFullYear();
@@ -516,6 +518,8 @@ function verbalizeScripture(text: string): string {
 }
 
 export default function App() {
+  const { startTour, locale, setLocale } = useTour();
+
   // Lists and selection
   const [devotionals, setDevotionals] = useState<Devotional[]>(dailyDevotionals);
   const [selectedIdx, setSelectedIdx] = useState<number>(0);
@@ -1153,6 +1157,33 @@ export default function App() {
                 </button>
 
                 <button
+                  id="replay-tour-btn"
+                  onClick={() => startTour("onboarding")}
+                  className={`p-1.5 rounded-lg border transition-all flex items-center space-x-1 text-xs font-mono font-bold ${
+                    isSlate 
+                      ? "bg-slate-900/50 border-white/5 text-cyan-400 hover:bg-slate-800" 
+                      : "bg-amber-50 border-amber-900/10 text-amber-800 hover:bg-amber-100"
+                  }`}
+                  title="Replay onboarding tour / Repetir recorrido"
+                >
+                  <Sparkles size={11} className="animate-pulse" />
+                  <span className="hidden xs:inline text-[10px]">TOUR</span>
+                </button>
+
+                <button
+                  id="language-toggle"
+                  onClick={() => setLocale(locale === "en" ? "es" : "en")}
+                  className={`p-1.5 rounded-lg border transition-all text-[10px] font-mono font-bold ${
+                    isSlate 
+                      ? "bg-slate-900/50 border-white/5 text-cyan-400 hover:bg-slate-800" 
+                      : "bg-amber-50 border-amber-900/10 text-amber-800 hover:bg-amber-100"
+                  }`}
+                  title="Switch language / Cambiar idioma"
+                >
+                  {locale.toUpperCase()}
+                </button>
+
+                <button
                   id="theme-toggle"
                   onClick={toggleTheme}
                   className={`p-1.5 rounded-lg border transition-all ${
@@ -1728,6 +1759,7 @@ export default function App() {
         </div>
 
       </div>
+      <TourManager />
     </div>
   );
 }
