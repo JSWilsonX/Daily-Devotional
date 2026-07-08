@@ -619,6 +619,12 @@ export default function App() {
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const paragraphRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const carouselContainerRef = useRef<HTMLDivElement | null>(null);
+  const devotionalCacheRef = useRef<{
+    book: string;
+    date: string;
+    profile: string;
+    data: DevotionalContent;
+  } | null>(null);
 
   // Load devotionals and check localStorage
   useEffect(() => {
@@ -788,15 +794,29 @@ export default function App() {
 
   // Fetch content for the selected devotional
   const fetchActiveDevotionalContent = async (devotional: Devotional, profileStyle: string = selectedProfile) => {
+    // Use user's current local date/time to build the correct month and day suffix
+    const month = String(currentTime.getMonth() + 1).padStart(2, "0");
+    const day = String(currentTime.getDate()).padStart(2, "0");
+    const dateSuffix = `${month}_${day}/`;
+
+    // Check if the same book (by id), date, and profile are in cache
+    if (
+      devotionalCacheRef.current &&
+      devotionalCacheRef.current.book === devotional.id &&
+      devotionalCacheRef.current.date === dateSuffix &&
+      devotionalCacheRef.current.profile === profileStyle
+    ) {
+      console.log("Serving devotional from client-side cache:", devotional.id, dateSuffix, profileStyle);
+      setContent(devotionalCacheRef.current.data);
+      setContentError(null);
+      setIsLoadingContent(false);
+      return;
+    }
+
     setIsLoadingContent(true);
     setContentError(null);
     setContent(null);
     try {
-      // Use user's current local date/time to build the correct month and day suffix
-      const month = String(currentTime.getMonth() + 1).padStart(2, "0");
-      const day = String(currentTime.getDate()).padStart(2, "0");
-      const dateSuffix = `${month}_${day}/`;
-      
       let baseLink = devotional.link;
       if (!baseLink.endsWith("/")) {
         baseLink += "/";
@@ -808,6 +828,15 @@ export default function App() {
         throw new Error(`Server returned code ${res.status}`);
       }
       const data = await res.json();
+
+      // Cache the retrieved devotional content
+      devotionalCacheRef.current = {
+        book: devotional.id,
+        date: dateSuffix,
+        profile: profileStyle,
+        data: data
+      };
+
       setContent(data);
     } catch (err: any) {
       console.error("Error fetching content:", err);
