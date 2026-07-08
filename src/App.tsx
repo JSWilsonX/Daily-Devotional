@@ -526,10 +526,6 @@ export default function App() {
   const [selectedIdx, setSelectedIdx] = useState<number | null>(() => {
     const savedSelectedId = localStorage.getItem("egw_selected_devotional_id");
     if (savedSelectedId) {
-      if (savedSelectedId === "ysrp") {
-        const idx = dailyDevotionals.findIndex(d => d.id === "yrp");
-        return idx !== -1 ? idx : null;
-      }
       const idx = dailyDevotionals.findIndex(d => d.id === savedSelectedId);
       return idx !== -1 ? idx : null;
     }
@@ -643,13 +639,8 @@ export default function App() {
 
   // Load devotionals and check localStorage
   useEffect(() => {
-    let savedSelectedId = localStorage.getItem("egw_selected_devotional_id");
+    const savedSelectedId = localStorage.getItem("egw_selected_devotional_id");
     const savedTheme = localStorage.getItem("egw_theme");
-    
-    if (savedSelectedId === "ysrp") {
-      savedSelectedId = "yrp";
-      localStorage.setItem("egw_selected_devotional_id", "yrp");
-    }
 
     if (savedTheme) {
       setTheme(savedTheme as "cream" | "slate");

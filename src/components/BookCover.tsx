@@ -8,22 +8,28 @@ interface BookCoverProps {
 }
 
 const THEME_COLORS: Record<string, { bg: string; border: string; accent: string }> = {
-  mlt: { bg: "from-amber-950 via-amber-900 to-amber-950", border: "border-amber-500/30", accent: "text-amber-300" },
   ohc: { bg: "from-sky-950 via-slate-900 to-sky-950", border: "border-sky-500/30", accent: "text-sky-300" },
-  sdg: { bg: "from-red-950 via-red-900 to-red-950", border: "border-red-500/30", accent: "text-red-300" },
-  rc: { bg: "from-emerald-950 via-emerald-900 to-emerald-950", border: "border-emerald-500/30", accent: "text-emerald-300" },
-  cc: { bg: "from-amber-900 via-stone-800 to-amber-950", border: "border-amber-400/30", accent: "text-amber-200" },
-  mar: { bg: "from-purple-950 via-violet-900 to-purple-950", border: "border-violet-500/30", accent: "text-violet-300" },
+  fh: { bg: "from-red-950 via-rose-900 to-red-950", border: "border-rose-500/30", accent: "text-rose-300" },
+  ul: { bg: "from-red-950 via-stone-900 to-red-950", border: "border-red-400/30", accent: "text-red-300" },
   tmk: { bg: "from-indigo-950 via-indigo-900 to-indigo-950", border: "border-indigo-500/30", accent: "text-indigo-300" },
+  rc: { bg: "from-emerald-950 via-emerald-900 to-emerald-950", border: "border-emerald-500/30", accent: "text-emerald-300" },
+  ctr: { bg: "from-blue-950 via-indigo-950 to-blue-950", border: "border-amber-500/30", accent: "text-amber-300" },
+  cc: { bg: "from-amber-900 via-stone-800 to-amber-950", border: "border-amber-400/30", accent: "text-amber-200" },
+  ag: { bg: "from-rose-950 via-rose-900 to-rose-950", border: "border-rose-400/30", accent: "text-rose-300" },
   hp: { bg: "from-blue-950 via-cyan-900 to-blue-950", border: "border-cyan-500/30", accent: "text-cyan-300" },
-  gag: { bg: "from-rose-950 via-rose-900 to-rose-950", border: "border-rose-400/30", accent: "text-rose-300" },
-  tdg: { bg: "from-stone-950 via-stone-900 to-stone-950", border: "border-stone-500/30", accent: "text-stone-300" },
-  tblj: { bg: "from-teal-950 via-teal-900 to-teal-950", border: "border-teal-500/30", accent: "text-teal-300" },
-  ysrp: { bg: "from-orange-950 via-orange-900 to-orange-950", border: "border-orange-500/30", accent: "text-orange-300" },
   lhu: { bg: "from-yellow-950 via-amber-900 to-yellow-950", border: "border-amber-400/30", accent: "text-amber-200" },
-  fw: { bg: "from-zinc-900 via-zinc-800 to-zinc-900", border: "border-zinc-500/30", accent: "text-zinc-300" },
-  dbd: { bg: "from-slate-950 via-zinc-900 to-slate-950", border: "border-slate-500/30", accent: "text-slate-300" },
-  ul: { bg: "from-red-950 via-stone-900 to-red-950", border: "border-red-400/30", accent: "text-red-300" }
+  mar: { bg: "from-purple-950 via-violet-900 to-purple-950", border: "border-violet-500/30", accent: "text-violet-300" },
+  mlt: { bg: "from-amber-950 via-amber-900 to-amber-950", border: "border-amber-500/30", accent: "text-amber-300" },
+  ofc: { bg: "from-stone-900 via-amber-950 to-stone-900", border: "border-amber-600/30", accent: "text-amber-300" },
+  blj: { bg: "from-teal-950 via-teal-900 to-teal-950", border: "border-teal-500/30", accent: "text-teal-300" },
+  flb: { bg: "from-zinc-900 via-zinc-800 to-zinc-900", border: "border-zinc-500/30", accent: "text-zinc-300" },
+  hb: { bg: "from-teal-950 via-emerald-950 to-teal-950", border: "border-emerald-500/30", accent: "text-emerald-300" },
+  rre: { bg: "from-orange-950 via-amber-900 to-orange-950", border: "border-amber-500/30", accent: "text-amber-300" },
+  sd: { bg: "from-red-950 via-red-900 to-red-950", border: "border-red-500/30", accent: "text-red-300" },
+  tdg: { bg: "from-stone-950 via-stone-900 to-stone-950", border: "border-stone-500/30", accent: "text-stone-300" },
+  wgd: { bg: "from-slate-950 via-rose-950 to-slate-950", border: "border-rose-500/30", accent: "text-rose-300" },
+  yrp: { bg: "from-orange-950 via-orange-900 to-orange-950", border: "border-orange-500/30", accent: "text-orange-300" },
+  jnn: { bg: "from-fuchsia-950 via-purple-900 to-fuchsia-950", border: "border-fuchsia-500/30", accent: "text-fuchsia-300" }
 };
 
 export const BookCover: React.FC<BookCoverProps> = ({ title, coverUrl, active, bookId }) => {
