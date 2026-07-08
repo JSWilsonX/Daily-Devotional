@@ -523,7 +523,22 @@ export default function App() {
 
   // Lists and selection
   const [devotionals, setDevotionals] = useState<Devotional[]>(dailyDevotionals);
-  const [selectedIdx, setSelectedIdx] = useState<number>(0);
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(() => {
+    const savedSelectedId = localStorage.getItem("egw_selected_devotional_id");
+    if (savedSelectedId) {
+      if (savedSelectedId === "ysrp") {
+        const idx = dailyDevotionals.findIndex(d => d.id === "yrp");
+        return idx !== -1 ? idx : null;
+      }
+      const idx = dailyDevotionals.findIndex(d => d.id === savedSelectedId);
+      return idx !== -1 ? idx : null;
+    }
+    return null;
+  });
+  const [showCarousel, setShowCarousel] = useState<boolean>(() => {
+    const savedSelectedId = localStorage.getItem("egw_selected_devotional_id");
+    return savedSelectedId ? false : true;
+  });
   const [isScraping, setIsScraping] = useState<boolean>(false);
   const [scrapeSource, setScrapeSource] = useState<string>("local");
 
@@ -648,8 +663,14 @@ export default function App() {
       const idx = dailyDevotionals.findIndex(d => d.id === savedSelectedId);
       if (idx !== -1) {
         setSelectedIdx(idx);
+        setShowCarousel(false);
+      } else {
+        setSelectedIdx(null);
+        setShowCarousel(true);
       }
     } else {
+      setSelectedIdx(null);
+      setShowCarousel(true);
       // Fetch list dynamically just in case we have a service sync
       fetchDevotionals();
     }
@@ -706,7 +727,7 @@ export default function App() {
 
   // Sync selected index and profile to localStorage and fetch content
   useEffect(() => {
-    if (devotionals.length > 0 && devotionals[selectedIdx]) {
+    if (selectedIdx !== null && devotionals.length > 0 && devotionals[selectedIdx]) {
       localStorage.setItem("egw_selected_devotional_id", devotionals[selectedIdx].id);
       localStorage.setItem("egw_selected_profile", selectedProfile);
       fetchActiveDevotionalContent(devotionals[selectedIdx], selectedProfile);
@@ -754,7 +775,7 @@ export default function App() {
 
   // Handle active book auto-scrolling in the carousel
   useEffect(() => {
-    if (devotionals.length > 0 && devotionals[selectedIdx]) {
+    if (selectedIdx !== null && devotionals.length > 0 && devotionals[selectedIdx]) {
       const activeBookId = devotionals[selectedIdx].id;
       const element = document.getElementById(`carousel-item-${activeBookId}`);
       if (element && carouselContainerRef.current) {
@@ -782,7 +803,10 @@ export default function App() {
         const savedSelectedId = localStorage.getItem("egw_selected_devotional_id");
         if (savedSelectedId) {
           const idx = result.data.findIndex((d: Devotional) => d.id === savedSelectedId);
-          if (idx !== -1) setSelectedIdx(idx);
+          if (idx !== -1) {
+            setSelectedIdx(idx);
+            setShowCarousel(false);
+          }
         }
       }
     } catch (err) {
@@ -857,10 +881,12 @@ export default function App() {
     }
     
     // Auto shift selection optionally, or let them just click
-    if (direction === "left" && selectedIdx > 0) {
-      setSelectedIdx(selectedIdx - 1);
-    } else if (direction === "right" && selectedIdx < devotionals.length - 1) {
-      setSelectedIdx(selectedIdx + 1);
+    if (selectedIdx !== null) {
+      if (direction === "left" && selectedIdx > 0) {
+        setSelectedIdx(selectedIdx - 1);
+      } else if (direction === "right" && selectedIdx < devotionals.length - 1) {
+        setSelectedIdx(selectedIdx + 1);
+      }
     }
   };
 
@@ -1201,19 +1227,6 @@ export default function App() {
                 </button>
 
                 <button
-                  id="language-toggle"
-                  onClick={() => setLocale(locale === "en" ? "es" : "en")}
-                  className={`p-1.5 rounded-lg border transition-all text-[10px] font-mono font-bold ${
-                    isSlate 
-                      ? "bg-slate-900/50 border-white/5 text-cyan-400 hover:bg-slate-800" 
-                      : "bg-amber-50 border-amber-900/10 text-amber-800 hover:bg-amber-100"
-                  }`}
-                  title="Switch language / Cambiar idioma"
-                >
-                  {locale.toUpperCase()}
-                </button>
-
-                <button
                   id="theme-toggle"
                   onClick={toggleTheme}
                   className={`p-1.5 rounded-lg border transition-all ${
@@ -1231,122 +1244,203 @@ export default function App() {
         </header>
 
         {/* 4. Carousel Area */}
-        <section id="carousel-section" className={`px-4 py-3 border-b ${isSlate ? "border-white/5 bg-slate-950/20" : "border-amber-900/5 bg-amber-50/20"}`}>
+        <section id="carousel-section" className={`px-4 py-4 border-b transition-all duration-300 ${isSlate ? "border-white/5 bg-slate-950/20" : "border-amber-900/5 bg-amber-50/20"}`}>
           <div className="max-w-6xl mx-auto">
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <h2 className={`text-[10px] font-bold uppercase tracking-widest font-mono ${isSlate ? "text-cyan-400" : "text-amber-800"}`}>
-                  DEVOTIONAL LIBRARY
-                </h2>
-                <p className={`text-[10px] mt-0.5 hidden sm:block ${subTextStyle}`}>
-                  Scroll and select a devotional book cover below to fetch today's entry.
-                </p>
-              </div>
-              
-              <div className="flex space-x-1.5">
-                <button
-                  id="carousel-left"
-                  onClick={() => scrollCarousel("left")}
-                  disabled={selectedIdx === 0}
-                  className={`p-1.5 rounded-lg transition-all border ${
-                    isSlate 
-                      ? "bg-slate-900/40 hover:bg-slate-800 text-cyan-400 border-white/5 disabled:opacity-20" 
-                      : "bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-900/10 disabled:opacity-25"
-                  }`}
-                >
-                  <ChevronLeft size={13} />
-                </button>
-                <button
-                  id="carousel-right"
-                  onClick={() => scrollCarousel("right")}
-                  disabled={selectedIdx === devotionals.length - 1}
-                  className={`p-1.5 rounded-lg transition-all border ${
-                    isSlate 
-                      ? "bg-slate-900/40 hover:bg-slate-800 text-cyan-400 border-white/5 disabled:opacity-20" 
-                      : "bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-900/10 disabled:opacity-25"
-                  }`}
-                >
-                  <ChevronRight size={13} />
-                </button>
-              </div>
-            </div>
-
-            {/* Book Carousel Slider */}
-            {isScraping && devotionals.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-10 space-y-2">
-                <Loader2 className={`animate-spin ${isSlate ? "text-cyan-400" : "text-amber-600"}`} size={24} />
-                <p className="text-[10px] font-mono italic">Syncing with Ellen G. White Estate database...</p>
-              </div>
-            ) : (
-              <div
-                id="carousel-viewport"
-                ref={carouselContainerRef}
-                className="flex overflow-x-auto space-x-4 py-2 px-1 scrollbar-none snap-x snap-mandatory scroll-smooth"
-                style={{ scrollbarWidth: "none" }}
-              >
-                {devotionals.map((book, idx) => (
-                  <div
-                    key={book.id}
-                    id={`carousel-item-${book.id}`}
-                    onClick={() => setSelectedIdx(idx)}
-                    className="flex-none w-28 sm:w-36 snap-center cursor-pointer transition-transform duration-300 hover:scale-[1.02]"
-                  >
-                    <BookCover
-                      title={book.title}
-                      coverUrl={book.cover}
-                      active={idx === selectedIdx}
-                      bookId={book.id}
-                    />
-                    <p className={`text-center text-[10px] mt-2 font-semibold truncate max-w-full px-1 ${isSlate ? "text-slate-200" : "text-stone-800"}`}>
-                      {book.title}
+            {showCarousel ? (
+              <div className="animate-fade-in">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h2 className={`text-[10px] font-bold uppercase tracking-widest font-mono ${isSlate ? "text-cyan-400" : "text-amber-800"}`}>
+                      DEVOTIONAL LIBRARY
+                    </h2>
+                    <p className={`text-[10px] mt-0.5 hidden sm:block ${subTextStyle}`}>
+                      Scroll and select a devotional book cover below to fetch today's entry.
                     </p>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Selected Book Bento Banner - Hidden on mobile screens to prioritize vertical space */}
-            {devotionals.length > 0 && devotionals[selectedIdx] && (
-              <div 
-                id="selected-book-details"
-                className={`mt-3 p-4 transition-all duration-300 hidden sm:block ${cardBgStyle}`}
-              >
-                <div className="flex items-start space-x-4">
-                  <div className={`p-2 rounded-xl hidden md:block ${isSlate ? "bg-cyan-500/10 text-cyan-400" : "bg-amber-500/10 text-amber-800"}`}>
-                    <Sparkles size={16} />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2">
-                      <span className={`font-display font-bold text-sm ${isSlate ? "text-cyan-300 text-glow-cyan" : "text-amber-800"}`}>
-                        {devotionals[selectedIdx].title}
-                      </span>
-                      <span className={`text-[8px] font-mono font-bold px-1.5 py-0.5 rounded ${isSlate ? "bg-cyan-500/20 text-cyan-400" : "bg-amber-500/10 text-amber-800"}`}>
-                        ACTIVE CORE
-                      </span>
-                    </div>
-                    <p className={`text-[11px] mt-1 leading-relaxed font-sans ${subTextStyle}`}>
-                      {devotionals[selectedIdx].description}
-                    </p>
-                    <a
-                      href={devotionals[selectedIdx].link}
-                      target="_blank"
-                      rel="noreferrer"
-                      className={`text-[9px] font-mono tracking-wider hover:underline inline-flex items-center space-x-1 mt-2 ${
-                        isSlate ? "text-cyan-400 font-bold" : "text-amber-800"
-                      }`}
-                    >
-                      <span>RESOLVE METADATA URL</span>
-                      <Sparkles size={8} />
-                    </a>
                   </div>
                   
-                  <div className={`text-[9px] px-2 py-1 font-mono rounded font-bold ${
-                    isSlate ? "bg-slate-900 border border-white/5 text-cyan-400" : "bg-amber-100 text-amber-900"
-                  }`}>
-                    NODE://{devotionals[selectedIdx].id.toUpperCase()}
+                  <div className="flex space-x-1.5">
+                    <button
+                      id="carousel-left"
+                      onClick={() => scrollCarousel("left")}
+                      disabled={selectedIdx === null || selectedIdx === 0}
+                      className={`p-1.5 rounded-lg transition-all border ${
+                        isSlate 
+                          ? "bg-slate-900/40 hover:bg-slate-800 text-cyan-400 border-white/5 disabled:opacity-20" 
+                          : "bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-900/10 disabled:opacity-25"
+                      }`}
+                    >
+                      <ChevronLeft size={13} />
+                    </button>
+                    <button
+                      id="carousel-right"
+                      onClick={() => scrollCarousel("right")}
+                      disabled={selectedIdx === null || selectedIdx === devotionals.length - 1}
+                      className={`p-1.5 rounded-lg transition-all border ${
+                        isSlate 
+                          ? "bg-slate-900/40 hover:bg-slate-800 text-cyan-400 border-white/5 disabled:opacity-20" 
+                          : "bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-900/10 disabled:opacity-25"
+                      }`}
+                    >
+                      <ChevronRight size={13} />
+                    </button>
                   </div>
                 </div>
+
+                {/* Book Carousel Slider */}
+                {isScraping && devotionals.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-10 space-y-2">
+                    <Loader2 className={`animate-spin ${isSlate ? "text-cyan-400" : "text-amber-600"}`} size={24} />
+                    <p className="text-[10px] font-mono italic">Syncing with Ellen G. White Estate database...</p>
+                  </div>
+                ) : (
+                  <div
+                    id="carousel-viewport"
+                    ref={carouselContainerRef}
+                    className="flex overflow-x-auto space-x-4 py-2 px-1 scrollbar-none snap-x snap-mandatory scroll-smooth"
+                    style={{ scrollbarWidth: "none" }}
+                  >
+                    {devotionals.map((book, idx) => (
+                      <div
+                        key={book.id}
+                        id={`carousel-item-${book.id}`}
+                        onClick={() => {
+                          setSelectedIdx(idx);
+                          setShowCarousel(false);
+                        }}
+                        className="flex-none w-28 sm:w-36 snap-center cursor-pointer transition-transform duration-300 hover:scale-[1.02]"
+                      >
+                        <BookCover
+                          title={book.title}
+                          coverUrl={book.cover}
+                          active={idx === selectedIdx}
+                          bookId={book.id}
+                        />
+                        <p className={`text-center text-[10px] mt-2 font-semibold truncate max-w-full px-1 ${isSlate ? "text-slate-200" : "text-stone-800"}`}>
+                          {book.title}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Selected Book Bento Banner - Hidden on mobile screens to prioritize vertical space */}
+                {selectedIdx !== null && devotionals.length > 0 && devotionals[selectedIdx] && (
+                  <div 
+                    id="selected-book-details"
+                    className={`mt-3 p-4 transition-all duration-300 hidden sm:block ${cardBgStyle}`}
+                  >
+                    <div className="flex items-start space-x-4">
+                      <div className={`p-2 rounded-xl hidden md:block ${isSlate ? "bg-cyan-500/10 text-cyan-400" : "bg-amber-500/10 text-amber-800"}`}>
+                        <Sparkles size={16} />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                          <span className={`font-display font-bold text-sm ${isSlate ? "text-cyan-300 text-glow-cyan" : "text-amber-800"}`}>
+                            {devotionals[selectedIdx].title}
+                          </span>
+                          <span className={`text-[8px] font-mono font-bold px-1.5 py-0.5 rounded ${isSlate ? "bg-cyan-500/20 text-cyan-400" : "bg-amber-500/10 text-amber-800"}`}>
+                            ACTIVE CORE
+                          </span>
+                        </div>
+                        <p className={`text-[11px] mt-1 leading-relaxed font-sans ${subTextStyle}`}>
+                          {devotionals[selectedIdx].description}
+                        </p>
+                        <a
+                          href={devotionals[selectedIdx].link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className={`text-[9px] font-mono tracking-wider hover:underline inline-flex items-center space-x-1 mt-2 ${
+                            isSlate ? "text-cyan-400 font-bold" : "text-amber-800"
+                          }`}
+                        >
+                          <span>RESOLVE METADATA URL</span>
+                          <Sparkles size={8} />
+                        </a>
+                      </div>
+                      
+                      <div className={`text-[9px] px-2 py-1 font-mono rounded font-bold ${
+                        isSlate ? "bg-slate-900 border border-white/5 text-cyan-400" : "bg-amber-100 text-amber-900"
+                      }`}>
+                        NODE://{devotionals[selectedIdx].id.toUpperCase()}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
+            ) : (
+              selectedIdx !== null && devotionals[selectedIdx] && (
+                <div className="flex flex-col md:grid md:grid-cols-12 gap-6 items-center py-2 animate-fade-in">
+                  {/* Left Side: Selected Book Cover (3 cols out of 12) */}
+                  <div className="md:col-span-3 flex flex-col items-center justify-center">
+                    <div 
+                      onClick={() => setShowCarousel(true)}
+                      className="group relative cursor-pointer transition-all duration-300 hover:scale-[1.04]"
+                      title="Click book to show library carousel"
+                    >
+                      <div className="w-28 sm:w-32">
+                        <BookCover
+                          title={devotionals[selectedIdx].title}
+                          coverUrl={devotionals[selectedIdx].cover}
+                          active={true}
+                          bookId={devotionals[selectedIdx].id}
+                        />
+                      </div>
+                      {/* Subtle overlay hint */}
+                      <div className="absolute inset-0 bg-black/60 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center p-2 text-center">
+                        <BookOpen size={18} className="text-cyan-400 mb-1 animate-bounce" />
+                        <span className="text-[10px] font-mono font-bold text-white uppercase tracking-wider">
+                          Show Library
+                        </span>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => setShowCarousel(true)}
+                      className={`mt-2 text-[9px] font-mono tracking-wider font-bold transition-colors flex items-center space-x-1 uppercase ${
+                        isSlate ? "text-cyan-400/70 hover:text-cyan-400" : "text-amber-800/70 hover:text-amber-800"
+                      }`}
+                    >
+                      <span>Change Book</span>
+                    </button>
+                  </div>
+
+                  {/* Right Side: Selected Book Details (9 cols out of 12) - Hidden on narrow screens */}
+                  <div className="hidden md:flex md:col-span-9 flex-col justify-between h-full space-y-3">
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className={`font-display font-bold text-base sm:text-lg ${isSlate ? "text-cyan-300 text-glow-cyan" : "text-amber-800"}`}>
+                          {devotionals[selectedIdx].title}
+                        </span>
+                        <span className={`text-[8px] font-mono font-bold px-1.5 py-0.5 rounded ${isSlate ? "bg-cyan-500/20 text-cyan-400" : "bg-amber-500/10 text-amber-800"}`}>
+                          ACTIVE BOOK
+                        </span>
+                      </div>
+                      <p className={`text-xs mt-2 leading-relaxed font-sans ${subTextStyle}`}>
+                        {devotionals[selectedIdx].description}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-dashed border-white/10">
+                      <a
+                        href={devotionals[selectedIdx].link}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={`text-[9px] font-mono tracking-wider hover:underline inline-flex items-center space-x-1 ${
+                          isSlate ? "text-cyan-400 font-bold" : "text-amber-800"
+                        }`}
+                      >
+                        <span>EGW ESTATE PAGE</span>
+                        <Sparkles size={8} />
+                      </a>
+
+                      <div className={`text-[9px] px-2 py-0.5 font-mono rounded font-bold ${
+                        isSlate ? "bg-slate-900 border border-white/5 text-cyan-400" : "bg-amber-100 text-amber-900"
+                      }`}>
+                        NODE://{devotionals[selectedIdx].id.toUpperCase()}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
             )}
           </div>
         </section>
@@ -1572,9 +1666,14 @@ export default function App() {
               </div>
             </article>
           ) : (
-            <div id="no-content-state" className="flex-1 flex flex-col items-center justify-center py-24 text-center">
-              <Compass className="text-cyan-400 animate-spin" size={48} />
-              <p className="font-mono italic text-sm mt-4">Pre-configuring immersive telemetry...</p>
+            <div id="no-content-state" className="flex-1 flex flex-col items-center justify-center py-16 text-center select-none animate-fade-in">
+              <BookOpen className={`w-12 h-12 mb-4 opacity-40 ${isSlate ? "text-cyan-400" : "text-amber-800"}`} />
+              <p className={`font-display text-base font-medium ${isSlate ? "text-slate-300" : "text-stone-850"}`}>
+                No Devotional Selected
+              </p>
+              <p className={`text-xs mt-2 max-w-xs leading-relaxed ${subTextStyle}`}>
+                Please select a devotional book from the library above to load today's daily reading.
+              </p>
             </div>
           )}
         </main>
@@ -1595,7 +1694,7 @@ export default function App() {
               <div className={`w-9 h-12 rounded-md overflow-hidden shadow-sm flex items-center justify-center border ${
                 isSlate ? "bg-slate-900 border-white/10" : "bg-amber-50 border-amber-900/10"
               }`}>
-                {devotionals[selectedIdx]?.cover ? (
+                {selectedIdx !== null && devotionals[selectedIdx]?.cover ? (
                   <img 
                     src={devotionals[selectedIdx].cover} 
                     alt="cover" 
@@ -1606,7 +1705,7 @@ export default function App() {
                   />
                 ) : (
                   <span className="text-[10px] font-bold text-cyan-400 font-mono">
-                    {devotionals[selectedIdx]?.id.toUpperCase() || "EGW"}
+                    {(selectedIdx !== null ? devotionals[selectedIdx]?.id : "EGW")?.toUpperCase()}
                   </span>
                 )}
               </div>
