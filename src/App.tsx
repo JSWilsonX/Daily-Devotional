@@ -27,6 +27,7 @@ import {
   Flame
 } from "lucide-react";
 import { BookCover } from "./components/BookCover";
+import { ProjectIcon } from "./components/ProjectIcon";
 import { useTour, TourManager } from "./components/Tour";
 
 
@@ -1115,8 +1116,8 @@ export default function App() {
           <div className="max-w-6xl mx-auto w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3 select-none">
             {/* Left side: branding/title */}
             <div className="flex items-center space-x-3">
-              <div className={`p-2 rounded-xl shrink-0 ${isSlate ? "bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]" : "bg-amber-500/10 text-amber-800"}`}>
-                <BookOpen size={18} className="animate-pulse" />
+              <div className="shrink-0">
+                <ProjectIcon size={32} className="rounded-xl shadow-lg border border-slate-700/50 hover:scale-105 transition-transform duration-300" />
               </div>
               <div>
                 <h1 className="font-display text-base sm:text-lg font-bold tracking-tight">
@@ -1658,7 +1659,7 @@ export default function App() {
             </article>
           ) : (
             <div id="no-content-state" className="flex-1 flex flex-col items-center justify-center py-16 text-center select-none animate-fade-in">
-              <BookOpen className={`w-12 h-12 mb-4 opacity-40 ${isSlate ? "text-cyan-400" : "text-amber-800"}`} />
+              <ProjectIcon size={96} className="mb-6 rounded-2xl shadow-2xl border border-slate-700/50 hover:scale-105 transition-transform duration-300" />
               <p className={`font-display text-base font-medium ${isSlate ? "text-slate-300" : "text-stone-850"}`}>
                 No Devotional Selected
               </p>
