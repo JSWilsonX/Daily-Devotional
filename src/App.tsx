@@ -161,154 +161,154 @@ export const dailyDevotionals = [
     title: "Our High Calling",
     cover: "https://media2.egwwritings.org/covers/81_s.jpg",
     link: "https://whiteestate.org/devotional/ohc/",
-    description: "A classic devotional call to holiness, virtue, and a deeper commitment to Christ."
+    description: "This devotional classic calls readers to holiness, spiritual maturity, and a deeper commitment to Christ. It explores faith, temptation, salvation, and the challenges of wealth, criticism, and suffering."
   },
   {
     id: "fh",
     title: "From the Heart",
     cover: "https://media2.egwwritings.org/covers/12210_s.jpg",
     link: "https://whiteestate.org/devotional/fh/",
-    description: "A collection of encouraging messages that gently guide readers closer to Jesus and His soon return."
+    description: "These messages were written to guide searching hearts toward Jesus and prepare believers for His soon return. They offer encouragement, wisdom, and gentle correction for a closer walk with God."
   },
   {
     id: "ul",
     title: "The Upward Look",
     cover: "https://media2.egwwritings.org/covers/147_s.jpg",
     link: "https://whiteestate.org/devotional/ul/",
-    description: "These readings lift the heart heavenward and keep the focus fixed on Christ as our Savior and example."
+    description: "This devotional keeps the reader's eyes fixed on Jesus as both example and source of saving grace. Its reflections lift the heart heavenward and strengthen faith step by step."
   },
   {
     id: "tmk",
     title: "That I May Know Him",
     cover: "https://media2.egwwritings.org/covers/126_s.jpg",
     link: "https://whiteestate.org/devotional/tmk/",
-    description: "A devotional book that invites readers into a richer knowledge of God through personal and heartfelt messages."
+    description: "These readings invite readers into a fuller knowledge of God through warm, personal messages and intimate reflections. They reveal the heart of prayer, devotion, and a life centered on Christ."
   },
   {
     id: "rc",
     title: "Reflecting Christ",
     cover: "https://media2.egwwritings.org/covers/89_s.jpg",
     link: "https://whiteestate.org/devotional/rc/",
-    description: "A Christ-centered devotional that encourages believers to walk in the footsteps of Jesus."
+    description: "A Christ-centered devotional that encourages believers to walk in the footsteps of Jesus. It highlights the beauty of a life shaped by His character and love."
   },
   {
     id: "ctr",
     title: "Christ Triumphant",
     cover: "https://media2.egwwritings.org/covers/9_s.jpg",
     link: "https://whiteestate.org/devotional/ctr/",
-    description: "These daily readings highlight God's power to overcome and triumph in the great controversy."
+    description: "These daily readings draw from the great controversy theme and focus on God's power to overcome. They strengthen hope by pointing to the triumph of Christ over evil."
   },
   {
     id: "cc",
     title: "Conflict and Courage",
     cover: "https://media2.egwwritings.org/covers/17_s.jpg",
     link: "https://whiteestate.org/devotional/cc/",
-    description: "A devotional journey through salvation history that offers courage and hope for today."
+    description: "This devotional traces decisive moments in salvation history and shows how the past still speaks to the present. It offers counsel, courage, and hope for faithful living today."
   },
   {
     id: "ag",
     title: "God's Amazing Grace",
     cover: "https://media2.egwwritings.org/covers/33_s.jpg",
     link: "https://whiteestate.org/devotional/ag/",
-    description: "These readings invite readers to experience the serenity and strength that come from daily connection with God."
+    description: "These reflections invite readers to experience the peace and strength that come from daily communion with God. They celebrate grace as the power that changes the heart and shapes the life."
   },
   {
     id: "hp",
     title: "In Heavenly Places",
     cover: "https://media2.egwwritings.org/covers/38_s.jpg",
     link: "https://whiteestate.org/devotional/hp/",
-    description: "A devotional collection that draws readers into deeper fellowship with Christ and a fuller understanding of His character."
+    description: "This collection brings readers into a deeper understanding of Christ's character and the work of heaven. It encourages a life of devotion, surrender, and holy fellowship with God."
   },
   {
     id: "lhu",
     title: "Lift Him Up",
     cover: "https://media2.egwwritings.org/covers/44_s.jpg",
     link: "https://whiteestate.org/devotional/lhu/",
-    description: "These reflections focus on Jesus as Teacher, Healer, King, and Redeemer."
+    description: "These reflections center on Jesus as Teacher, Healer, King, and Redeemer. They call readers to behold Him more clearly and be transformed by His likeness."
   },
   {
     id: "mar",
     title: "Maranatha",
     cover: "https://media2.egwwritings.org/covers/74_s.jpg",
     link: "https://whiteestate.org/devotional/mar/",
-    description: "A devotional centered on Christ's soon return and the hope of His glorious appearing."
+    description: "This devotional focuses on the blessed hope of Christ's soon return. It stirs longing for deliverance and renewed faith in the promises of God."
   },
   {
     id: "mlt",
     title: "My Life Today",
     cover: "https://media2.egwwritings.org/covers/79_s.jpg",
     link: "https://whiteestate.org/devotional/mlt/",
-    description: "This devotional touches every part of the Christian life with a steady focus on God's fatherly love."
+    description: "These readings touch nearly every area of the Christian life with warmth and practical insight. They remind readers of God's fatherly love and the call to live fully for Him."
   },
   {
     id: "ofc",
     title: "Our Father Cares",
     cover: "https://media2.egwwritings.org/covers/80_s.jpg",
     link: "https://whiteestate.org/devotional/ofc/",
-    description: "A warm meditation on the Father's love and the comfort of being His child."
+    description: "This devotional explores the Father's love for His children and the comfort of being held by Him. It encourages trust, gratitude, and hope in the midst of life's struggles."
   },
   {
     id: "blj",
     title: "To Be Like Jesus",
     cover: "https://media2.egwwritings.org/covers/151_s.jpg",
     link: "https://whiteestate.org/devotional/blj/",
-    description: "These devotionals call believers into deeper fellowship with God and a life shaped by Christ's likeness."
+    description: "These devotionals call believers into deeper fellowship with God and a life shaped by Christ's likeness. They invite readers to walk closely with the Shepherd and follow Him day by day."
   },
   {
     id: "flb",
     title: "The Faith I Live By",
     cover: "https://media2.egwwritings.org/covers/131_s.jpg",
     link: "https://whiteestate.org/devotional/flb/",
-    description: "A doctrine-centered devotional that strengthens faith through daily reflections on biblical truth."
+    description: "This devotional is devoted to the foundational truths of Scripture and the doctrines that strengthen faith. It offers daily reflection that is both inspiring and instructive."
   },
   {
     id: "hb",
     title: "Homeward Bound",
     cover: "https://media2.egwwritings.org/covers/12862_s.jpg",
     link: "https://whiteestate.org/devotional/hb/",
-    description: "These readings encourage surrender, victory in Christ, and hope as we journey homeward."
+    description: "These readings encourage surrender, victory in Christ, and hope as believers journey toward home. They reflect major themes of faith, holiness, and the great controversy."
   },
   {
     id: "rre",
     title: "Radiant Religion",
     cover: "https://media2.egwwritings.org/covers/14039_s.jpg",
     link: "https://whiteestate.org/devotional/rre/",
-    description: "A foundational devotional collection that reflects the rich spiritual life of early Christian discipleship."
+    description: "This early devotional collection reflects the spiritual life of earnest discipleship. It offers a foundational look at living with radiant faith and purpose."
   },
   {
     id: "sd",
     title: "Sons and Daughters of God",
     cover: "https://media2.egwwritings.org/covers/102_s.jpg",
     link: "https://whiteestate.org/devotional/sd/",
-    description: "These reflections invite readers to pursue the highest standard of spiritual attainment in Christ."
+    description: "These reflections invite readers to pursue the highest standard of spiritual attainment in Christ. They emphasize the cross, holiness, and the dignity of belonging to God."
   },
   {
     id: "tdg",
     title: "This Day With God",
     cover: "https://media2.egwwritings.org/covers/149_s.jpg",
     link: "https://whiteestate.org/devotional/tdg/",
-    description: "A devotional collection arranged by the day they were written, offering practical encouragement and counsel."
+    description: "This devotional is arranged by the day they were written, giving the reader a personal and historical glimpse into Ellen White's counsel. It offers encouragement, wisdom, and hope."
   },
   {
     id: "wgd",
     title: "With God at Dawn",
     cover: "https://media2.egwwritings.org/covers/13940_s.jpg",
     link: "https://whiteestate.org/devotional/wgd/",
-    description: "These daily readings begin the day with spiritual focus and renewed commitment to God."
+    description: "These readings begin the day with spiritual focus and renewed commitment to God. They are designed to help readers meet each morning with reverence and purpose."
   },
   {
     id: "yrp",
     title: "Ye Shall Receive Power",
     cover: "https://media2.egwwritings.org/covers/153_s.jpg",
     link: "https://whiteestate.org/devotional/yrp/",
-    description: "A devotional that highlights the promise and power of the Holy Spirit in everyday discipleship."
+    description: "A devotional that highlights the promise and power of the Holy Spirit in everyday discipleship. It encourages readers to welcome His presence and cooperate with His work."
   },
   {
     id: "jnn",
     title: "Jesus, Name Above All Names",
     cover: "https://media2.egwwritings.org/covers/14150_s.jpg",
     link: "https://whiteestate.org/devotional/jnn/",
-    description: "This devotional explores the many names of Jesus and draws readers into deeper love for Him."
+    description: "This devotional explores the many names of Jesus and invites readers into deeper love for Him. It offers a fresh, intimate way to behold the Savior each day."
   }
 ];
 
@@ -1361,15 +1361,15 @@ export default function App() {
               </div>
             ) : (
               selectedIdx !== null && devotionals[selectedIdx] && (
-                <div className="flex flex-col md:grid md:grid-cols-12 gap-6 items-center py-2 animate-fade-in">
-                  {/* Left Side: Selected Book Cover (3 cols out of 12) */}
-                  <div className="md:col-span-3 flex flex-col items-center justify-center">
+                <div className="flex flex-row gap-4 sm:gap-6 items-center py-2 animate-fade-in">
+                  {/* Left Side: Selected Book Cover */}
+                  <div className="flex-shrink-0 flex flex-col items-center justify-center">
                     <div 
                       onClick={() => setShowCarousel(true)}
                       className="group relative cursor-pointer transition-all duration-300 hover:scale-[1.04]"
                       title="Click book to show library carousel"
                     >
-                      <div className="w-28 sm:w-32">
+                      <div className="w-16 sm:w-24 md:w-28">
                         <BookCover
                           title={devotionals[selectedIdx].title}
                           coverUrl={devotionals[selectedIdx].cover}
@@ -1378,16 +1378,16 @@ export default function App() {
                         />
                       </div>
                       {/* Subtle overlay hint */}
-                      <div className="absolute inset-0 bg-black/60 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center p-2 text-center">
-                        <BookOpen size={18} className="text-cyan-400 mb-1 animate-bounce" />
-                        <span className="text-[10px] font-mono font-bold text-white uppercase tracking-wider">
-                          Show Library
+                      <div className="absolute inset-0 bg-black/60 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center p-1 text-center">
+                        <BookOpen size={14} className="text-cyan-400 mb-0.5 animate-bounce" />
+                        <span className="text-[8px] font-mono font-bold text-white uppercase tracking-wider">
+                          Library
                         </span>
                       </div>
                     </div>
                     <button 
                       onClick={() => setShowCarousel(true)}
-                      className={`mt-2 text-[9px] font-mono tracking-wider font-bold transition-colors flex items-center space-x-1 uppercase ${
+                      className={`mt-1.5 text-[8px] sm:text-[9px] font-mono tracking-wider font-bold transition-colors flex items-center space-x-1 uppercase ${
                         isSlate ? "text-cyan-400/70 hover:text-cyan-400" : "text-amber-800/70 hover:text-amber-800"
                       }`}
                     >
@@ -1395,28 +1395,28 @@ export default function App() {
                     </button>
                   </div>
 
-                  {/* Right Side: Selected Book Details (9 cols out of 12) - Hidden on narrow screens */}
-                  <div className="hidden md:flex md:col-span-9 flex-col justify-between h-full space-y-3">
+                  {/* Right Side: Selected Book Details */}
+                  <div className="flex-1 flex flex-col justify-between h-full min-w-0 py-0.5">
                     <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className={`font-display font-bold text-base sm:text-lg ${isSlate ? "text-cyan-300 text-glow-cyan" : "text-amber-800"}`}>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className={`font-display font-bold text-xs sm:text-sm md:text-base truncate max-w-[200px] xs:max-w-[250px] sm:max-w-md ${isSlate ? "text-cyan-300 text-glow-cyan" : "text-amber-800"}`}>
                           {devotionals[selectedIdx].title}
                         </span>
-                        <span className={`text-[8px] font-mono font-bold px-1.5 py-0.5 rounded ${isSlate ? "bg-cyan-500/20 text-cyan-400" : "bg-amber-500/10 text-amber-800"}`}>
+                        <span className={`text-[7px] sm:text-[8px] font-mono font-bold px-1.5 py-0.5 rounded ${isSlate ? "bg-cyan-500/20 text-cyan-400" : "bg-amber-500/10 text-amber-800"}`}>
                           ACTIVE BOOK
                         </span>
                       </div>
-                      <p className={`text-xs mt-2 leading-relaxed font-sans ${subTextStyle}`}>
+                      <p className={`text-[10px] sm:text-xs mt-1 leading-relaxed font-sans line-clamp-4 ${subTextStyle}`}>
                         {devotionals[selectedIdx].description}
                       </p>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-dashed border-white/10">
+                    <div className="flex items-center justify-between pt-1.5 mt-1.5 border-t border-dashed border-white/10">
                       <a
                         href={devotionals[selectedIdx].link}
-                        target="_blank"
+                        target="EGWEstatePage"
                         rel="noreferrer"
-                        className={`text-[9px] font-mono tracking-wider hover:underline inline-flex items-center space-x-1 ${
+                        className={`text-[8px] sm:text-[9px] font-mono tracking-wider hover:underline inline-flex items-center space-x-1 ${
                           isSlate ? "text-cyan-400 font-bold" : "text-amber-800"
                         }`}
                       >
@@ -1424,7 +1424,7 @@ export default function App() {
                         <Sparkles size={8} />
                       </a>
 
-                      <div className={`text-[9px] px-2 py-0.5 font-mono rounded font-bold ${
+                      <div className={`text-[8px] sm:text-[9px] px-1.5 py-0.5 font-mono rounded font-bold ${
                         isSlate ? "bg-slate-900 border border-white/5 text-cyan-400" : "bg-amber-100 text-amber-900"
                       }`}>
                         NODE://{devotionals[selectedIdx].id.toUpperCase()}
