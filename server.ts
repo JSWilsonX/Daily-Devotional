@@ -225,16 +225,57 @@ async function paraphraseDevotional(
   try {
     if (!process.env.GEMINI_API_KEY) {
       console.warn("GEMINI_API_KEY is not defined. Skipping paraphrase step.");
-      return { title, paragraphs, isFallback: true };
+      return { 
+        title, 
+        paragraphs: paragraphs.map(p => ({ ...p, pronunciationOverrides: [] })), 
+        isFallback: true 
+      };
     }
 
-    console.log(`Calling Gemini to paraphrase devotional in the "${profile}" profile style...`);
+    console.log(`Calling Gemini to paraphrase devotional in the "${profile}" profile style and extract pronunciation overrides...`);
 
-    const originalJson = JSON.stringify({ title, paragraphs }, null, 2);
+    const PRONUNCIATION_TOKENS = [
+      "LIVE_VERB",
+      "LIVE_ADJECTIVE",
+      "READ_PRESENT",
+      "READ_PAST",
+      "LEAD_VERB",
+      "LEAD_METAL",
+      "WIND_AIR",
+      "WIND_TURN",
+      "TEAR_RIP",
+      "TEAR_CRY",
+      "BASS_MUSIC",
+      "BASS_FISH",
+      "CLOSE_NEAR",
+      "CLOSE_SHUT",
+      "MINUTE_TIME",
+      "MINUTE_TINY",
+      "OBJECT_NOUN",
+      "OBJECT_VERB",
+      "RECORD_NOUN",
+      "RECORD_VERB",
+      "PRESENT_NOUN",
+      "PRESENT_VERB"
+    ];
+
+    const originalJson = JSON.stringify({ 
+      title, 
+      paragraphs, 
+      pronunciationTokens: PRONUNCIATION_TOKENS 
+    }, null, 2);
 
     let profileInstruction = "";
 
     switch (profile) {
+      case "classic":
+      case "original":
+        profileInstruction = `
+### PROFILE: "Classic / Original"
+- **Tone**: Keep the text exactly verbatim as in the original input.
+- **Specific Rules**: Do NOT change, rewrite, or paraphrase any words of the original input. Keep the 'title' and each paragraph's 'text' exactly the same. Your primary task under this profile is ONLY to identify and generate the 'pronunciationOverrides' list.
+`;
+        break;
       case "clear_modern":
         profileInstruction = `
 ### PROFILE: "Clear & Modern"
@@ -299,6 +340,16 @@ ${profileInstruction}
 4. **Length Consistency**: Ensure the paraphrased paragraphs are approximately the same duration/reading length as the original paragraphs to keep the text-to-speech reading flow, speed, and time structure aligned.
 5. **No Meta-Commentary**: Do not add external commentary, introductory fluff (e.g., "Here is your modern version:"), or meta-commentary inside the fields. Only return the final paraphrased text.
 6. **Output Format**: You MUST return the output in JSON matching the input schema exactly, preserving all the paragraph IDs, their order, and their 'type' ('scripture' or 'body').
+7. **Pronunciation Overrides**: For each paragraph, include a \`pronunciationOverrides\` array. Its purpose is to identify individual words whose pronunciation cannot be reliably determined by a typical English text-to-speech engine.
+- Only include an override when the pronunciation is ambiguous. If no overrides are needed, return an empty array.
+- Each override must contain:
+  - \`text\` – the exact word as it appears in the paragraph text.
+  - \`occurrence\` – the 1-based occurrence number of that word within the paragraph text.
+  - \`token\` – one of the allowed pronunciation tokens provided in the \`pronunciationTokens\` field of the input.
+- Do NOT modify the paragraph text.
+- Do NOT return phonetic spellings.
+- Do NOT return SSML.
+- Do NOT invent new pronunciation tokens. Only select from the provided \`pronunciationTokens\`.
 `;
 
     let response;
@@ -342,9 +393,31 @@ ${profileInstruction}
                       text: {
                         type: Type.STRING,
                         description: "The paraphrased version of the paragraph text matching the requested profile"
+                      },
+                      pronunciationOverrides: {
+                        type: Type.ARRAY,
+                        description: "Identify individual words whose pronunciation cannot be reliably determined by a typical English text-to-speech engine. Only include when ambiguous. If none, return an empty array.",
+                        items: {
+                          type: Type.OBJECT,
+                          properties: {
+                            text: {
+                              type: Type.STRING,
+                              description: "The exact word as it appears in the paragraph"
+                            },
+                            occurrence: {
+                              type: Type.INTEGER,
+                              description: "The 1-based occurrence number of that word within the paragraph"
+                            },
+                            token: {
+                              type: Type.STRING,
+                              description: "One of the allowed pronunciation tokens"
+                            }
+                          },
+                          required: ["text", "occurrence", "token"]
+                        }
                       }
                     },
-                    required: ["id", "type", "text"]
+                    required: ["id", "type", "text", "pronunciationOverrides"]
                   }
                 }
               },
@@ -403,12 +476,28 @@ ${profileInstruction}
       const parsed = JSON.parse(responseText.trim());
       if (parsed && parsed.title && Array.isArray(parsed.paragraphs)) {
         console.log(`Successfully paraphrased devotional for profile "${profile}" with Gemini!`);
+        // Ensure every paragraph has a valid pronunciationOverrides array and log overrides
+        parsed.paragraphs = parsed.paragraphs.map((p: any) => {
+          const overrides = Array.isArray(p.pronunciationOverrides) ? p.pronunciationOverrides : [];
+          if (overrides.length > 0) {
+            console.log(`[Pronunciation Overrides found for paragraph ${p.id}]:`, JSON.stringify(overrides, null, 2));
+          }
+          return {
+            ...p,
+            pronunciationOverrides: overrides
+          };
+        });
         return parsed;
       }
     }
 
     console.warn("Invalid response structure from Gemini. Falling back to original content.");
-    return { title, paragraphs, warning: "The AI response format was unexpected. Showing original text.", isFallback: true };
+    return { 
+      title, 
+      paragraphs: paragraphs.map(p => ({ ...p, pronunciationOverrides: [] })), 
+      warning: "The AI response format was unexpected. Showing original text.", 
+      isFallback: true 
+    };
 
   } catch (error: any) {
     let errMsg = error?.message || String(error);
@@ -430,7 +519,12 @@ ${profileInstruction}
       warning = "The Gemini AI service is currently experiencing high demand or is temporarily unavailable. Displaying the original authentic text instead.";
     }
     
-    return { title, paragraphs, warning, isFallback: true };
+    return { 
+      title, 
+      paragraphs: paragraphs.map(p => ({ ...p, pronunciationOverrides: [] })), 
+      warning, 
+      isFallback: true 
+    };
   }
 }
 
@@ -500,12 +594,7 @@ app.get("/api/fetch-devotional", async (req, res) => {
 
     console.log(`Successfully fetched devotional "${title}" with ${paragraphs.length} paragraphs.`);
     
-    // If original/classic profile requested, skip paraphrase
-    if (profile === "classic" || profile === "original") {
-      return res.json({ title, paragraphs });
-    }
-
-    // Paraphrase with Gemini API
+    // Paraphrase with Gemini API (handles both paraphrased styles AND classic style for pronunciation overrides)
     const paraphrased = await paraphraseDevotional(title, paragraphs, profile);
 
     return res.json({

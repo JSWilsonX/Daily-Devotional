@@ -46,10 +46,60 @@ interface Devotional {
   description: string;
 }
 
+interface PronunciationOverride {
+  text: string;
+  occurrence: number;
+  token: string;
+}
+
 interface DevotionalBlock {
   id: string;
   type: "scripture" | "body";
   text: string;
+  pronunciationOverrides?: PronunciationOverride[];
+}
+
+export const PRONUNCIATION_REPLACEMENTS: Record<string, string> = {
+  LIVE_VERB: "liv",
+  LIVE_ADJECTIVE: "lyve",
+  READ_PRESENT: "reed",
+  READ_PAST: "red",
+  LEAD_VERB: "leed",
+  LEAD_METAL: "led",
+  WIND_AIR: "wind",
+  WIND_TURN: "wynd",
+  TEAR_RIP: "tare",
+  TEAR_CRY: "teer",
+  BASS_MUSIC: "base",
+  BASS_FISH: "bass",
+  CLOSE_NEAR: "cloce",
+  CLOSE_SHUT: "cloze",
+  MINUTE_TIME: "minit",
+  MINUTE_TINY: "my-newt",
+  OBJECT_NOUN: "ob-ject",
+  OBJECT_VERB: "ub-ject",
+  RECORD_NOUN: "rec-ord",
+  RECORD_VERB: "re-cord",
+  PRESENT_NOUN: "prez-ent",
+  PRESENT_VERB: "pree-zent"
+};
+
+function replaceNthWord(paragraphText: string, targetWord: string, occurrence: number, replacement: string): string {
+  const escaped = targetWord.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  const regex = new RegExp(`\\b${escaped}\\b`, 'gi');
+  
+  let currentCount = 0;
+  return paragraphText.replace(regex, (match) => {
+    currentCount++;
+    if (currentCount === occurrence) {
+      const isCapitalized = match[0] === match[0].toUpperCase() && match[0] !== match[0].toLowerCase();
+      if (isCapitalized && replacement.length > 0) {
+        return replacement[0].toUpperCase() + replacement.slice(1);
+      }
+      return replacement;
+    }
+    return match;
+  });
 }
 
 interface DevotionalContent {
@@ -845,6 +895,15 @@ export default function App() {
       }
       const data = await res.json();
 
+      // Log pronunciation overrides to browser console
+      if (data && Array.isArray(data.paragraphs)) {
+        data.paragraphs.forEach((p: any) => {
+          if (p.pronunciationOverrides && p.pronunciationOverrides.length > 0) {
+            console.log(`%c[Pronunciation Overrides for paragraph ${p.id}]:`, 'color: #0d9488; font-weight: bold;', p.pronunciationOverrides);
+          }
+        });
+      }
+
       // Cache the retrieved devotional content
       devotionalCacheRef.current = {
         book: devotional.id,
@@ -903,6 +962,20 @@ export default function App() {
 
     const block = content.paragraphs[idx];
     let speechText = block.text;
+
+    // Apply pronunciation overrides if present
+    if (block.pronunciationOverrides && Array.isArray(block.pronunciationOverrides) && block.pronunciationOverrides.length > 0) {
+      console.log(`%c[Speaking paragraph ${block.id}] Applying pronunciation overrides:`, 'color: #ea580c; font-weight: bold;', block.pronunciationOverrides);
+      const originalText = speechText;
+      for (const override of block.pronunciationOverrides) {
+        const replacement = PRONUNCIATION_REPLACEMENTS[override.token];
+        if (replacement) {
+          speechText = replaceNthWord(speechText, override.text, override.occurrence, replacement);
+        }
+      }
+      console.log(`%c[Original text]:`, 'color: #71717a;', originalText);
+      console.log(`%c[Modified phonetic text for TTS]:`, 'color: #0284c7; font-weight: bold;', speechText);
+    }
 
     // If it's the first paragraph, optionally announce the title
     if (idx === 0) {
