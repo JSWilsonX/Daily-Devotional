@@ -283,39 +283,49 @@ async function paraphraseDevotional(
 - **Specific Rules**: Smooth out 19th-century passive structures and archaic vocabulary (e.g., replace words like "thou", "thee", "thine", "ye", "hath", "doth", "shalt", "wouldst" with clean, respectful modern equivalents). Keep the language respectful, dignified, and deep, but easily readable for a modern adult. Preserve the exact theological meaning and flow of logic.
 `;
         break;
-      case "everyday_conversational":
+      case "easy_reading":
         profileInstruction = `
-### PROFILE: "Everyday Conversational"
-- **Tone**: Warm, relatable, direct, and encouraging.
-- **Specific Rules**: Use active verbs and shorter, punchier sentences. Write it so it sounds completely natural when read aloud, like a podcast host or trusted mentor sharing a personal insight. Focus on immediate clarity and a warm personal connection.
+### PROFILE: "Easy Reading"
+- **Tone**: Simple, clear, encouraging, and direct.
+- **Specific Rules**:
+  - Translate abstract metaphors into direct, literal statements.
+  - Place Bible references in parentheses immediately following the relevant text (e.g., '1 Timothy 6:9, 10').
+  - Use short, active-voice sentences.
+  - No meta-commentary or conversational preambles; keep the text purely instructional and reflective.
+  - Match the length and reading duration of each paraphrased paragraph to its specific original counterpart, using a higher count of simple sentences to fill out the longer sections.
 `;
         break;
-      case "expressive_digital":
+      case "young_adult":
         profileInstruction = `
-### PROFILE: "Expressive / Digital Native"
-- **Tone**: High-impact, concise, and energetic.
-- **Specific Rules**: Eliminate wordy 19th-century transitions, repetitive descriptors, and complex subordinate clauses. Condense the text to its absolute core spiritual truth and practical takeaway, making it highly scannable.
+### PROFILE: "Young Adult"
+- **Tone**: Authentic, conversational, raw, and intellectually challenging.
+- **Specific Rules**:
+  - Reframe themes around modern culture, ethics, social media, and personal identity.
+  - Place Bible references in parentheses immediately following the relevant text (e.g., '1 Timothy 6:9, 10').
+  - Avoid preachy or patronizing language. Write from an authentic peer-to-peer perspective.
+  - Match the scale of each paraphrased paragraph to its respective original counterpart, expanding on the modern psychological and societal impacts to naturally fill out the longer paragraphs.
 `;
         break;
-      case "professional_growth":
+      case "teens_youth":
         profileInstruction = `
-### PROFILE: "Professional Growth"
-- **Tone**: Polished, structured, and insightful.
-- **Specific Rules**: Highlight inherent themes of character building, focus, mental resilience, wisdom, and leadership. Use clean, sophisticated modern language suitable for an executive or professional doing morning reflection.
+### PROFILE: "Teens & Youth"
+- **Tone**: Dynamic, empathetic, direct, and mentoring.
+- **Specific Rules**:
+  - Map abstract spiritual traps to relatable teenager experiences like digital comparison, peer group pressure, management of allowance/talents, and finding self-worth.
+  - Place Bible references in parentheses immediately following the relevant text (e.g., '1 Timothy 6:9, 10').
+  - Avoid sounding like an lecturing adult; frame choices around personal integrity and character growth.
+  - Ensure each paraphrased paragraph corresponds directly to the length of its original counterpart, scaling the student-focused real-world applications up or down to match the original size.
 `;
         break;
-      case "discovery_story":
+      case "kids_primary":
         profileInstruction = `
-### PROFILE: "Discovery & Story" (Elementary School Level)
-- **Tone**: Enthusiastic, simple, highly visual, and concrete.
-- **Specific Rules**: Lower the comprehension level to a 3rd-4th grade reading level. Break long paragraphs into 2-3 short sentences. Translate abstract theological metaphors into concrete, real-world examples a child easily understands (e.g., school dynamics, family, pets, or nature). Avoid punitive, scary, or overly academic terms.
-`;
-        break;
-      case "real_life_everyday":
-        profileInstruction = `
-### PROFILE: "Real Life / Everyday" (High School Level)
-- **Tone**: Authentic, direct, supportive, and non-judgmental.
-- **Specific Rules**: Frame the devotional concepts around the real-world experiences of modern teenage life (school stress, identity, friendships, integrity, finding purpose, handling pressure). Eliminate dense 19th-century prose. Do NOT use transient internet or teen slang, which dates instantly; instead, use clean, modern, peer-to-peer language that treats the teenager with mature respect.
+### PROFILE: "Kids & Primary"
+- **Tone**: Enthusiastic, story-driven, imaginative, and highly visual.
+- **Specific Rules**:
+  - Translate complex, frightening, or mature theological terms into concrete stories about sharing, being happy with what we have, and making kind choices at school or home.
+  - Place Bible references in parentheses immediately following the relevant text (e.g., '1 Timothy 6:9, 10').
+  - Absolutely no meta-commentary, introductory storytelling hooks, or conversational preambles.
+  - Match the length of each paraphrased paragraph to its specific original counterpart, intentionally adjusting the depth of sensory descriptions and story details to fit shorter or longer segments.
 `;
         break;
       default:

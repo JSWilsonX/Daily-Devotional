@@ -24,7 +24,9 @@ import {
   Smile,
   Users,
   Check,
-  Flame
+  Flame,
+  Book,
+  Anchor
 } from "lucide-react";
 import { BookCover } from "./components/BookCover";
 import { ProjectIcon } from "./components/ProjectIcon";
@@ -125,39 +127,32 @@ export const DEVOTIONAL_PROFILES = [
     badge: "Professional Adult"
   },
   {
-    id: "everyday_conversational",
-    name: "Everyday Conversational",
-    description: "Warm, relatable mentor perspective; read like a personal podcast",
-    icon: MessageSquare,
-    badge: "Podcast Tone"
+    id: "easy_reading",
+    name: "Easy Reading",
+    description: "A highly accessible version using clear language, simplified vocabulary, and direct sentence structures for easy comprehension.",
+    badge: "Simplified English",
+    icon: Book
   },
   {
-    id: "expressive_digital",
-    name: "Expressive / Digital Native",
-    description: "High-impact, condensed, and energetic core spiritual truth",
-    icon: Zap,
-    badge: "High Impact"
+    id: "young_adult",
+    name: "Young Adult",
+    description: "An authentic, thought-provoking adaptation that reframes scriptural themes around modern culture, ethics, and identity.",
+    badge: "Collegiate & YA",
+    icon: Compass
   },
   {
-    id: "professional_growth",
-    name: "Professional Growth",
-    description: "Executive reflection: Wisdom, character, and mental resilience",
-    icon: TrendingUp,
-    badge: "Leadership Focus"
+    id: "teens_youth",
+    name: "Teens & Youth",
+    description: "An engaging, supportive message that translates spiritual principles into the real-world experiences and peer dynamics of middle and high schoolers.",
+    badge: "Middle & High School",
+    icon: Anchor
   },
   {
-    id: "discovery_story",
-    name: "Discovery & Story",
-    description: "Elementary School (3rd-4th grade): Concrete, visual story analogies",
-    icon: Smile,
-    badge: "Kids / Family"
-  },
-  {
-    id: "real_life_everyday",
-    name: "Real Life / Everyday",
-    description: "High School: Authentic guidance on modern teen dynamics & pressure",
-    icon: Users,
-    badge: "Teens / Youth"
+    id: "kids_primary",
+    name: "Kids & Primary",
+    description: "An enthusiastic, story-driven journey that brings lessons to life for young minds using concrete examples and rich sensory details.",
+    badge: "Early Elementary",
+    icon: Smile
   }
 ];
 
@@ -178,30 +173,25 @@ export const PROFILE_VOICE_CONFIGS: Record<string, VoiceProfile> = {
     pitch: 1.0,
     genderPref: "female"
   },
-  everyday_conversational: {
-    rate: 1.05,
-    pitch: 1.1,
-    genderPref: "any"
-  },
-  expressive_digital: {
-    rate: 1.15,
-    pitch: 1.15,
-    genderPref: "any"
-  },
-  professional_growth: {
-    rate: 0.95,
-    pitch: 0.95,
-    genderPref: "male"
-  },
-  discovery_story: {
-    rate: 0.92,
-    pitch: 1.25,
+  easy_reading: {
+    rate: 0.9,
+    pitch: 1.0,
     genderPref: "female"
   },
-  real_life_everyday: {
+  young_adult: {
     rate: 1.0,
+    pitch: 1.0,
+    genderPref: "any"
+  },
+  teens_youth: {
+    rate: 1.02,
     pitch: 1.05,
     genderPref: "any"
+  },
+  kids_primary: {
+    rate: 0.95,
+    pitch: 1.1,
+    genderPref: "female"
   }
 };
 
