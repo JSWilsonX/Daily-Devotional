@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { 
   Play, 
   Pause, 
@@ -296,14 +296,14 @@ export const dailyDevotionals = [
   },
   {
     id: "flb",
-    title: "The Faith I Live By",
+    title: "The Privilege of Prayer",
     cover: "https://media2.egwwritings.org/covers/131_s.jpg",
     link: "https://whiteestate.org/devotional/flb/",
     description: "This devotional is devoted to the foundational truths of Scripture and the doctrines that strengthen faith. It offers daily reflection that is both inspiring and instructive."
   },
   {
     id: "hb",
-    title: "Homeward Bound",
+    title: "Lay Up Your Treasure in Heaven",
     cover: "https://media2.egwwritings.org/covers/12862_s.jpg",
     link: "https://whiteestate.org/devotional/hb/",
     description: "These readings encourage surrender, victory in Christ, and hope as believers journey toward home. They reflect major themes of faith, holiness, and the great controversy."
@@ -324,7 +324,7 @@ export const dailyDevotionals = [
   },
   {
     id: "tdg",
-    title: "This Day With God",
+    title: "This Day with God",
     cover: "https://media2.egwwritings.org/covers/149_s.jpg",
     link: "https://whiteestate.org/devotional/tdg/",
     description: "This devotional is arranged by the day they were written, giving the reader a personal and historical glimpse into Ellen White's counsel. It offers encouragement, wisdom, and hope."
@@ -348,7 +348,7 @@ export const dailyDevotionals = [
     title: "Jesus, Name Above All Names",
     cover: "https://media2.egwwritings.org/covers/14150_s.jpg",
     link: "https://whiteestate.org/devotional/jnn/",
-    description: "This devotional explores the many names of Jesus and invites readers into deeper love for Him. It offers a fresh, intimate way to behold the Savior each day."
+    description: "This devotional explores the many names of Jesus and draws readers into deeper love for Him. It offers a fresh, intimate way to behold the Savior each day."
   }
 ];
 
@@ -564,14 +564,97 @@ export default function App() {
 
   // Lists and selection
   const [devotionals, setDevotionals] = useState<Devotional[]>(dailyDevotionals);
-  const [selectedIdx, setSelectedIdx] = useState<number | null>(() => {
-    const savedSelectedId = localStorage.getItem("egw_selected_devotional_id");
-    if (savedSelectedId) {
-      const idx = dailyDevotionals.findIndex(d => d.id === savedSelectedId);
-      return idx !== -1 ? idx : null;
-    }
-    return null;
+  const [selectedId, setSelectedId] = useState<string | null>(() => {
+    return localStorage.getItem("egw_selected_devotional_id");
   });
+  const [bookReadHistory, setBookReadHistory] = useState<Record<string, number>>(() => {
+    try {
+      const saved = localStorage.getItem("egw_book_read_history");
+      return saved ? JSON.parse(saved) : {};
+    } catch (e) {
+      return {};
+    }
+  });
+
+  // Derived sorted list: selected book on the left, remaining sorted by MRU (most recently used)
+  const sortedDevotionals = useMemo(() => {
+    if (devotionals.length === 0) return [];
+    
+    const selectedBook = selectedId ? devotionals.find(b => b.id === selectedId) : null;
+    const remainingBooks = selectedId ? devotionals.filter(b => b.id !== selectedId) : [...devotionals];
+    
+    // Explicit desired order of unread books as requested by the user
+    const UNREAD_BOOKS_ORDER = [
+      "blj", // To Be Like Jesus
+      "flb", // The Privilege of Prayer
+      "mar", // Maranatha
+      "yrp", // Ye Shall Receive Power
+      "wgd", // With God at Dawn
+      "tmk", // That I May Know Him
+      "sd",  // Sons and Daughters of God
+      "ohc", // Our High Calling
+      "cc",  // Conflict and Courage
+      "ag",  // God's Amazing Grace
+      "lhu", // Lift Him Up
+      "rc",  // Reflecting Christ
+      "mlt", // My Life Today
+      "hp",  // In Heavenly Places
+      "jnn", // Jesus, Name Above All Names
+      "rre", // Radiant Religion
+      "tdg", // This Day with God
+      "ul",  // The Upward Look
+      "ofc", // Our Father Cares
+      "ctr", // Christ Triumphant
+      "fh",  // From the Heart
+      "hb"   // Lay Up Your Treasure in Heaven
+    ];
+
+    // Sort remaining by most recently used (descending timestamp, with unread books at the end)
+    remainingBooks.sort((a, b) => {
+      const timeA = bookReadHistory[a.id] || 0;
+      const timeB = bookReadHistory[b.id] || 0;
+      
+      if (timeA > 0 && timeB > 0) {
+        return timeB - timeA; // Descending order: more recent read comes first
+      }
+      if (timeA > 0) return -1; // A is read, B is not. A comes first.
+      if (timeB > 0) return 1;  // B is read, A is not. B comes first.
+      
+      // Both are unread, sort by the requested list order
+      const indexA = UNREAD_BOOKS_ORDER.indexOf(a.id);
+      const indexB = UNREAD_BOOKS_ORDER.indexOf(b.id);
+      
+      if (indexA !== -1 && indexB !== -1) {
+        return indexA - indexB;
+      }
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+      
+      return a.title.localeCompare(b.title);
+    });
+    
+    if (selectedBook) {
+      return [selectedBook, ...remainingBooks];
+    }
+    return remainingBooks;
+  }, [devotionals, selectedId, bookReadHistory]);
+
+  const selectedIdx = selectedId !== null && sortedDevotionals.length > 0
+    ? sortedDevotionals.findIndex(d => d.id === selectedId)
+    : null;
+
+  const handleSelectBook = (idx: number | null) => {
+    if (idx === null) {
+      setSelectedId(null);
+      localStorage.removeItem("egw_selected_devotional_id");
+      return;
+    }
+    const clickedBook = sortedDevotionals[idx];
+    if (clickedBook) {
+      setSelectedId(clickedBook.id);
+      localStorage.setItem("egw_selected_devotional_id", clickedBook.id);
+    }
+  };
   const [showCarousel, setShowCarousel] = useState<boolean>(() => {
     const savedSelectedId = localStorage.getItem("egw_selected_devotional_id");
     return savedSelectedId ? false : true;
@@ -635,6 +718,17 @@ export default function App() {
   // Action to complete reading for today and advance streak
   const completeDailyReading = () => {
     const todayStr = getLocalDateString(new Date());
+
+    // Flag the currently selected book as read/used
+    if (selectedId) {
+      const updatedHistory = {
+        ...bookReadHistory,
+        [selectedId]: Date.now()
+      };
+      setBookReadHistory(updatedHistory);
+      localStorage.setItem("egw_book_read_history", JSON.stringify(updatedHistory));
+    }
+
     if (hasCompletedToday) return;
 
     let newStreak = 1;
@@ -692,16 +786,16 @@ export default function App() {
     setScrapeSource("local");
     
     if (savedSelectedId) {
-      const idx = dailyDevotionals.findIndex(d => d.id === savedSelectedId);
-      if (idx !== -1) {
-        setSelectedIdx(idx);
+      const exists = dailyDevotionals.some(d => d.id === savedSelectedId);
+      if (exists) {
+        setSelectedId(savedSelectedId);
         setShowCarousel(false);
       } else {
-        setSelectedIdx(null);
+        setSelectedId(null);
         setShowCarousel(true);
       }
     } else {
-      setSelectedIdx(null);
+      setSelectedId(null);
       setShowCarousel(true);
       // Fetch list dynamically just in case we have a service sync
       fetchDevotionals();
@@ -757,16 +851,19 @@ export default function App() {
     }
   };
 
-  // Sync selected index and profile to localStorage and fetch content
+  // Sync selected book and profile to localStorage and fetch content
   useEffect(() => {
-    if (selectedIdx !== null && devotionals.length > 0 && devotionals[selectedIdx]) {
-      localStorage.setItem("egw_selected_devotional_id", devotionals[selectedIdx].id);
-      localStorage.setItem("egw_selected_profile", selectedProfile);
-      fetchActiveDevotionalContent(devotionals[selectedIdx], selectedProfile);
-      // Reset speech when book or profile changes
-      stopSpeech();
+    if (selectedId !== null) {
+      const activeBook = sortedDevotionals.find(d => d.id === selectedId);
+      if (activeBook) {
+        localStorage.setItem("egw_selected_devotional_id", selectedId);
+        localStorage.setItem("egw_selected_profile", selectedProfile);
+        fetchActiveDevotionalContent(activeBook, selectedProfile);
+        // Reset speech when book or profile changes
+        stopSpeech();
+      }
     }
-  }, [selectedIdx, devotionals, selectedProfile]);
+  }, [selectedId, selectedProfile, devotionals]);
 
   // Load available speech voices
   useEffect(() => {
@@ -807,18 +904,21 @@ export default function App() {
 
   // Handle active book auto-scrolling in the carousel
   useEffect(() => {
-    if (selectedIdx !== null && devotionals.length > 0 && devotionals[selectedIdx]) {
-      const activeBookId = devotionals[selectedIdx].id;
-      const element = document.getElementById(`carousel-item-${activeBookId}`);
-      if (element && carouselContainerRef.current) {
-        element.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-          inline: "center"
-        });
-      }
+    if (showCarousel && selectedIdx !== null && sortedDevotionals.length > 0 && sortedDevotionals[selectedIdx]) {
+      const activeBookId = sortedDevotionals[selectedIdx].id;
+      const timer = setTimeout(() => {
+        const element = document.getElementById(`carousel-item-${activeBookId}`);
+        if (element && carouselContainerRef.current) {
+          element.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+            inline: "start"
+          });
+        }
+      }, 50);
+      return () => clearTimeout(timer);
     }
-  }, [selectedIdx, devotionals]);
+  }, [selectedIdx, sortedDevotionals, showCarousel]);
 
   // Fetch the book listings from Express scraper
   const fetchDevotionals = async () => {
@@ -834,9 +934,9 @@ export default function App() {
         // Restore selection if matching
         const savedSelectedId = localStorage.getItem("egw_selected_devotional_id");
         if (savedSelectedId) {
-          const idx = result.data.findIndex((d: Devotional) => d.id === savedSelectedId);
-          if (idx !== -1) {
-            setSelectedIdx(idx);
+          const exists = result.data.some((d: Devotional) => d.id === savedSelectedId);
+          if (exists) {
+            setSelectedId(savedSelectedId);
             setShowCarousel(false);
           }
         }
@@ -919,15 +1019,6 @@ export default function App() {
         left: direction === "left" ? -scrollAmt : scrollAmt,
         behavior: "smooth"
       });
-    }
-    
-    // Auto shift selection optionally, or let them just click
-    if (selectedIdx !== null) {
-      if (direction === "left" && selectedIdx > 0) {
-        setSelectedIdx(selectedIdx - 1);
-      } else if (direction === "right" && selectedIdx < devotionals.length - 1) {
-        setSelectedIdx(selectedIdx + 1);
-      }
     }
   };
 
@@ -1317,7 +1408,7 @@ export default function App() {
                     <button
                       id="carousel-left"
                       onClick={() => scrollCarousel("left")}
-                      disabled={selectedIdx === null || selectedIdx === 0}
+                      disabled={sortedDevotionals.length <= 1}
                       className={`p-1.5 rounded-lg transition-all border ${
                         isSlate 
                           ? "bg-slate-900/40 hover:bg-slate-800 text-cyan-400 border-white/5 disabled:opacity-20" 
@@ -1329,7 +1420,7 @@ export default function App() {
                     <button
                       id="carousel-right"
                       onClick={() => scrollCarousel("right")}
-                      disabled={selectedIdx === null || selectedIdx === devotionals.length - 1}
+                      disabled={sortedDevotionals.length <= 1}
                       className={`p-1.5 rounded-lg transition-all border ${
                         isSlate 
                           ? "bg-slate-900/40 hover:bg-slate-800 text-cyan-400 border-white/5 disabled:opacity-20" 
@@ -1342,7 +1433,7 @@ export default function App() {
                 </div>
 
                 {/* Book Carousel Slider */}
-                {isScraping && devotionals.length === 0 ? (
+                {isScraping && sortedDevotionals.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-10 space-y-2">
                     <Loader2 className={`animate-spin ${isSlate ? "text-cyan-400" : "text-amber-600"}`} size={24} />
                     <p className="text-[10px] font-mono italic">Syncing with Ellen G. White Estate database...</p>
@@ -1354,22 +1445,30 @@ export default function App() {
                     className="flex overflow-x-auto space-x-4 py-2 px-1 scrollbar-none snap-x snap-mandatory scroll-smooth"
                     style={{ scrollbarWidth: "none" }}
                   >
-                    {devotionals.map((book, idx) => (
+                    {sortedDevotionals.map((book, idx) => (
                       <div
                         key={book.id}
                         id={`carousel-item-${book.id}`}
                         onClick={() => {
-                          setSelectedIdx(idx);
+                          handleSelectBook(idx);
                           setShowCarousel(false);
                         }}
                         className="flex-none w-28 sm:w-36 snap-center cursor-pointer transition-transform duration-300 hover:scale-[1.02]"
                       >
-                        <BookCover
-                          title={book.title}
-                          coverUrl={book.cover}
-                          active={idx === selectedIdx}
-                          bookId={book.id}
-                        />
+                        <div className="relative">
+                          <BookCover
+                            title={book.title}
+                            coverUrl={book.cover}
+                            active={idx === selectedIdx}
+                            bookId={book.id}
+                          />
+                          {/* Checked as read indicator */}
+                          {bookReadHistory[book.id] && (
+                            <div className="absolute top-2 right-2 bg-emerald-500 text-white rounded-full p-1 shadow-md z-10 animate-fade-in flex items-center justify-center border border-white/20">
+                              <Check size={8} className="stroke-[3]" />
+                            </div>
+                          )}
+                        </div>
                         <p className={`text-center text-[10px] mt-2 font-semibold truncate max-w-full px-1 ${isSlate ? "text-slate-200" : "text-stone-800"}`}>
                           {book.title}
                         </p>
@@ -1379,7 +1478,7 @@ export default function App() {
                 )}
 
                 {/* Selected Book Bento Banner - Hidden on mobile screens to prioritize vertical space */}
-                {selectedIdx !== null && devotionals.length > 0 && devotionals[selectedIdx] && (
+                {selectedIdx !== null && sortedDevotionals.length > 0 && sortedDevotionals[selectedIdx] && (
                   <div 
                     id="selected-book-details"
                     className={`mt-3 p-4 transition-all duration-300 hidden sm:block ${cardBgStyle}`}
@@ -1391,17 +1490,17 @@ export default function App() {
                       <div className="flex-1">
                         <div className="flex items-center space-x-2">
                           <span className={`font-display font-bold text-sm ${isSlate ? "text-cyan-300 text-glow-cyan" : "text-amber-800"}`}>
-                            {devotionals[selectedIdx].title}
+                            {sortedDevotionals[selectedIdx].title}
                           </span>
                           <span className={`text-[8px] font-mono font-bold px-1.5 py-0.5 rounded ${isSlate ? "bg-cyan-500/20 text-cyan-400" : "bg-amber-500/10 text-amber-800"}`}>
                             ACTIVE CORE
                           </span>
                         </div>
                         <p className={`text-[11px] mt-1 leading-relaxed font-sans ${subTextStyle}`}>
-                          {devotionals[selectedIdx].description}
+                          {sortedDevotionals[selectedIdx].description}
                         </p>
                         <a
-                          href={devotionals[selectedIdx].link}
+                          href={sortedDevotionals[selectedIdx].link}
                           target="_blank"
                           rel="noreferrer"
                           className={`text-[9px] font-mono tracking-wider hover:underline inline-flex items-center space-x-1 mt-2 ${
@@ -1416,14 +1515,14 @@ export default function App() {
                       <div className={`text-[9px] px-2 py-1 font-mono rounded font-bold ${
                         isSlate ? "bg-slate-900 border border-white/5 text-cyan-400" : "bg-amber-100 text-amber-900"
                       }`}>
-                        NODE://{devotionals[selectedIdx].id.toUpperCase()}
+                        NODE://{sortedDevotionals[selectedIdx].id.toUpperCase()}
                       </div>
                     </div>
                   </div>
                 )}
               </div>
             ) : (
-              selectedIdx !== null && devotionals[selectedIdx] && (
+              selectedIdx !== null && sortedDevotionals[selectedIdx] && (
                 <div className="flex flex-row gap-4 sm:gap-6 items-center py-2 animate-fade-in">
                   {/* Left Side: Selected Book Cover */}
                   <div className="flex-shrink-0 flex flex-col items-center justify-center">
@@ -1434,10 +1533,10 @@ export default function App() {
                     >
                       <div className="w-16 sm:w-24 md:w-28">
                         <BookCover
-                          title={devotionals[selectedIdx].title}
-                          coverUrl={devotionals[selectedIdx].cover}
+                          title={sortedDevotionals[selectedIdx].title}
+                          coverUrl={sortedDevotionals[selectedIdx].cover}
                           active={true}
-                          bookId={devotionals[selectedIdx].id}
+                          bookId={sortedDevotionals[selectedIdx].id}
                         />
                       </div>
                       {/* Subtle overlay hint */}
@@ -1463,20 +1562,20 @@ export default function App() {
                     <div>
                       <div className="flex flex-wrap items-center gap-1.5">
                         <span className={`font-display font-bold text-xs sm:text-sm md:text-base truncate max-w-[200px] xs:max-w-[250px] sm:max-w-md ${isSlate ? "text-cyan-300 text-glow-cyan" : "text-amber-800"}`}>
-                          {devotionals[selectedIdx].title}
+                          {sortedDevotionals[selectedIdx].title}
                         </span>
                         <span className={`text-[7px] sm:text-[8px] font-mono font-bold px-1.5 py-0.5 rounded ${isSlate ? "bg-cyan-500/20 text-cyan-400" : "bg-amber-500/10 text-amber-800"}`}>
                           ACTIVE BOOK
                         </span>
                       </div>
                       <p className={`text-[10px] sm:text-xs mt-1 leading-relaxed font-sans line-clamp-4 ${subTextStyle}`}>
-                        {devotionals[selectedIdx].description}
+                        {sortedDevotionals[selectedIdx].description}
                       </p>
                     </div>
 
                     <div className="flex items-center justify-between pt-1.5 mt-1.5 border-t border-dashed border-white/10">
                       <a
-                        href={devotionals[selectedIdx].link}
+                        href={sortedDevotionals[selectedIdx].link}
                         target="EGWEstatePage"
                         rel="noreferrer"
                         className={`text-[8px] sm:text-[9px] font-mono tracking-wider hover:underline inline-flex items-center space-x-1 ${
@@ -1490,7 +1589,7 @@ export default function App() {
                       <div className={`text-[8px] sm:text-[9px] px-1.5 py-0.5 font-mono rounded font-bold ${
                         isSlate ? "bg-slate-900 border border-white/5 text-cyan-400" : "bg-amber-100 text-amber-900"
                       }`}>
-                        NODE://{devotionals[selectedIdx].id.toUpperCase()}
+                        NODE://{sortedDevotionals[selectedIdx].id.toUpperCase()}
                       </div>
                     </div>
                   </div>
@@ -1508,7 +1607,7 @@ export default function App() {
               <Loader2 className={`animate-spin ${isSlate ? "text-cyan-400" : "text-amber-600"}`} size={36} />
               <div className="text-center">
                 <p className="font-display font-medium text-base">Initializing Devotional Stream...</p>
-                <p className={`text-xs mt-1.5 font-mono ${subTextStyle}`}>Fetching: {devotionals[selectedIdx]?.title || "Ellen G. White Estate"}</p>
+                <p className={`text-xs mt-1.5 font-mono ${subTextStyle}`}>Fetching: {sortedDevotionals[selectedIdx]?.title || "Ellen G. White Estate"}</p>
               </div>
             </div>
           ) : contentError ? (
@@ -1521,7 +1620,7 @@ export default function App() {
                 {contentError}
               </p>
               <button
-                onClick={() => devotionals[selectedIdx] && fetchActiveDevotionalContent(devotionals[selectedIdx])}
+                onClick={() => sortedDevotionals[selectedIdx] && fetchActiveDevotionalContent(sortedDevotionals[selectedIdx])}
                 className={`mt-5 px-5 py-2.5 rounded-xl font-mono text-xs font-semibold transition-all ${
                   isSlate 
                     ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:opacity-90 text-white shadow-lg shadow-cyan-500/20" 
@@ -1549,7 +1648,7 @@ export default function App() {
               {/* Devotional Heading */}
               <header className="text-center mb-10 pb-8 border-b border-white/5">
                 <span className={`text-[10px] uppercase tracking-widest font-mono font-bold ${isSlate ? "text-cyan-400" : "text-amber-800"}`}>
-                  {devotionals[selectedIdx]?.title || "Featured Daily Entry"}
+                  {sortedDevotionals[selectedIdx]?.title || "Featured Daily Entry"}
                 </span>
                 <h2 className={`font-display text-2xl sm:text-3xl font-bold tracking-tight mt-2.5 leading-tight ${isSlate ? "text-white" : "text-stone-950"}`}>
                   {content.title}
@@ -1692,15 +1791,34 @@ export default function App() {
                       </div>
                     </div>
 
-                    <div className="w-full sm:w-auto shrink-0">
-                      {hasCompletedToday ? (
-                        <div className={`px-4 py-2.5 rounded-2xl text-xs font-mono font-bold flex items-center justify-center space-x-2 border ${
-                          isSlate 
-                            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)]" 
-                            : "bg-emerald-600/10 border-emerald-600/20 text-emerald-800"
-                        }`}>
-                          <Check size={14} className="text-emerald-400 font-bold" />
-                          <span>CHECKED IN ({streakCount}d)</span>
+                    <div className="w-full sm:w-auto shrink-0 flex flex-col sm:flex-row items-center justify-center gap-2">
+                      {selectedId && bookReadHistory[selectedId] ? (
+                        <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+                          <div className={`px-4 py-2.5 rounded-2xl text-xs font-mono font-bold flex items-center justify-center space-x-2 border w-full sm:w-auto ${
+                            isSlate 
+                              ? "bg-[#10b981]/15 border-emerald-500/30 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)]" 
+                              : "bg-emerald-600/10 border-emerald-600/20 text-emerald-800"
+                          }`}>
+                            <Check size={14} className="text-emerald-400 font-bold" />
+                            <span>COMPLETED (READ)</span>
+                          </div>
+                          
+                          <button
+                            onClick={() => {
+                              const updatedHistory = { ...bookReadHistory };
+                              delete updatedHistory[selectedId];
+                              setBookReadHistory(updatedHistory);
+                              localStorage.setItem("egw_book_read_history", JSON.stringify(updatedHistory));
+                            }}
+                            className={`w-full sm:w-auto px-4 py-2 rounded-xl text-[10px] font-mono font-bold transition-all border cursor-pointer text-center ${
+                              isSlate 
+                                ? "bg-slate-950 border-white/10 text-slate-400 hover:text-rose-400 hover:border-rose-500/30" 
+                                : "bg-white border-stone-200 text-stone-500 hover:text-rose-700 hover:border-rose-300"
+                            }`}
+                            title="Reset completed status for this book"
+                          >
+                            RESET STATUS
+                          </button>
                         </div>
                       ) : (
                         <button
@@ -1749,9 +1867,9 @@ export default function App() {
               <div className={`w-9 h-12 rounded-md overflow-hidden shadow-sm flex items-center justify-center border ${
                 isSlate ? "bg-slate-900 border-white/10" : "bg-amber-50 border-amber-900/10"
               }`}>
-                {selectedIdx !== null && devotionals[selectedIdx]?.cover ? (
+                {selectedIdx !== null && sortedDevotionals[selectedIdx]?.cover ? (
                   <img 
-                    src={devotionals[selectedIdx].cover} 
+                    src={sortedDevotionals[selectedIdx].cover} 
                     alt="cover" 
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -1760,7 +1878,7 @@ export default function App() {
                   />
                 ) : (
                   <span className="text-[10px] font-bold text-cyan-400 font-mono">
-                    {(selectedIdx !== null ? devotionals[selectedIdx]?.id : "EGW")?.toUpperCase()}
+                    {(selectedIdx !== null ? sortedDevotionals[selectedIdx]?.id : "EGW")?.toUpperCase()}
                   </span>
                 )}
               </div>

@@ -124,14 +124,14 @@ const DEVOTIONALS_LIST = [
   },
   {
     id: "flb",
-    title: "The Faith I Live By",
+    title: "The Privilege of Prayer",
     cover: "https://media2.egwwritings.org/covers/131_s.jpg",
     link: "https://whiteestate.org/devotional/flb/",
     description: "A doctrine-centered devotional that strengthens faith through daily reflections on biblical truth."
   },
   {
     id: "hb",
-    title: "Homeward Bound",
+    title: "Lay Up Your Treasure in Heaven",
     cover: "https://media2.egwwritings.org/covers/12862_s.jpg",
     link: "https://whiteestate.org/devotional/hb/",
     description: "These readings encourage surrender, victory in Christ, and hope as we journey homeward."
@@ -152,7 +152,7 @@ const DEVOTIONALS_LIST = [
   },
   {
     id: "tdg",
-    title: "This Day With God",
+    title: "This Day with God",
     cover: "https://media2.egwwritings.org/covers/149_s.jpg",
     link: "https://whiteestate.org/devotional/tdg/",
     description: "A devotional collection arranged by the day they were written, offering practical encouragement and counsel."
