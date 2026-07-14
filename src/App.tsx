@@ -296,14 +296,14 @@ export const dailyDevotionals = [
   },
   {
     id: "flb",
-    title: "The Privilege of Prayer",
+    title: "The Faith I Live By",
     cover: "https://media2.egwwritings.org/covers/131_s.jpg",
     link: "https://whiteestate.org/devotional/flb/",
     description: "This devotional is devoted to the foundational truths of Scripture and the doctrines that strengthen faith. It offers daily reflection that is both inspiring and instructive."
   },
   {
     id: "hb",
-    title: "Lay Up Your Treasure in Heaven",
+    title: "Homeward Bound",
     cover: "https://media2.egwwritings.org/covers/12862_s.jpg",
     link: "https://whiteestate.org/devotional/hb/",
     description: "These readings encourage surrender, victory in Christ, and hope as believers journey toward home. They reflect major themes of faith, holiness, and the great controversy."
@@ -586,7 +586,7 @@ export default function App() {
     // Explicit desired order of unread books as requested by the user
     const UNREAD_BOOKS_ORDER = [
       "blj", // To Be Like Jesus
-      "flb", // The Privilege of Prayer
+      "flb", // The Faith I Live By
       "mar", // Maranatha
       "yrp", // Ye Shall Receive Power
       "wgd", // With God at Dawn
@@ -606,7 +606,7 @@ export default function App() {
       "ofc", // Our Father Cares
       "ctr", // Christ Triumphant
       "fh",  // From the Heart
-      "hb"   // Lay Up Your Treasure in Heaven
+      "hb"   // Homeward Bound
     ];
 
     // Sort remaining by most recently used (descending timestamp, with unread books at the end)
