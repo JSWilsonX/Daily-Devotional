@@ -50,9 +50,7 @@ function formatDateForInput(date: Date): string {
 }
 
 function formatDateDisplay(date: Date): string {
-  const isToday = getLocalDateString(date) === getLocalDateString(new Date());
-  const formatted = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  return isToday ? `Today (${formatted})` : formatted;
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 interface Devotional {
@@ -1285,188 +1283,191 @@ export default function App() {
         {/* Header Ribbon with Real-Time HUD */}
         <header 
           id="app-header" 
-          className={`px-4 py-2.5 md:py-3.5 border-b transition-all ${
+          className={`px-4 py-2.5 md:py-3.5 border-b transition-all relative z-30 ${
             isSlate 
               ? "bg-[#020617]/40 backdrop-blur-xl border-white/5" 
               : "bg-[#FAF7F2]/80 backdrop-blur-xl border-amber-900/5"
           }`}
         >
-          <div className="max-w-6xl mx-auto w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3 select-none">
+          <div className="max-w-6xl mx-auto w-full flex flex-wrap items-center justify-between gap-2.5 select-none">
             {/* Left side: branding/title */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2.5 shrink-0">
               <div className="shrink-0">
-                <ProjectIcon size={32} className="rounded-xl shadow-lg border border-slate-700/50 hover:scale-105 transition-transform duration-300" />
+                <ProjectIcon size={28} className="rounded-xl shadow-lg border border-slate-700/50 hover:scale-105 transition-transform duration-300" />
               </div>
               <div>
-                <h1 className="font-display text-base sm:text-lg font-bold tracking-tight">
+                <h1 className="font-display text-sm sm:text-base md:text-lg font-bold tracking-tight whitespace-nowrap">
                   {isSlate ? "Ellen G. White Devotionals" : "EGW Daily Devotionals"}
                 </h1>
               </div>
             </div>
 
             {/* Right side: HUD controls & Style selection */}
-            <div className="flex flex-wrap items-center gap-3 sm:gap-4 justify-between sm:justify-end">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 justify-end min-w-0">
               
-              {/* Reading Style Selection Dropdown */}
-              <div className="flex items-center space-x-2">
-                <span className={`text-[10px] font-mono uppercase font-bold ${isSlate ? "text-slate-400" : "text-[#6E665A]"}`}>Style:</span>
-                <select
-                  id="header-profile-switcher"
-                  value={selectedProfile}
-                  onChange={(e) => {
-                    const newProfile = e.target.value;
-                    setSelectedProfile(newProfile);
-                    applyProfileVoiceSettings(newProfile);
-                  }}
-                  className={`text-xs rounded-xl border px-2.5 py-1 font-sans font-medium focus:ring-1 focus:ring-cyan-400 outline-none cursor-pointer ${
-                    isSlate 
-                      ? "bg-slate-950 border-white/10 text-slate-200 focus:border-cyan-400" 
-                      : "bg-white border-amber-900/15 text-stone-800 focus:border-amber-600"
-                  }`}
-                >
-                  {DEVOTIONAL_PROFILES.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Calendar Date Selector */}
-              <div className="relative" id="calendar-date-container">
-                {showDatePicker && (
-                  <div 
-                    className="fixed inset-0 z-40" 
-                    onClick={() => setShowDatePicker(false)} 
-                  />
-                )}
-                
-                <div className="flex items-center space-x-1">
-                  <button
-                    onClick={() => {
-                      const prev = new Date(selectedDate);
-                      prev.setDate(prev.getDate() - 1);
-                      setSelectedDate(prev);
+              {/* Row group ensuring Style and Calendar Date Selector stay together */}
+              <div className="flex items-center gap-2 shrink-0">
+                {/* Reading Style Selection Dropdown */}
+                <div className="flex items-center space-x-1.5 shrink-0">
+                  <span className={`text-[10px] font-mono uppercase font-bold ${isSlate ? "text-slate-400" : "text-[#6E665A]"}`}>Style:</span>
+                  <select
+                    id="header-profile-switcher"
+                    value={selectedProfile}
+                    onChange={(e) => {
+                      const newProfile = e.target.value;
+                      setSelectedProfile(newProfile);
+                      applyProfileVoiceSettings(newProfile);
                     }}
-                    className={`p-1.5 rounded-xl border transition-all ${
+                    className={`text-xs rounded-xl border px-2 py-1 font-sans font-medium focus:ring-1 focus:ring-cyan-400 outline-none cursor-pointer max-w-[130px] sm:max-w-[160px] truncate ${
                       isSlate 
-                        ? "bg-slate-900/50 border-white/5 text-slate-300 hover:text-cyan-400 hover:bg-slate-800" 
-                        : "bg-amber-50 border-amber-900/10 text-stone-700 hover:text-amber-800 hover:bg-amber-100"
+                        ? "bg-slate-950 border-white/10 text-slate-200 focus:border-cyan-400" 
+                        : "bg-white border-amber-900/15 text-stone-800 focus:border-amber-600"
                     }`}
-                    title="Previous Day"
                   >
-                    <ChevronLeft size={12} />
-                  </button>
-
-                  <button
-                    id="header-calendar-button"
-                    onClick={() => setShowDatePicker(!showDatePicker)}
-                    className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-xl border text-xs font-mono font-medium transition-all ${
-                      isSlate 
-                        ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 shadow-[0_0_12px_rgba(34,211,238,0.12)]" 
-                        : "bg-amber-100/80 border-amber-300 text-amber-900 hover:bg-amber-200/80"
-                    }`}
-                    title="Select Devotional Date / Seleccionar Fecha"
-                  >
-                    <Calendar size={13} className="shrink-0 text-cyan-400" />
-                    <span className="font-bold tracking-tight">{formatDateDisplay(selectedDate)}</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      const next = new Date(selectedDate);
-                      next.setDate(next.getDate() + 1);
-                      setSelectedDate(next);
-                    }}
-                    className={`p-1.5 rounded-xl border transition-all ${
-                      isSlate 
-                        ? "bg-slate-900/50 border-white/5 text-slate-300 hover:text-cyan-400 hover:bg-slate-800" 
-                        : "bg-amber-50 border-amber-900/10 text-stone-700 hover:text-amber-800 hover:bg-amber-100"
-                    }`}
-                    title="Next Day"
-                  >
-                    <ChevronRight size={12} />
-                  </button>
+                    {DEVOTIONAL_PROFILES.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
-                {/* Date Picker Popover Modal */}
-                {showDatePicker && (
-                  <div 
-                    className={`absolute right-0 sm:right-auto sm:left-0 top-full mt-2 w-72 p-4 rounded-2xl border shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 ${
-                      isSlate 
-                        ? "bg-slate-950 border-cyan-500/30 text-slate-100 shadow-[0_10px_30px_rgba(0,0,0,0.8)]" 
-                        : "bg-amber-50 border-amber-900/20 text-stone-800 shadow-[0_10px_30px_rgba(0,0,0,0.15)]"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-3 border-b pb-2 border-slate-700/30">
-                      <div className="flex items-center space-x-1.5">
-                        <Calendar size={14} className={isSlate ? "text-cyan-400" : "text-amber-800"} />
-                        <span className="text-xs font-bold font-mono uppercase tracking-wider">
-                          Devotional Calendar
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => setShowDatePicker(false)}
-                        className="p-1 rounded-lg hover:bg-slate-800/50 text-slate-400 hover:text-white"
-                      >
-                        <X size={14} />
-                      </button>
-                    </div>
+                {/* Calendar Date Selector */}
+                <div className="relative shrink-0" id="calendar-date-container">
+                  {showDatePicker && (
+                    <div 
+                      className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px]" 
+                      onClick={() => setShowDatePicker(false)} 
+                    />
+                  )}
+                  
+                  <div className="flex items-center space-x-1">
+                    <button
+                      onClick={() => {
+                        const prev = new Date(selectedDate);
+                        prev.setDate(prev.getDate() - 1);
+                        setSelectedDate(prev);
+                      }}
+                      className={`p-1.5 rounded-xl border transition-all ${
+                        isSlate 
+                          ? "bg-slate-900/50 border-white/5 text-slate-300 hover:text-cyan-400 hover:bg-slate-800" 
+                          : "bg-amber-50 border-amber-900/10 text-stone-700 hover:text-amber-800 hover:bg-amber-100"
+                      }`}
+                      title="Previous Day"
+                    >
+                      <ChevronLeft size={12} />
+                    </button>
 
-                    <div className="space-y-3">
-                      {/* HTML Date Input */}
-                      <div>
-                        <label className={`block text-[10px] font-mono font-bold uppercase mb-1 ${isSlate ? "text-slate-400" : "text-stone-600"}`}>
-                          Select Date (e.g. July 4th):
-                        </label>
-                        <input
-                          type="date"
-                          value={formatDateForInput(selectedDate)}
-                          onChange={(e) => {
-                            if (e.target.value) {
-                              const [yyyy, mm, dd] = e.target.value.split("-").map(Number);
-                              const newD = new Date(yyyy, mm - 1, dd);
-                              setSelectedDate(newD);
-                            }
-                          }}
-                          className={`w-full text-xs rounded-xl border px-3 py-1.5 font-mono outline-none focus:ring-1 focus:ring-cyan-400 cursor-pointer ${
-                            isSlate 
-                              ? "bg-slate-900 border-white/10 text-cyan-300" 
-                              : "bg-white border-amber-900/20 text-stone-800"
-                          }`}
-                        />
-                      </div>
+                    <button
+                      id="header-calendar-button"
+                      onClick={() => setShowDatePicker(!showDatePicker)}
+                      className={`flex items-center space-x-1.5 px-2 py-1 rounded-xl border text-xs font-mono font-medium transition-all ${
+                        isSlate 
+                          ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 shadow-[0_0_12px_rgba(34,211,238,0.12)]" 
+                          : "bg-amber-100/80 border-amber-300 text-amber-900 hover:bg-amber-200/80"
+                      }`}
+                      title="Select Devotional Date / Seleccionar Fecha"
+                    >
+                      <Calendar size={13} className="shrink-0 text-cyan-400" />
+                      <span className="font-bold tracking-tight">{formatDateDisplay(selectedDate)}</span>
+                    </button>
 
-                      {/* Quick Shortcuts */}
-                      <div>
+                    <button
+                      onClick={() => {
+                        const next = new Date(selectedDate);
+                        next.setDate(next.getDate() + 1);
+                        setSelectedDate(next);
+                      }}
+                      className={`p-1.5 rounded-xl border transition-all ${
+                        isSlate 
+                          ? "bg-slate-900/50 border-white/5 text-slate-300 hover:text-cyan-400 hover:bg-slate-800" 
+                          : "bg-amber-50 border-amber-900/10 text-stone-700 hover:text-amber-800 hover:bg-amber-100"
+                      }`}
+                      title="Next Day"
+                    >
+                      <ChevronRight size={12} />
+                    </button>
+                  </div>
+
+                  {/* Date Picker Popover Modal - Narrower, aligned to the right side */}
+                  {showDatePicker && (
+                    <div 
+                      className={`absolute right-0 top-full mt-2 w-60 max-w-[calc(100vw-2rem)] p-3 rounded-2xl border shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 ${
+                        isSlate 
+                          ? "bg-slate-950 border-cyan-500/30 text-slate-100 shadow-[0_10px_35px_rgba(0,0,0,0.9)]" 
+                          : "bg-amber-50 border-amber-900/20 text-stone-800 shadow-[0_10px_35px_rgba(0,0,0,0.2)]"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2.5 border-b pb-2 border-slate-700/30">
+                        <div className="flex items-center space-x-1.5">
+                          <Calendar size={13} className={isSlate ? "text-cyan-400" : "text-amber-800"} />
+                          <span className="text-[11px] font-bold font-mono uppercase tracking-wider">
+                            Calendar
+                          </span>
+                        </div>
                         <button
-                          onClick={() => {
-                            setSelectedDate(new Date());
-                            setShowDatePicker(false);
-                          }}
-                          className={`w-full px-3 py-2 rounded-xl border text-center font-mono text-xs font-semibold transition-all ${
-                            isSlate 
-                              ? "bg-slate-900/80 border-white/10 hover:border-cyan-400 hover:bg-slate-800 text-slate-200" 
-                              : "bg-white border-amber-900/15 hover:border-amber-600 hover:bg-amber-100/50 text-stone-800"
-                          }`}
+                          onClick={() => setShowDatePicker(false)}
+                          className="p-1 rounded-lg hover:bg-slate-800/50 text-slate-400 hover:text-white"
                         >
-                          📅 Reset to Today
+                          <X size={13} />
                         </button>
                       </div>
 
-                      <div className="pt-2 border-t border-slate-700/30 flex justify-between items-center text-[10px] font-mono text-slate-400">
-                        <span>Selected Reading Date:</span>
-                        <span className="font-bold text-cyan-400">{selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                      <div className="space-y-2.5">
+                        {/* HTML Date Input */}
+                        <div>
+                          <label className={`block text-[9.5px] font-mono font-bold uppercase mb-1 ${isSlate ? "text-slate-400" : "text-stone-600"}`}>
+                            Select Date:
+                          </label>
+                          <input
+                            type="date"
+                            value={formatDateForInput(selectedDate)}
+                            onChange={(e) => {
+                              if (e.target.value) {
+                                const [yyyy, mm, dd] = e.target.value.split("-").map(Number);
+                                const newD = new Date(yyyy, mm - 1, dd);
+                                setSelectedDate(newD);
+                              }
+                            }}
+                            className={`w-full text-xs rounded-xl border px-2.5 py-1.5 font-mono outline-none focus:ring-1 focus:ring-cyan-400 cursor-pointer ${
+                              isSlate 
+                                ? "bg-slate-900 border-white/10 text-cyan-300" 
+                                : "bg-white border-amber-900/20 text-stone-800"
+                            }`}
+                          />
+                        </div>
+
+                        {/* Quick Reset Shortcut */}
+                        <div>
+                          <button
+                            onClick={() => {
+                              setSelectedDate(new Date());
+                              setShowDatePicker(false);
+                            }}
+                            className={`w-full px-2.5 py-1.5 rounded-xl border text-center font-mono text-[11px] font-semibold transition-all ${
+                              isSlate 
+                                ? "bg-slate-900/80 border-white/10 hover:border-cyan-400 hover:bg-slate-800 text-slate-200" 
+                                : "bg-white border-amber-900/15 hover:border-amber-600 hover:bg-amber-100/50 text-stone-800"
+                            }`}
+                          >
+                            📅 Reset to Today
+                          </button>
+                        </div>
+
+                        <div className="pt-2 border-t border-slate-700/30 flex justify-between items-center text-[9.5px] font-mono text-slate-400">
+                          <span>Date:</span>
+                          <span className="font-bold text-cyan-400">{selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
 
               {/* Spiritual Streak HUD Badge */}
               <div 
                 id="header-streak-badge"
-                className={`flex items-center space-x-2 px-3 py-1 rounded-2xl border font-mono transition-all duration-300 ${
+                className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-2xl border font-mono transition-all duration-300 shrink-0 ${
                   hasCompletedToday
                     ? isSlate 
                       ? "bg-amber-500/10 border-amber-400/30 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.15)]" 
@@ -1477,7 +1478,7 @@ export default function App() {
                 }`}
                 title={hasCompletedToday ? "Spiritual Streak Active!" : "Read today's devotional to lock in your streak!"}
               >
-                <Flame size={14} className={`transition-all duration-300 ${hasCompletedToday ? "animate-pulse fill-amber-400 text-amber-500" : "opacity-60"}`} />
+                <Flame size={13} className={`transition-all duration-300 ${hasCompletedToday ? "animate-pulse fill-amber-400 text-amber-500" : "opacity-60"}`} />
                 <div className="text-left leading-none">
                   <div className="text-xs font-bold flex items-baseline">
                     <span>{streakCount}</span>
@@ -1486,18 +1487,18 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Clock - Hidden on mobile, compact on tablet/desktop */}
-              <div className="hidden md:block text-right border-r border-white/10 pr-4 leading-none">
-                <div className="text-sm font-light font-mono leading-none">
+              {/* Clock - Hidden on smaller screens */}
+              <div className="hidden lg:block text-right border-r border-white/10 pr-3 leading-none shrink-0">
+                <div className="text-xs font-light font-mono leading-none">
                   {timeString}
                 </div>
-                <div className={`text-[8.5px] tracking-wider font-mono mt-1 ${isSlate ? "text-cyan-400/80" : "text-amber-800"}`}>
+                <div className={`text-[8px] tracking-wider font-mono mt-0.5 ${isSlate ? "text-cyan-400/80" : "text-amber-800"}`}>
                   {dateString}
                 </div>
               </div>
 
               {/* Actions */}
-              <div className="flex items-center space-x-1.5">
+              <div className="flex items-center space-x-1 shrink-0">
                 <button
                   id="sync-button"
                   onClick={fetchDevotionals}
@@ -1510,7 +1511,7 @@ export default function App() {
                   title="Refresh database catalogs"
                 >
                   <RefreshCw size={11} className={isScraping ? "animate-spin" : ""} />
-                  <span className="hidden xs:inline text-[10px]">SYNC</span>
+                  <span className="hidden sm:inline text-[10px]">SYNC</span>
                 </button>
 
                 <button
@@ -1524,7 +1525,7 @@ export default function App() {
                   title="Replay onboarding tour / Repetir recorrido"
                 >
                   <Sparkles size={11} className="animate-pulse" />
-                  <span className="hidden xs:inline text-[10px]">TOUR</span>
+                  <span className="hidden sm:inline text-[10px]">TOUR</span>
                 </button>
 
                 <button
