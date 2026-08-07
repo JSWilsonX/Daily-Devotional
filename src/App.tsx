@@ -26,7 +26,9 @@ import {
   Check,
   Flame,
   Book,
-  Anchor
+  Anchor,
+  Calendar,
+  X
 } from "lucide-react";
 import { BookCover } from "./components/BookCover";
 import { ProjectIcon } from "./components/ProjectIcon";
@@ -38,6 +40,19 @@ function getLocalDateString(date: Date): string {
   const mm = String(date.getMonth() + 1).padStart(2, '0');
   const dd = String(date.getDate()).padStart(2, '0');
   return `${yyyy}-${mm}-${dd}`;
+}
+
+function formatDateForInput(date: Date): string {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function formatDateDisplay(date: Date): string {
+  const isToday = getLocalDateString(date) === getLocalDateString(new Date());
+  const formatted = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return isToday ? `Today (${formatted})` : formatted;
 }
 
 interface Devotional {
@@ -681,6 +696,10 @@ export default function App() {
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedVoiceName, setSelectedVoiceName] = useState<string>("");
 
+  // Calendar / Devotional Date State
+  const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
+  const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
+
   // Appearance
   const [theme, setTheme] = useState<"cream" | "slate">("slate");
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
@@ -851,19 +870,19 @@ export default function App() {
     }
   };
 
-  // Sync selected book and profile to localStorage and fetch content
+  // Sync selected book, profile, and selectedDate to localStorage and fetch content
   useEffect(() => {
     if (selectedId !== null) {
       const activeBook = sortedDevotionals.find(d => d.id === selectedId);
       if (activeBook) {
         localStorage.setItem("egw_selected_devotional_id", selectedId);
         localStorage.setItem("egw_selected_profile", selectedProfile);
-        fetchActiveDevotionalContent(activeBook, selectedProfile);
-        // Reset speech when book or profile changes
+        fetchActiveDevotionalContent(activeBook, selectedProfile, selectedDate);
+        // Reset speech when book, profile, or date changes
         stopSpeech();
       }
     }
-  }, [selectedId, selectedProfile, devotionals]);
+  }, [selectedId, selectedProfile, devotionals, selectedDate]);
 
   // Load available speech voices
   useEffect(() => {
@@ -949,11 +968,16 @@ export default function App() {
   };
 
   // Fetch content for the selected devotional
-  const fetchActiveDevotionalContent = async (devotional: Devotional, profileStyle: string = selectedProfile) => {
-    // Use user's current local date/time to build the correct month and day suffix
-    const month = String(currentTime.getMonth() + 1).padStart(2, "0");
-    const day = String(currentTime.getDate()).padStart(2, "0");
+  const fetchActiveDevotionalContent = async (
+    devotional: Devotional, 
+    profileStyle: string = selectedProfile,
+    targetDate: Date = selectedDate
+  ) => {
+    // Use target date to build the correct month and day suffix
+    const month = String(targetDate.getMonth() + 1).padStart(2, "0");
+    const day = String(targetDate.getDate()).padStart(2, "0");
     const dateSuffix = `${month}_${day}/`;
+    const dayParam = `${month}_${day}`;
 
     // Check if the same book (by id), date, and profile are in cache
     if (
@@ -979,7 +1003,7 @@ export default function App() {
       }
       const dateSpecificUrl = `${baseLink}${dateSuffix}`;
 
-      const res = await fetch(`/api/fetch-devotional?url=${encodeURIComponent(dateSpecificUrl)}&profile=${profileStyle}`);
+      const res = await fetch(`/api/fetch-devotional?url=${encodeURIComponent(dateSpecificUrl)}&profile=${profileStyle}&book_id=${devotional.id}&day=${dayParam}`);
       if (!res.ok) {
         throw new Error(`Server returned code ${res.status}`);
       }
@@ -1306,6 +1330,137 @@ export default function App() {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              {/* Calendar Date Selector */}
+              <div className="relative" id="calendar-date-container">
+                {showDatePicker && (
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setShowDatePicker(false)} 
+                  />
+                )}
+                
+                <div className="flex items-center space-x-1">
+                  <button
+                    onClick={() => {
+                      const prev = new Date(selectedDate);
+                      prev.setDate(prev.getDate() - 1);
+                      setSelectedDate(prev);
+                    }}
+                    className={`p-1.5 rounded-xl border transition-all ${
+                      isSlate 
+                        ? "bg-slate-900/50 border-white/5 text-slate-300 hover:text-cyan-400 hover:bg-slate-800" 
+                        : "bg-amber-50 border-amber-900/10 text-stone-700 hover:text-amber-800 hover:bg-amber-100"
+                    }`}
+                    title="Previous Day"
+                  >
+                    <ChevronLeft size={12} />
+                  </button>
+
+                  <button
+                    id="header-calendar-button"
+                    onClick={() => setShowDatePicker(!showDatePicker)}
+                    className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-xl border text-xs font-mono font-medium transition-all ${
+                      isSlate 
+                        ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 shadow-[0_0_12px_rgba(34,211,238,0.12)]" 
+                        : "bg-amber-100/80 border-amber-300 text-amber-900 hover:bg-amber-200/80"
+                    }`}
+                    title="Select Devotional Date / Seleccionar Fecha"
+                  >
+                    <Calendar size={13} className="shrink-0 text-cyan-400" />
+                    <span className="font-bold tracking-tight">{formatDateDisplay(selectedDate)}</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      const next = new Date(selectedDate);
+                      next.setDate(next.getDate() + 1);
+                      setSelectedDate(next);
+                    }}
+                    className={`p-1.5 rounded-xl border transition-all ${
+                      isSlate 
+                        ? "bg-slate-900/50 border-white/5 text-slate-300 hover:text-cyan-400 hover:bg-slate-800" 
+                        : "bg-amber-50 border-amber-900/10 text-stone-700 hover:text-amber-800 hover:bg-amber-100"
+                    }`}
+                    title="Next Day"
+                  >
+                    <ChevronRight size={12} />
+                  </button>
+                </div>
+
+                {/* Date Picker Popover Modal */}
+                {showDatePicker && (
+                  <div 
+                    className={`absolute right-0 sm:right-auto sm:left-0 top-full mt-2 w-72 p-4 rounded-2xl border shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 ${
+                      isSlate 
+                        ? "bg-slate-950 border-cyan-500/30 text-slate-100 shadow-[0_10px_30px_rgba(0,0,0,0.8)]" 
+                        : "bg-amber-50 border-amber-900/20 text-stone-800 shadow-[0_10px_30px_rgba(0,0,0,0.15)]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-3 border-b pb-2 border-slate-700/30">
+                      <div className="flex items-center space-x-1.5">
+                        <Calendar size={14} className={isSlate ? "text-cyan-400" : "text-amber-800"} />
+                        <span className="text-xs font-bold font-mono uppercase tracking-wider">
+                          Devotional Calendar
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => setShowDatePicker(false)}
+                        className="p-1 rounded-lg hover:bg-slate-800/50 text-slate-400 hover:text-white"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+
+                    <div className="space-y-3">
+                      {/* HTML Date Input */}
+                      <div>
+                        <label className={`block text-[10px] font-mono font-bold uppercase mb-1 ${isSlate ? "text-slate-400" : "text-stone-600"}`}>
+                          Select Date (e.g. July 4th):
+                        </label>
+                        <input
+                          type="date"
+                          value={formatDateForInput(selectedDate)}
+                          onChange={(e) => {
+                            if (e.target.value) {
+                              const [yyyy, mm, dd] = e.target.value.split("-").map(Number);
+                              const newD = new Date(yyyy, mm - 1, dd);
+                              setSelectedDate(newD);
+                            }
+                          }}
+                          className={`w-full text-xs rounded-xl border px-3 py-1.5 font-mono outline-none focus:ring-1 focus:ring-cyan-400 cursor-pointer ${
+                            isSlate 
+                              ? "bg-slate-900 border-white/10 text-cyan-300" 
+                              : "bg-white border-amber-900/20 text-stone-800"
+                          }`}
+                        />
+                      </div>
+
+                      {/* Quick Shortcuts */}
+                      <div>
+                        <button
+                          onClick={() => {
+                            setSelectedDate(new Date());
+                            setShowDatePicker(false);
+                          }}
+                          className={`w-full px-3 py-2 rounded-xl border text-center font-mono text-xs font-semibold transition-all ${
+                            isSlate 
+                              ? "bg-slate-900/80 border-white/10 hover:border-cyan-400 hover:bg-slate-800 text-slate-200" 
+                              : "bg-white border-amber-900/15 hover:border-amber-600 hover:bg-amber-100/50 text-stone-800"
+                          }`}
+                        >
+                          📅 Reset to Today
+                        </button>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-700/30 flex justify-between items-center text-[10px] font-mono text-slate-400">
+                        <span>Selected Reading Date:</span>
+                        <span className="font-bold text-cyan-400">{selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Spiritual Streak HUD Badge */}

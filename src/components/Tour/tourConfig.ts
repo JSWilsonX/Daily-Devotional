@@ -60,6 +60,20 @@ export const tours: TourDefinition[] = [
         allowInteraction: true
       },
       {
+        id: "calendar-date-picker",
+        selector: "#header-calendar-button",
+        title: {
+          en: "Calendar Date Selector",
+          es: "Selector de Fecha de Calendario"
+        },
+        explanation: {
+          en: "Select any day of the year (e.g. July 4th or Christmas) to read historical devotional reflections for that specific date.",
+          es: "Selecciona cualquier día del año (por ejemplo, el 4 de julio o Navidad) para leer reflexiones devocionales históricas para esa fecha específica."
+        },
+        placement: "bottom",
+        allowInteraction: true
+      },
+      {
         id: "audio-console",
         selector: "#audio-playback-dock",
         title: {
