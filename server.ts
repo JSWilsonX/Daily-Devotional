@@ -1,5 +1,8 @@
 import express from "express";
 import path from "path";
+import fs from "fs";
+import { execSync } from "child_process";
+import { DatabaseSync } from "node:sqlite";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
@@ -8,6 +11,48 @@ dotenv.config();
 
 const app = express();
 const PORT = 3000;
+
+// Initialize SQLite database from zipped contents if needed
+const DB_PATH = path.join(process.cwd(), "devotionals.db");
+
+function initDatabase(): DatabaseSync {
+  if (!fs.existsSync(DB_PATH)) {
+    console.log(`[Database Init] Database file not found at ${DB_PATH}. Building SQLite database from uploaded zip files...`);
+    try {
+      execSync("python3 scripts/build_db.py", { stdio: "inherit" });
+    } catch (err) {
+      console.error("[Database Init] Failed to build database using scripts/build_db.py:", err);
+    }
+  }
+
+  console.log(`[Database Init] Opening SQLite database at ${DB_PATH}...`);
+  const db = new DatabaseSync(DB_PATH);
+
+  // Ensure table and index exist as requested: Index on (profile_id, book_id, day)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS devotionals (
+      profile_id TEXT NOT NULL,
+      book_id TEXT NOT NULL,
+      day TEXT NOT NULL,
+      title TEXT,
+      paragraphs TEXT NOT NULL,
+      PRIMARY KEY (profile_id, book_id, day)
+    );
+    CREATE INDEX IF NOT EXISTS idx_profile_book_day ON devotionals (profile_id, book_id, day);
+  `);
+
+  return db;
+}
+
+const db = initDatabase();
+
+const getDevotionalStmt = db.prepare(
+  "SELECT title, paragraphs FROM devotionals WHERE profile_id = ? AND book_id = ? AND day = ?"
+);
+
+const insertDevotionalStmt = db.prepare(
+  "INSERT OR REPLACE INTO devotionals (profile_id, book_id, day, title, paragraphs) VALUES (?, ?, ?, ?, ?)"
+);
 
 // Initialize GoogleGenAI client for modern professional paraphrasing
 const ai = new GoogleGenAI({
@@ -540,16 +585,62 @@ ${profileInstruction}
 
 /**
  * 2. Fetch specific devotional page and parse its content
+ * First attempts to retrieve from SQLite database. If not found, fetches from website.
  */
 app.get("/api/fetch-devotional", async (req, res) => {
   const devUrl = req.query.url as string;
   const profile = (req.query.profile as string) || "classic";
+
+  const reqBookId = (req.query.book_id as string)?.toLowerCase();
+  const reqDay = (req.query.day as string);
+
+  let bookId = reqBookId || null;
+  let day = reqDay || null;
+
+  if ((!bookId || !day) && devUrl) {
+    const match = devUrl.match(/\/devotional\/([a-z0-9_-]+)\/(\d{2}_\d{2})/i);
+    if (match) {
+      bookId = bookId || match[1].toLowerCase();
+      day = day || match[2];
+    }
+  }
+
+  function normalizeProfile(p: string): string {
+    if (!p) return "original";
+    const lower = p.toLowerCase().trim();
+    if (lower === "classic" || lower === "original") return "original";
+    return lower;
+  }
+
+  const profileId = normalizeProfile(profile);
+
+  // 1. Try to retrieve content from SQLite database indexed on (profile_id, book_id, day)
+  if (bookId && day) {
+    try {
+      const row = getDevotionalStmt.get(profileId, bookId, day) as { title: string; paragraphs: string } | undefined;
+      if (row && row.paragraphs) {
+        console.log(`[Database HIT] Serving devotional for profile='${profileId}', book='${bookId}', day='${day}' from SQLite database.`);
+        const parsedParagraphs = JSON.parse(row.paragraphs);
+        return res.json({
+          title: row.title || "",
+          paragraphs: parsedParagraphs,
+          source: "database"
+        });
+      } else {
+        console.log(`[Database MISS] Entry not found in SQLite DB for profile='${profileId}', book='${bookId}', day='${day}'.`);
+      }
+    } catch (dbErr) {
+      console.error("Error querying SQLite database:", dbErr);
+    }
+  }
+
+  // 2. Fallback: retrieve content from the website if not in database
   if (!devUrl) {
-    return res.status(400).json({ error: "Missing 'url' parameter" });
+    return res.status(400).json({ error: "Missing 'url' or missing entry in database and no URL provided to fetch" });
   }
 
   try {
-    console.log(`Fetching devotional content from ${devUrl}... (Profile: ${profile})`);
+    console.log(`[Website Fetch] Fetching devotional content from ${devUrl}... (Profile: ${profile})`);
     const response = await fetchWithTimeout(devUrl, 10000);
     if (!response.ok) {
       return res.status(response.status).json({ error: `Failed to fetch devotional page: ${response.statusText}` });
@@ -570,7 +661,6 @@ app.get("/api/fetch-devotional", async (req, res) => {
 
     // 2. Extract paragraph blocks of class egw_content_wrapper
     const paragraphs: any[] = [];
-    // Using matchAll to capture all matching paragraph structures
     const pMatches = html.matchAll(/<p\s+([\s\S]*?)>([\s\S]*?)<\/p>/gi);
 
     for (const match of pMatches) {
@@ -588,8 +678,6 @@ app.get("/api/fetch-devotional", async (req, res) => {
           type = "scripture";
         }
 
-        // Clean text content but keep scripture citation inner text if present
-        // Strips tags cleanly and replaces multiple spaces/newlines
         const text = body.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 
         if (text) {
@@ -602,16 +690,27 @@ app.get("/api/fetch-devotional", async (req, res) => {
       }
     }
 
-    console.log(`Successfully fetched devotional "${title}" with ${paragraphs.length} paragraphs.`);
+    console.log(`Successfully fetched devotional "${title}" from website with ${paragraphs.length} paragraphs.`);
     
     // Paraphrase with Gemini API (handles both paraphrased styles AND classic style for pronunciation overrides)
     const paraphrased = await paraphraseDevotional(title, paragraphs, profile);
+
+    // Save newly fetched content to database if bookId and day are known
+    if (bookId && day && paraphrased.title && Array.isArray(paraphrased.paragraphs) && paraphrased.paragraphs.length > 0) {
+      try {
+        insertDevotionalStmt.run(profileId, bookId, day, paraphrased.title, JSON.stringify(paraphrased.paragraphs));
+        console.log(`[Database Cache] Saved newly scraped entry to SQLite DB for profile='${profileId}', book='${bookId}', day='${day}'.`);
+      } catch (cacheErr) {
+        console.error("Failed to cache newly scraped entry into SQLite DB:", cacheErr);
+      }
+    }
 
     return res.json({
       title: paraphrased.title,
       paragraphs: paraphrased.paragraphs,
       warning: paraphrased.warning,
-      isFallback: paraphrased.isFallback
+      isFallback: paraphrased.isFallback,
+      source: "website"
     });
 
   } catch (error: any) {
