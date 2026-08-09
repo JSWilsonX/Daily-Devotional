@@ -101,6 +101,7 @@ export const PRONUNCIATION_REPLACEMENTS: Record<string, string> = {
 };
 
 function replaceNthWord(paragraphText: string, targetWord: string, occurrence: number, replacement: string): string {
+  if (!paragraphText || !targetWord) return paragraphText || "";
   const escaped = targetWord.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
   const regex = new RegExp(`\\b${escaped}\\b`, 'gi');
   
@@ -109,10 +110,10 @@ function replaceNthWord(paragraphText: string, targetWord: string, occurrence: n
     currentCount++;
     if (currentCount === occurrence) {
       const isCapitalized = match[0] === match[0].toUpperCase() && match[0] !== match[0].toLowerCase();
-      if (isCapitalized && replacement.length > 0) {
+      if (isCapitalized && replacement && replacement.length > 0) {
         return replacement[0].toUpperCase() + replacement.slice(1);
       }
-      return replacement;
+      return replacement || "";
     }
     return match;
   });
@@ -392,6 +393,7 @@ function isSingleChapterBook(book: string): boolean {
 }
 
 function verbalizeBook(book: string): string {
+  if (!book) return "";
   let b = book.trim();
   b = b.replace(/\s+/g, " ");
   
@@ -1060,13 +1062,23 @@ export default function App() {
       return;
     }
 
+    // Detach callbacks on previous utterance so cancel() doesn't trigger stale onend/onerror handlers
+    if (utteranceRef.current) {
+      utteranceRef.current.onend = null;
+      utteranceRef.current.onerror = null;
+    }
     window.speechSynthesis.cancel();
+
     setActiveParagraphIdx(idx);
     setIsPlaying(true);
     setIsPaused(false);
 
     const block = content.paragraphs[idx];
-    let speechText = block.text;
+    if (!block) return;
+    let speechText = block.text || "";
+
+    // Normalize em-dashes and en-dashes so TTS engine doesn't stutter or drop text
+    speechText = speechText.replace(/—/g, ", ").replace(/–/g, " - ");
 
     // Apply pronunciation overrides if present
     if (block.pronunciationOverrides && Array.isArray(block.pronunciationOverrides) && block.pronunciationOverrides.length > 0) {
@@ -1113,12 +1125,15 @@ export default function App() {
 
     utterance.onerror = (e) => {
       console.warn("Speech Synthesis error:", e);
-      if (e.error !== "interrupted") {
+      if (e.error !== "interrupted" && e.error !== "canceled") {
         stopSpeech();
       }
     };
 
-    window.speechSynthesis.speak(utterance);
+    // Short 30ms delay prevents browser Web Speech API race conditions after cancel()
+    setTimeout(() => {
+      window.speechSynthesis.speak(utterance);
+    }, 30);
   };
 
   const startSpeech = () => {
@@ -1141,6 +1156,10 @@ export default function App() {
   };
 
   const stopSpeech = () => {
+    if (utteranceRef.current) {
+      utteranceRef.current.onend = null;
+      utteranceRef.current.onerror = null;
+    }
     window.speechSynthesis.cancel();
     setIsPlaying(false);
     setIsPaused(false);
@@ -2212,7 +2231,7 @@ export default function App() {
                   >
                     {voices.map(v => (
                       <option key={v.name} value={v.name}>
-                        {v.name.replace("Google", "").replace("Microsoft", "").trim()} ({v.lang})
+                        {(v.name || "").replace("Google", "").replace("Microsoft", "").trim()} ({v.lang})
                       </option>
                     ))}
                   </select>
