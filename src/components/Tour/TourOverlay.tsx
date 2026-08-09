@@ -24,11 +24,37 @@ export function TourOverlay({
 }: TourOverlayProps) {
   const currentStep = tour.steps[stepIdx];
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
+  const [isFallbackMoreMenu, setIsFallbackMoreMenu] = useState(false);
   const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
   const [arrowClass, setArrowClass] = useState("");
   const [arrowStyle, setArrowStyle] = useState<React.CSSProperties>({});
   const [realPlacement, setRealPlacement] = useState<TourPlacement>("auto");
   const popoverRef = useRef<HTMLDivElement>(null);
+
+  // Helper to find visible target or fallback to More Menu button if target is collapsed
+  const getVisibleTarget = (selector: string): { element: HTMLElement | null; isFallback: boolean } => {
+    if (selector === "#app-root") return { element: null, isFallback: false };
+
+    const el = document.querySelector<HTMLElement>(selector);
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        return { element: el, isFallback: false };
+      }
+    }
+
+    // Fallback: If primary control is hidden (e.g. collapsed into More Menu on small screens),
+    // point to the More Menu button if present and visible
+    const moreMenuBtn = document.querySelector<HTMLElement>("#header-more-menu-btn");
+    if (moreMenuBtn) {
+      const moreRect = moreMenuBtn.getBoundingClientRect();
+      if (moreRect.width > 0 && moreRect.height > 0) {
+        return { element: moreMenuBtn, isFallback: true };
+      }
+    }
+
+    return { element: null, isFallback: false };
+  };
 
   // Helper to translate content
   const translate = (field: string | Record<string, string>) => {
@@ -43,10 +69,10 @@ export function TourOverlay({
     let animationFrameId: number;
 
     const updateBounds = () => {
-      const selector = currentStep.selector;
-      const element = document.querySelector(selector);
+      const { element, isFallback } = getVisibleTarget(currentStep.selector);
+      setIsFallbackMoreMenu(isFallback);
 
-      if (element && selector !== "#app-root") {
+      if (element) {
         // Scroll target into view if necessary
         const rect = element.getBoundingClientRect();
         const isOffscreen =
@@ -183,7 +209,7 @@ export function TourOverlay({
     const blockGlobalInputs = (e: MouseEvent) => {
       if (selector === "#app-root" || !targetRect) return;
 
-      const element = document.querySelector(selector);
+      const { element } = getVisibleTarget(selector);
       if (element) {
         const clickedInside = element.contains(e.target as Node);
         // If interaction is allowed, and clicked inside the target element, let it pass
@@ -377,6 +403,18 @@ export function TourOverlay({
           >
             {translate(currentStep.explanation)}
           </p>
+
+          {/* More Menu Callout Badge if pointing to More Options button on smaller screens */}
+          {isFallbackMoreMenu && (
+            <div className="mt-3 text-[11px] font-mono font-semibold text-cyan-300 bg-cyan-950/80 border border-cyan-500/40 px-2.5 py-1.5 rounded-xl flex items-center space-x-1.5 shadow-sm">
+              <span className="text-sm shrink-0">📍</span>
+              <span className="leading-tight">
+                {locale === "es"
+                  ? "Control ubicado en el menú '...' de Más Opciones"
+                  : "Control located inside the '...' More Options menu"}
+              </span>
+            </div>
+          )}
 
           {/* Navigation Controls */}
           <div className="flex items-center justify-between mt-5 pt-3 border-t border-slate-800/80">

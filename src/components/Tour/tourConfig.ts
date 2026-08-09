@@ -102,20 +102,6 @@ export const tours: TourDefinition[] = [
         allowInteraction: false
       },
       {
-        id: "sync-db",
-        selector: "#sync-button",
-        title: {
-          en: "Live Database Sync",
-          es: "Sincronización de Base de Datos"
-        },
-        explanation: {
-          en: "Force a refresh and synchronization with the global servers to ensure your local devotionals and content files are perfectly aligned and up to date.",
-          es: "Fuerza una actualización con los servidores globales para asegurarte de que tus devocionales locales estén perfectamente actualizados."
-        },
-        placement: "bottom",
-        allowInteraction: true
-      },
-      {
         id: "theme-toggle-step",
         selector: "#theme-toggle",
         title: {
@@ -123,8 +109,8 @@ export const tours: TourDefinition[] = [
           es: "Ajustes de Ambiente Estético"
         },
         explanation: {
-          en: "Toggle between our responsive, eye-safe 'Twilight Slate' dark mode and our warm, historical 'Cream reading environment' to match your room lighting.",
-          es: "Cambia entre nuestro modo oscuro 'Twilight Slate' seguro para la vista y nuestro cálido fondo 'Cream' que evoca pergaminos clásicos."
+          en: "Toggle between our responsive, eye-safe 'Twilight Slate' dark mode and warm 'Cream' reading environment. On mobile or narrow screens, tap the '...' More Options menu to switch themes.",
+          es: "Cambia entre nuestro modo oscuro 'Twilight Slate' y el ambiente cálido 'Cream'. En pantallas móviles o pequeñas, toca el menú '...' de Más Opciones para cambiar de tema."
         },
         placement: "bottom",
         allowInteraction: true

@@ -28,7 +28,8 @@ import {
   Book,
   Anchor,
   Calendar,
-  X
+  X,
+  MoreHorizontal
 } from "lucide-react";
 import { BookCover } from "./components/BookCover";
 import { ProjectIcon } from "./components/ProjectIcon";
@@ -697,6 +698,7 @@ export default function App() {
   // Calendar / Devotional Date State
   const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
+  const [showMoreMenu, setShowMoreMenu] = useState<boolean>(false);
 
   // Appearance
   const [theme, setTheme] = useState<"cream" | "slate">("slate");
@@ -1283,191 +1285,152 @@ export default function App() {
         {/* Header Ribbon with Real-Time HUD */}
         <header 
           id="app-header" 
-          className={`px-4 py-2.5 md:py-3.5 border-b transition-all relative z-30 ${
+          className={`px-3 sm:px-4 py-2 border-b transition-all relative z-30 ${
             isSlate 
               ? "bg-[#020617]/40 backdrop-blur-xl border-white/5" 
               : "bg-[#FAF7F2]/80 backdrop-blur-xl border-amber-900/5"
           }`}
         >
-          <div className="max-w-6xl mx-auto w-full flex flex-wrap items-center justify-between gap-2.5 select-none">
-            {/* Left side: branding/title */}
-            <div className="flex items-center space-x-2.5 shrink-0">
-              <div className="shrink-0">
-                <ProjectIcon size={28} className="rounded-xl shadow-lg border border-slate-700/50 hover:scale-105 transition-transform duration-300" />
+          <div className="max-w-6xl mx-auto w-full flex flex-col md:flex-row md:items-center justify-between gap-1.5 sm:gap-2 select-none">
+            {/* Row 1: Title on Left + More Menu / Quick Actions on Right */}
+            <div className="flex items-center justify-between w-full md:w-auto shrink-0 gap-2">
+              <div className="flex items-center space-x-2 shrink-0">
+                <div className="shrink-0">
+                  <ProjectIcon size={26} className="rounded-xl shadow-lg border border-slate-700/50 hover:scale-105 transition-transform duration-300" />
+                </div>
+                <div>
+                  <h1 className="font-display text-sm sm:text-base font-bold tracking-tight whitespace-nowrap">
+                    {isSlate ? "Ellen G. White Devotionals" : "EGW Daily Devotionals"}
+                  </h1>
+                </div>
               </div>
-              <div>
-                <h1 className="font-display text-sm sm:text-base md:text-lg font-bold tracking-tight whitespace-nowrap">
-                  {isSlate ? "Ellen G. White Devotionals" : "EGW Daily Devotionals"}
-                </h1>
+
+              {/* Quick Actions (Desktop) / More Menu (Mobile/Narrow) */}
+              <div className="flex items-center space-x-1 shrink-0">
+                {/* Full Desktop Action Buttons */}
+                <div className="hidden lg:flex items-center space-x-1">
+                  <button
+                    id="replay-tour-btn"
+                    onClick={() => startTour("onboarding")}
+                    className={`p-1.5 rounded-lg border transition-all flex items-center space-x-1 text-xs font-mono font-bold ${
+                      isSlate 
+                        ? "bg-slate-900/50 border-white/5 text-cyan-400 hover:bg-slate-800" 
+                        : "bg-amber-50 border-amber-900/10 text-amber-800 hover:bg-amber-100"
+                    }`}
+                    title="Replay onboarding tour / Repetir recorrido"
+                  >
+                    <Sparkles size={11} className="animate-pulse" />
+                    <span className="hidden sm:inline text-[10px]">TOUR</span>
+                  </button>
+
+                  <button
+                    id="theme-toggle"
+                    onClick={toggleTheme}
+                    className={`p-1.5 rounded-lg border transition-all ${
+                      isSlate 
+                        ? "bg-slate-900/50 border-white/5 text-amber-400 hover:bg-slate-800" 
+                        : "bg-amber-50 border-amber-900/10 text-amber-800 hover:bg-amber-100"
+                    }`}
+                    title="Change preset theme"
+                  >
+                    {isSlate ? <Sun size={12} /> : <Moon size={12} />}
+                  </button>
+                </div>
+
+                {/* More Menu Dropdown Toggle for Mobile / Narrow Views */}
+                <div className="relative lg:hidden shrink-0">
+                  <button
+                    id="header-more-menu-btn"
+                    onClick={() => setShowMoreMenu(!showMoreMenu)}
+                    className={`p-1.5 rounded-lg border transition-all flex items-center space-x-1 text-xs font-mono font-bold ${
+                      isSlate 
+                        ? "bg-slate-900/60 border-white/10 text-cyan-400 hover:bg-slate-800" 
+                        : "bg-amber-100/80 border-amber-900/15 text-amber-900 hover:bg-amber-200"
+                    }`}
+                    title="More Options"
+                  >
+                    <MoreHorizontal size={14} />
+                  </button>
+
+                  {/* More Menu Popover */}
+                  {showMoreMenu && (
+                    <>
+                      <div 
+                        className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px]" 
+                        onClick={() => setShowMoreMenu(false)} 
+                      />
+                      <div 
+                        className={`absolute right-0 top-full mt-2 w-48 p-2 rounded-2xl border shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 ${
+                          isSlate 
+                            ? "bg-slate-950 border-cyan-500/30 text-slate-100 shadow-[0_10px_35px_rgba(0,0,0,0.9)]" 
+                            : "bg-amber-50 border-amber-900/20 text-stone-800 shadow-[0_10px_35px_rgba(0,0,0,0.2)]"
+                        }`}
+                      >
+                        <div className="space-y-1">
+                          <button
+                            onClick={() => {
+                              startTour("onboarding");
+                              setShowMoreMenu(false);
+                            }}
+                            className={`w-full text-left px-2.5 py-2 rounded-xl text-xs font-mono font-medium transition-all flex items-center space-x-2 ${
+                              isSlate ? "hover:bg-slate-800/80 text-cyan-400" : "hover:bg-amber-100 text-amber-900"
+                            }`}
+                          >
+                            <Sparkles size={13} className="text-amber-400 animate-pulse" />
+                            <span>Replay Tour</span>
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              toggleTheme();
+                              setShowMoreMenu(false);
+                            }}
+                            className={`w-full text-left px-2.5 py-2 rounded-xl text-xs font-mono font-medium transition-all flex items-center space-x-2 ${
+                              isSlate ? "hover:bg-slate-800/80 text-amber-400" : "hover:bg-amber-100 text-amber-900"
+                            }`}
+                          >
+                            {isSlate ? <Sun size={13} className="text-amber-400" /> : <Moon size={13} className="text-amber-800" />}
+                            <span>{isSlate ? "Light Amber Mode" : "Dark Slate Mode"}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Right side: HUD controls & Style selection */}
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3 justify-end min-w-0">
-              
-              {/* Row group ensuring Style and Calendar Date Selector stay together */}
-              <div className="flex items-center gap-2 shrink-0">
-                {/* Reading Style Selection Dropdown */}
-                <div className="flex items-center space-x-1.5 shrink-0">
-                  <span className={`text-[10px] font-mono uppercase font-bold ${isSlate ? "text-slate-400" : "text-[#6E665A]"}`}>Style:</span>
-                  <select
-                    id="header-profile-switcher"
-                    value={selectedProfile}
-                    onChange={(e) => {
-                      const newProfile = e.target.value;
-                      setSelectedProfile(newProfile);
-                      applyProfileVoiceSettings(newProfile);
-                    }}
-                    className={`text-xs rounded-xl border px-2 py-1 font-sans font-medium focus:ring-1 focus:ring-cyan-400 outline-none cursor-pointer max-w-[130px] sm:max-w-[160px] truncate ${
-                      isSlate 
-                        ? "bg-slate-950 border-white/10 text-slate-200 focus:border-cyan-400" 
-                        : "bg-white border-amber-900/15 text-stone-800 focus:border-amber-600"
-                    }`}
-                  >
-                    {DEVOTIONAL_PROFILES.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Calendar Date Selector */}
-                <div className="relative shrink-0" id="calendar-date-container">
-                  {showDatePicker && (
-                    <div 
-                      className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px]" 
-                      onClick={() => setShowDatePicker(false)} 
-                    />
-                  )}
-                  
-                  <div className="flex items-center space-x-1">
-                    <button
-                      onClick={() => {
-                        const prev = new Date(selectedDate);
-                        prev.setDate(prev.getDate() - 1);
-                        setSelectedDate(prev);
-                      }}
-                      className={`p-1.5 rounded-xl border transition-all ${
-                        isSlate 
-                          ? "bg-slate-900/50 border-white/5 text-slate-300 hover:text-cyan-400 hover:bg-slate-800" 
-                          : "bg-amber-50 border-amber-900/10 text-stone-700 hover:text-amber-800 hover:bg-amber-100"
-                      }`}
-                      title="Previous Day"
-                    >
-                      <ChevronLeft size={12} />
-                    </button>
-
-                    <button
-                      id="header-calendar-button"
-                      onClick={() => setShowDatePicker(!showDatePicker)}
-                      className={`flex items-center space-x-1.5 px-2 py-1 rounded-xl border text-xs font-mono font-medium transition-all ${
-                        isSlate 
-                          ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 shadow-[0_0_12px_rgba(34,211,238,0.12)]" 
-                          : "bg-amber-100/80 border-amber-300 text-amber-900 hover:bg-amber-200/80"
-                      }`}
-                      title="Select Devotional Date / Seleccionar Fecha"
-                    >
-                      <Calendar size={13} className="shrink-0 text-cyan-400" />
-                      <span className="font-bold tracking-tight">{formatDateDisplay(selectedDate)}</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        const next = new Date(selectedDate);
-                        next.setDate(next.getDate() + 1);
-                        setSelectedDate(next);
-                      }}
-                      className={`p-1.5 rounded-xl border transition-all ${
-                        isSlate 
-                          ? "bg-slate-900/50 border-white/5 text-slate-300 hover:text-cyan-400 hover:bg-slate-800" 
-                          : "bg-amber-50 border-amber-900/10 text-stone-700 hover:text-amber-800 hover:bg-amber-100"
-                      }`}
-                      title="Next Day"
-                    >
-                      <ChevronRight size={12} />
-                    </button>
-                  </div>
-
-                  {/* Date Picker Popover Modal - Narrower, aligned to the right side */}
-                  {showDatePicker && (
-                    <div 
-                      className={`absolute right-0 top-full mt-2 w-60 max-w-[calc(100vw-2rem)] p-3 rounded-2xl border shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 ${
-                        isSlate 
-                          ? "bg-slate-950 border-cyan-500/30 text-slate-100 shadow-[0_10px_35px_rgba(0,0,0,0.9)]" 
-                          : "bg-amber-50 border-amber-900/20 text-stone-800 shadow-[0_10px_35px_rgba(0,0,0,0.2)]"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-2.5 border-b pb-2 border-slate-700/30">
-                        <div className="flex items-center space-x-1.5">
-                          <Calendar size={13} className={isSlate ? "text-cyan-400" : "text-amber-800"} />
-                          <span className="text-[11px] font-bold font-mono uppercase tracking-wider">
-                            Calendar
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => setShowDatePicker(false)}
-                          className="p-1 rounded-lg hover:bg-slate-800/50 text-slate-400 hover:text-white"
-                        >
-                          <X size={13} />
-                        </button>
-                      </div>
-
-                      <div className="space-y-2.5">
-                        {/* HTML Date Input */}
-                        <div>
-                          <label className={`block text-[9.5px] font-mono font-bold uppercase mb-1 ${isSlate ? "text-slate-400" : "text-stone-600"}`}>
-                            Select Date:
-                          </label>
-                          <input
-                            type="date"
-                            value={formatDateForInput(selectedDate)}
-                            onChange={(e) => {
-                              if (e.target.value) {
-                                const [yyyy, mm, dd] = e.target.value.split("-").map(Number);
-                                const newD = new Date(yyyy, mm - 1, dd);
-                                setSelectedDate(newD);
-                              }
-                            }}
-                            className={`w-full text-xs rounded-xl border px-2.5 py-1.5 font-mono outline-none focus:ring-1 focus:ring-cyan-400 cursor-pointer ${
-                              isSlate 
-                                ? "bg-slate-900 border-white/10 text-cyan-300" 
-                                : "bg-white border-amber-900/20 text-stone-800"
-                            }`}
-                          />
-                        </div>
-
-                        {/* Quick Reset Shortcut */}
-                        <div>
-                          <button
-                            onClick={() => {
-                              setSelectedDate(new Date());
-                              setShowDatePicker(false);
-                            }}
-                            className={`w-full px-2.5 py-1.5 rounded-xl border text-center font-mono text-[11px] font-semibold transition-all ${
-                              isSlate 
-                                ? "bg-slate-900/80 border-white/10 hover:border-cyan-400 hover:bg-slate-800 text-slate-200" 
-                                : "bg-white border-amber-900/15 hover:border-amber-600 hover:bg-amber-100/50 text-stone-800"
-                            }`}
-                          >
-                            📅 Reset to Today
-                          </button>
-                        </div>
-
-                        <div className="pt-2 border-t border-slate-700/30 flex justify-between items-center text-[9.5px] font-mono text-slate-400">
-                          <span>Date:</span>
-                          <span className="font-bold text-cyan-400">{selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
+            {/* Row 2: HUD Controls (Style, Streak Badge, Calendar Date Selector) */}
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 justify-start sm:justify-end shrink-0 w-full md:w-auto py-0.5">
+              {/* Reading Style Selection Dropdown */}
+              <div className="flex items-center space-x-1 shrink-0">
+                <span className={`hidden sm:inline text-[10px] font-mono uppercase font-bold ${isSlate ? "text-slate-400" : "text-[#6E665A]"}`}>Style:</span>
+                <select
+                  id="header-profile-switcher"
+                  value={selectedProfile}
+                  onChange={(e) => {
+                    const newProfile = e.target.value;
+                    setSelectedProfile(newProfile);
+                    applyProfileVoiceSettings(newProfile);
+                  }}
+                  className={`text-xs rounded-xl border px-2 py-1 font-sans font-medium focus:ring-1 focus:ring-cyan-400 outline-none cursor-pointer max-w-[130px] sm:max-w-[160px] truncate ${
+                    isSlate 
+                      ? "bg-slate-950 border-white/10 text-slate-200 focus:border-cyan-400" 
+                      : "bg-white border-amber-900/15 text-stone-800 focus:border-amber-600"
+                  }`}
+                >
+                  {DEVOTIONAL_PROFILES.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Spiritual Streak HUD Badge */}
               <div 
                 id="header-streak-badge"
-                className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-2xl border font-mono transition-all duration-300 shrink-0 ${
+                className={`flex items-center space-x-1 px-2 py-1 rounded-2xl border font-mono transition-all duration-300 shrink-0 ${
                   hasCompletedToday
                     ? isSlate 
                       ? "bg-amber-500/10 border-amber-400/30 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.15)]" 
@@ -1478,7 +1441,7 @@ export default function App() {
                 }`}
                 title={hasCompletedToday ? "Spiritual Streak Active!" : "Read today's devotional to lock in your streak!"}
               >
-                <Flame size={13} className={`transition-all duration-300 ${hasCompletedToday ? "animate-pulse fill-amber-400 text-amber-500" : "opacity-60"}`} />
+                <Flame size={12} className={`transition-all duration-300 ${hasCompletedToday ? "animate-pulse fill-amber-400 text-amber-500" : "opacity-60"}`} />
                 <div className="text-left leading-none">
                   <div className="text-xs font-bold flex items-baseline">
                     <span>{streakCount}</span>
@@ -1487,59 +1450,133 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Clock - Hidden on smaller screens */}
-              <div className="hidden lg:block text-right border-r border-white/10 pr-3 leading-none shrink-0">
-                <div className="text-xs font-light font-mono leading-none">
-                  {timeString}
+              {/* Calendar Date Selector */}
+              <div className="relative shrink-0" id="calendar-date-container">
+                {showDatePicker && (
+                  <div 
+                    className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px]" 
+                    onClick={() => setShowDatePicker(false)} 
+                  />
+                )}
+                
+                <div className="flex items-center space-x-1">
+                  <button
+                    onClick={() => {
+                      const prev = new Date(selectedDate);
+                      prev.setDate(prev.getDate() - 1);
+                      setSelectedDate(prev);
+                    }}
+                    className={`p-1 rounded-xl border transition-all ${
+                      isSlate 
+                        ? "bg-slate-900/50 border-white/5 text-slate-300 hover:text-cyan-400 hover:bg-slate-800" 
+                        : "bg-amber-50 border-amber-900/10 text-stone-700 hover:text-amber-800 hover:bg-amber-100"
+                    }`}
+                    title="Previous Day"
+                  >
+                    <ChevronLeft size={12} />
+                  </button>
+
+                  <button
+                    id="header-calendar-button"
+                    onClick={() => setShowDatePicker(!showDatePicker)}
+                    className={`flex items-center space-x-1 px-2 py-1 rounded-xl border text-xs font-mono font-medium transition-all ${
+                      isSlate 
+                        ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 shadow-[0_0_12px_rgba(34,211,238,0.12)]" 
+                        : "bg-amber-100/80 border-amber-300 text-amber-900 hover:bg-amber-200/80"
+                    }`}
+                    title="Select Devotional Date / Seleccionar Fecha"
+                  >
+                    <Calendar size={12} className="shrink-0 text-cyan-400" />
+                    <span className="font-bold tracking-tight">{formatDateDisplay(selectedDate)}</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      const next = new Date(selectedDate);
+                      next.setDate(next.getDate() + 1);
+                      setSelectedDate(next);
+                    }}
+                    className={`p-1 rounded-xl border transition-all ${
+                      isSlate 
+                        ? "bg-slate-900/50 border-white/5 text-slate-300 hover:text-cyan-400 hover:bg-slate-800" 
+                        : "bg-amber-50 border-amber-900/10 text-stone-700 hover:text-amber-800 hover:bg-amber-100"
+                    }`}
+                    title="Next Day"
+                  >
+                    <ChevronRight size={12} />
+                  </button>
                 </div>
-                <div className={`text-[8px] tracking-wider font-mono mt-0.5 ${isSlate ? "text-cyan-400/80" : "text-amber-800"}`}>
-                  {dateString}
-                </div>
-              </div>
 
-              {/* Actions */}
-              <div className="flex items-center space-x-1 shrink-0">
-                <button
-                  id="sync-button"
-                  onClick={fetchDevotionals}
-                  disabled={isScraping}
-                  className={`p-1.5 rounded-lg transition-all flex items-center space-x-1 text-xs font-mono font-bold border ${
-                    isSlate 
-                      ? "bg-slate-900/50 hover:bg-slate-800 text-cyan-400 border-cyan-500/30" 
-                      : "bg-amber-50/80 hover:bg-amber-100 text-amber-900 border-amber-900/10"
-                  }`}
-                  title="Refresh database catalogs"
-                >
-                  <RefreshCw size={11} className={isScraping ? "animate-spin" : ""} />
-                  <span className="hidden sm:inline text-[10px]">SYNC</span>
-                </button>
+                {/* Date Picker Popover Modal */}
+                {showDatePicker && (
+                  <div 
+                    className={`absolute right-0 top-full mt-2 w-60 max-w-[calc(100vw-2rem)] p-3 rounded-2xl border shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 ${
+                      isSlate 
+                        ? "bg-slate-950 border-cyan-500/30 text-slate-100 shadow-[0_10px_35px_rgba(0,0,0,0.9)]" 
+                        : "bg-amber-50 border-amber-900/20 text-stone-800 shadow-[0_10px_35px_rgba(0,0,0,0.2)]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2.5 border-b pb-2 border-slate-700/30">
+                      <div className="flex items-center space-x-1.5">
+                        <Calendar size={13} className={isSlate ? "text-cyan-400" : "text-amber-800"} />
+                        <span className="text-[11px] font-bold font-mono uppercase tracking-wider">
+                          Calendar
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => setShowDatePicker(false)}
+                        className="p-1 rounded-lg hover:bg-slate-800/50 text-slate-400 hover:text-white"
+                      >
+                        <X size={13} />
+                      </button>
+                    </div>
 
-                <button
-                  id="replay-tour-btn"
-                  onClick={() => startTour("onboarding")}
-                  className={`p-1.5 rounded-lg border transition-all flex items-center space-x-1 text-xs font-mono font-bold ${
-                    isSlate 
-                      ? "bg-slate-900/50 border-white/5 text-cyan-400 hover:bg-slate-800" 
-                      : "bg-amber-50 border-amber-900/10 text-amber-800 hover:bg-amber-100"
-                  }`}
-                  title="Replay onboarding tour / Repetir recorrido"
-                >
-                  <Sparkles size={11} className="animate-pulse" />
-                  <span className="hidden sm:inline text-[10px]">TOUR</span>
-                </button>
+                    <div className="space-y-2.5">
+                      <div>
+                        <label className={`block text-[9.5px] font-mono font-bold uppercase mb-1 ${isSlate ? "text-slate-400" : "text-stone-600"}`}>
+                          Select Date:
+                        </label>
+                        <input
+                          type="date"
+                          value={formatDateForInput(selectedDate)}
+                          onChange={(e) => {
+                            if (e.target.value) {
+                              const [yyyy, mm, dd] = e.target.value.split("-").map(Number);
+                              const newD = new Date(yyyy, mm - 1, dd);
+                              setSelectedDate(newD);
+                            }
+                          }}
+                          className={`w-full text-xs rounded-xl border px-2.5 py-1.5 font-mono outline-none focus:ring-1 focus:ring-cyan-400 cursor-pointer ${
+                            isSlate 
+                              ? "bg-slate-900 border-white/10 text-cyan-300" 
+                              : "bg-white border-amber-900/20 text-stone-800"
+                          }`}
+                        />
+                      </div>
 
-                <button
-                  id="theme-toggle"
-                  onClick={toggleTheme}
-                  className={`p-1.5 rounded-lg border transition-all ${
-                    isSlate 
-                      ? "bg-slate-900/50 border-white/5 text-amber-400 hover:bg-slate-800" 
-                      : "bg-amber-50 border-amber-900/10 text-amber-800 hover:bg-amber-100"
-                  }`}
-                  title="Change preset theme"
-                >
-                  {isSlate ? <Sun size={12} /> : <Moon size={12} />}
-                </button>
+                      <div>
+                        <button
+                          onClick={() => {
+                            setSelectedDate(new Date());
+                            setShowDatePicker(false);
+                          }}
+                          className={`w-full px-2.5 py-1.5 rounded-xl border text-center font-mono text-[11px] font-semibold transition-all ${
+                            isSlate 
+                              ? "bg-slate-900/80 border-white/10 hover:border-cyan-400 hover:bg-slate-800 text-slate-200" 
+                              : "bg-white border-amber-900/15 hover:border-amber-600 hover:bg-amber-100/50 text-stone-800"
+                          }`}
+                        >
+                          📅 Reset to Today
+                        </button>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-700/30 flex justify-between items-center text-[9.5px] font-mono text-slate-400">
+                        <span>Date:</span>
+                        <span className="font-bold text-cyan-400">{selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1803,10 +1840,7 @@ export default function App() {
               
               {/* Devotional Heading */}
               <header className="text-center mb-10 pb-8 border-b border-white/5">
-                <span className={`text-[10px] uppercase tracking-widest font-mono font-bold ${isSlate ? "text-cyan-400" : "text-amber-800"}`}>
-                  {sortedDevotionals[selectedIdx]?.title || "Featured Daily Entry"}
-                </span>
-                <h2 className={`font-display text-2xl sm:text-3xl font-bold tracking-tight mt-2.5 leading-tight ${isSlate ? "text-white" : "text-stone-950"}`}>
+                <h2 className={`font-display text-2xl sm:text-3xl font-bold tracking-tight leading-tight ${isSlate ? "text-white" : "text-stone-950"}`}>
                   {content.title}
                 </h2>
                 <div className="mt-3 flex flex-col items-center justify-center gap-2 select-none">

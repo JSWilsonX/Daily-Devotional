@@ -43,12 +43,13 @@ def build_database(db_path='devotionals.db'):
 
     for z in zip_files:
         profile_id = z.replace('.zip', '')
-        if not os.path.exists(z):
-            print(f"Zip file '{z}' not found, skipping...")
+        zip_path = os.path.join('zips', z) if os.path.exists(os.path.join('zips', z)) else z
+        if not os.path.exists(zip_path):
+            print(f"Zip file '{z}' not found in 'zips/' or root, skipping...")
             continue
 
-        print(f"Importing {z} (profile_id: {profile_id})...")
-        with zipfile.ZipFile(z, 'r') as zf:
+        print(f"Importing {zip_path} (profile_id: {profile_id})...")
+        with zipfile.ZipFile(zip_path, 'r') as zf:
             records = []
             for name in zf.namelist():
                 if name.endswith('.json'):
