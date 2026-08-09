@@ -88,16 +88,16 @@ export const PRONUNCIATION_REPLACEMENTS: Record<string, string> = {
   TEAR_CRY: "teer",
   BASS_MUSIC: "base",
   BASS_FISH: "bass",
-  CLOSE_NEAR: "cloce",
+  CLOSE_NEAR: "klohs",
   CLOSE_SHUT: "cloze",
-  MINUTE_TIME: "minit",
-  MINUTE_TINY: "my-newt",
-  OBJECT_NOUN: "ob-ject",
-  OBJECT_VERB: "ub-ject",
-  RECORD_NOUN: "rec-ord",
-  RECORD_VERB: "re-cord",
-  PRESENT_NOUN: "prez-ent",
-  PRESENT_VERB: "pree-zent"
+  MINUTE_TIME: "minnit",
+  MINUTE_TINY: "mynewt",
+  OBJECT_NOUN: "objikt",
+  OBJECT_VERB: "ubjekt",
+  RECORD_NOUN: "rekurd",
+  RECORD_VERB: "rikord",
+  PRESENT_NOUN: "prezunt",
+  PRESENT_VERB: "pruzent"
 };
 
 function replaceNthWord(paragraphText: string, targetWord: string, occurrence: number, replacement: string): string {
@@ -700,7 +700,15 @@ export default function App() {
   // Calendar / Devotional Date State
   const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
+  const [pickerYear, setPickerYear] = useState<number>(() => new Date().getFullYear());
+  const [pickerMonth, setPickerMonth] = useState<number>(() => new Date().getMonth());
   const [showMoreMenu, setShowMoreMenu] = useState<boolean>(false);
+
+  const openDatePicker = () => {
+    setPickerYear(selectedDate.getFullYear());
+    setPickerMonth(selectedDate.getMonth());
+    setShowDatePicker(prev => !prev);
+  };
 
   // Appearance
   const [theme, setTheme] = useState<"cream" | "slate">("slate");
@@ -1471,13 +1479,6 @@ export default function App() {
 
               {/* Calendar Date Selector */}
               <div className="relative shrink-0" id="calendar-date-container">
-                {showDatePicker && (
-                  <div 
-                    className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px]" 
-                    onClick={() => setShowDatePicker(false)} 
-                  />
-                )}
-                
                 <div className="flex items-center space-x-1">
                   <button
                     onClick={() => {
@@ -1497,8 +1498,9 @@ export default function App() {
 
                   <button
                     id="header-calendar-button"
-                    onClick={() => setShowDatePicker(!showDatePicker)}
-                    className={`flex items-center space-x-1 px-2 py-1 rounded-xl border text-xs font-mono font-medium transition-all ${
+                    type="button"
+                    onClick={openDatePicker}
+                    className={`flex items-center space-x-1 px-2.5 py-1 rounded-xl border text-xs font-mono font-medium transition-all ${
                       isSlate 
                         ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 shadow-[0_0_12px_rgba(34,211,238,0.12)]" 
                         : "bg-amber-100/80 border-amber-300 text-amber-900 hover:bg-amber-200/80"
@@ -1526,75 +1528,197 @@ export default function App() {
                   </button>
                 </div>
 
-                {/* Date Picker Popover Modal */}
+                {/* Interactive Calendar Popover Modal */}
                 {showDatePicker && (
-                  <div 
-                    className={`absolute right-0 top-full mt-2 w-60 max-w-[calc(100vw-2rem)] p-3 rounded-2xl border shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 ${
-                      isSlate 
-                        ? "bg-slate-950 border-cyan-500/30 text-slate-100 shadow-[0_10px_35px_rgba(0,0,0,0.9)]" 
-                        : "bg-amber-50 border-amber-900/20 text-stone-800 shadow-[0_10px_35px_rgba(0,0,0,0.2)]"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-2.5 border-b pb-2 border-slate-700/30">
-                      <div className="flex items-center space-x-1.5">
-                        <Calendar size={13} className={isSlate ? "text-cyan-400" : "text-amber-800"} />
-                        <span className="text-[11px] font-bold font-mono uppercase tracking-wider">
-                          Calendar
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => setShowDatePicker(false)}
-                        className="p-1 rounded-lg hover:bg-slate-800/50 text-slate-400 hover:text-white"
-                      >
-                        <X size={13} />
-                      </button>
-                    </div>
+                  <>
+                    <div 
+                      className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px]" 
+                      onClick={() => setShowDatePicker(false)} 
+                    />
 
-                    <div className="space-y-2.5">
-                      <div>
-                        <label className={`block text-[9.5px] font-mono font-bold uppercase mb-1 ${isSlate ? "text-slate-400" : "text-stone-600"}`}>
-                          Select Date:
-                        </label>
-                        <input
-                          type="date"
-                          value={formatDateForInput(selectedDate)}
-                          onChange={(e) => {
-                            if (e.target.value) {
-                              const [yyyy, mm, dd] = e.target.value.split("-").map(Number);
-                              const newD = new Date(yyyy, mm - 1, dd);
-                              setSelectedDate(newD);
+                    <div 
+                      className={`absolute right-0 top-full mt-2 w-72 max-w-[calc(100vw-2rem)] p-3.5 rounded-2xl border shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 ${
+                        isSlate 
+                          ? "bg-slate-950 border-cyan-500/30 text-slate-100 shadow-[0_10px_35px_rgba(0,0,0,0.9)]" 
+                          : "bg-amber-50 border-amber-900/20 text-stone-800 shadow-[0_10px_35px_rgba(0,0,0,0.2)]"
+                      }`}
+                    >
+                      {/* Calendar Popover Top Bar */}
+                      <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-slate-700/30">
+                        <div className="flex items-center space-x-1.5">
+                          <Calendar size={13} className={isSlate ? "text-cyan-400" : "text-amber-800"} />
+                          <span className="text-[11px] font-bold font-mono uppercase tracking-wider">
+                            Select Date
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setShowDatePicker(false)}
+                          className={`p-1 rounded-lg transition-all ${
+                            isSlate 
+                              ? "hover:bg-slate-800 text-slate-400 hover:text-white" 
+                              : "hover:bg-amber-200/60 text-stone-600 hover:text-stone-900"
+                          }`}
+                          title="Close Calendar"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+
+                      {/* Month & Year Navigation Header */}
+                      <div className="flex items-center justify-between mb-2.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (pickerMonth === 0) {
+                              setPickerMonth(11);
+                              setPickerYear(y => y - 1);
+                            } else {
+                              setPickerMonth(m => m - 1);
                             }
                           }}
-                          className={`w-full text-xs rounded-xl border px-2.5 py-1.5 font-mono outline-none focus:ring-1 focus:ring-cyan-400 cursor-pointer ${
-                            isSlate 
-                              ? "bg-slate-900 border-white/10 text-cyan-300" 
-                              : "bg-white border-amber-900/20 text-stone-800"
+                          className={`p-1 rounded-lg border transition-all ${
+                            isSlate ? "bg-slate-900 border-white/10 hover:border-cyan-400 text-slate-300" : "bg-white border-amber-900/20 hover:border-amber-600 text-stone-700"
                           }`}
-                        />
+                          title="Previous Month"
+                        >
+                          <ChevronLeft size={13} />
+                        </button>
+
+                        <div className="flex items-center space-x-1.5">
+                          {/* Month Selector Dropdown */}
+                          <select
+                            value={pickerMonth}
+                            onChange={(e) => setPickerMonth(Number(e.target.value))}
+                            className={`text-xs font-bold font-mono px-2 py-1 rounded-lg border outline-none cursor-pointer ${
+                              isSlate ? "bg-slate-900 border-cyan-500/30 text-cyan-300" : "bg-white border-amber-900/20 text-amber-900"
+                            }`}
+                          >
+                            {[
+                              "January", "February", "March", "April", "May", "June",
+                              "July", "August", "September", "October", "November", "December"
+                            ].map((mName, idx) => (
+                              <option key={mName} value={idx}>{mName}</option>
+                            ))}
+                          </select>
+
+                          {/* Year Selector Dropdown */}
+                          <select
+                            value={pickerYear}
+                            onChange={(e) => setPickerYear(Number(e.target.value))}
+                            className={`text-xs font-bold font-mono px-1.5 py-1 rounded-lg border outline-none cursor-pointer ${
+                              isSlate ? "bg-slate-900 border-cyan-500/30 text-cyan-300" : "bg-white border-amber-900/20 text-amber-900"
+                            }`}
+                          >
+                            {Array.from({ length: 11 }, (_, i) => new Date().getFullYear() - 5 + i).map(y => (
+                              <option key={y} value={y}>{y}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (pickerMonth === 11) {
+                              setPickerMonth(0);
+                              setPickerYear(y => y + 1);
+                            } else {
+                              setPickerMonth(m => m + 1);
+                            }
+                          }}
+                          className={`p-1 rounded-lg border transition-all ${
+                            isSlate ? "bg-slate-900 border-white/10 hover:border-cyan-400 text-slate-300" : "bg-white border-amber-900/20 hover:border-amber-600 text-stone-700"
+                          }`}
+                          title="Next Month"
+                        >
+                          <ChevronRight size={13} />
+                        </button>
                       </div>
 
-                      <div>
+                      {/* Weekday Header Labels */}
+                      <div className="grid grid-cols-7 text-center mb-1 text-[10px] font-mono font-bold uppercase opacity-60">
+                        <span>Su</span>
+                        <span>Mo</span>
+                        <span>Tu</span>
+                        <span>We</span>
+                        <span>Th</span>
+                        <span>Fr</span>
+                        <span>Sa</span>
+                      </div>
+
+                      {/* Calendar Days Grid */}
+                      {(() => {
+                        const firstDayIndex = new Date(pickerYear, pickerMonth, 1).getDay();
+                        const daysInMonth = new Date(pickerYear, pickerMonth + 1, 0).getDate();
+                        const today = new Date();
+
+                        return (
+                          <div className="grid grid-cols-7 gap-1 text-center font-mono text-xs">
+                            {/* Empty padding slots before day 1 */}
+                            {Array.from({ length: firstDayIndex }).map((_, i) => (
+                              <div key={`empty-${i}`} className="h-7" />
+                            ))}
+
+                            {/* Day Cells */}
+                            {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
+                              const isSelected = 
+                                selectedDate.getFullYear() === pickerYear &&
+                                selectedDate.getMonth() === pickerMonth &&
+                                selectedDate.getDate() === day;
+
+                              const isToday = 
+                                today.getFullYear() === pickerYear &&
+                                today.getMonth() === pickerMonth &&
+                                today.getDate() === day;
+
+                              return (
+                                <button
+                                  key={day}
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedDate(new Date(pickerYear, pickerMonth, day));
+                                    setShowDatePicker(false);
+                                  }}
+                                  className={`h-7 rounded-lg flex items-center justify-center text-xs font-semibold transition-all relative ${
+                                    isSelected
+                                      ? isSlate 
+                                        ? "bg-cyan-500 text-slate-950 font-bold shadow-md shadow-cyan-500/20" 
+                                        : "bg-amber-800 text-amber-50 font-bold shadow-md"
+                                      : isSlate
+                                        ? "hover:bg-cyan-500/20 text-slate-200"
+                                        : "hover:bg-amber-200/60 text-stone-800"
+                                  } ${isToday && !isSelected ? (isSlate ? "ring-1 ring-cyan-400/60 text-cyan-300 font-bold" : "ring-1 ring-amber-700 text-amber-900 font-bold") : ""}`}
+                                >
+                                  {day}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
+
+                      {/* Quick Action Footer */}
+                      <div className="mt-3 pt-2 border-t border-slate-700/30 flex items-center justify-center text-[10px] font-mono">
                         <button
+                          type="button"
                           onClick={() => {
-                            setSelectedDate(new Date());
+                            const today = new Date();
+                            setSelectedDate(today);
+                            setPickerYear(today.getFullYear());
+                            setPickerMonth(today.getMonth());
                             setShowDatePicker(false);
                           }}
-                          className={`w-full px-2.5 py-1.5 rounded-xl border text-center font-mono text-[11px] font-semibold transition-all ${
+                          className={`w-full py-1.5 rounded-lg border font-semibold text-center transition-all ${
                             isSlate 
-                              ? "bg-slate-900/80 border-white/10 hover:border-cyan-400 hover:bg-slate-800 text-slate-200" 
-                              : "bg-white border-amber-900/15 hover:border-amber-600 hover:bg-amber-100/50 text-stone-800"
+                              ? "bg-slate-900 border-white/10 text-cyan-400 hover:bg-slate-800" 
+                              : "bg-white border-amber-900/15 text-amber-900 hover:bg-amber-100/60"
                           }`}
                         >
                           📅 Reset to Today
                         </button>
                       </div>
-
-                      <div className="pt-2 border-t border-slate-700/30 flex justify-between items-center text-[9.5px] font-mono text-slate-400">
-                        <span>Date:</span>
-                        <span className="font-bold text-cyan-400">{selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                      </div>
                     </div>
-                  </div>
+                  </>
                 )}
               </div>
             </div>
