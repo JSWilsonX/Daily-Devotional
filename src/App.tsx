@@ -592,6 +592,14 @@ export default function App() {
     }
   });
 
+  const isBookReadToday = (bookId: string): boolean => {
+    const val = bookReadHistory[bookId];
+    if (!val) return false;
+    const dateObj = typeof val === 'number' ? new Date(val) : new Date(Number(val) || val);
+    if (isNaN(dateObj.getTime())) return false;
+    return getLocalDateString(dateObj) === getLocalDateString(new Date());
+  };
+
   // Derived sorted list: selected book on the left, remaining sorted by MRU (most recently used)
   const sortedDevotionals = useMemo(() => {
     if (devotionals.length === 0) return [];
@@ -1797,13 +1805,8 @@ export default function App() {
                             coverUrl={book.cover}
                             active={idx === selectedIdx}
                             bookId={book.id}
+                            isReadToday={isBookReadToday(book.id)}
                           />
-                          {/* Checked as read indicator */}
-                          {bookReadHistory[book.id] && (
-                            <div className="absolute top-2 right-2 bg-emerald-500 text-white rounded-full p-1 shadow-md z-10 animate-fade-in flex items-center justify-center border border-white/20">
-                              <Check size={8} className="stroke-[3]" />
-                            </div>
-                          )}
                         </div>
                         <p className={`text-center text-[10px] mt-2 font-semibold truncate max-w-full px-1 ${isSlate ? "text-slate-200" : "text-stone-800"}`}>
                           {book.title}
@@ -1873,6 +1876,7 @@ export default function App() {
                           coverUrl={sortedDevotionals[selectedIdx].cover}
                           active={true}
                           bookId={sortedDevotionals[selectedIdx].id}
+                          isReadToday={isBookReadToday(sortedDevotionals[selectedIdx].id)}
                         />
                       </div>
                       {/* Subtle overlay hint */}
@@ -2125,7 +2129,7 @@ export default function App() {
                     </div>
 
                     <div className="w-full sm:w-auto shrink-0 flex flex-col sm:flex-row items-center justify-center gap-2">
-                      {selectedId && bookReadHistory[selectedId] ? (
+                      {selectedId && isBookReadToday(selectedId) ? (
                         <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
                           <div className={`px-4 py-2.5 rounded-2xl text-xs font-mono font-bold flex items-center justify-center space-x-2 border w-full sm:w-auto ${
                             isSlate 
@@ -2133,7 +2137,7 @@ export default function App() {
                               : "bg-emerald-600/10 border-emerald-600/20 text-emerald-800"
                           }`}>
                             <Check size={14} className="text-emerald-400 font-bold" />
-                            <span>COMPLETED (READ)</span>
+                            <span>COMPLETED (READ TODAY)</span>
                           </div>
                           
                           <button

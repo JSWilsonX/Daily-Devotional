@@ -1,10 +1,12 @@
 import React, { useState } from "react";
+import { Check } from "lucide-react";
 
 interface BookCoverProps {
   title: string;
   coverUrl: string;
   active: boolean;
   bookId: string;
+  isReadToday?: boolean;
 }
 
 const THEME_COLORS: Record<string, { bg: string; border: string; accent: string }> = {
@@ -32,7 +34,7 @@ const THEME_COLORS: Record<string, { bg: string; border: string; accent: string 
   jnn: { bg: "from-fuchsia-950 via-purple-900 to-fuchsia-950", border: "border-fuchsia-500/30", accent: "text-fuchsia-300" }
 };
 
-export const BookCover: React.FC<BookCoverProps> = ({ title, coverUrl, active, bookId }) => {
+export const BookCover: React.FC<BookCoverProps> = ({ title, coverUrl, active, bookId, isReadToday }) => {
   const [imageError, setImageError] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -116,6 +118,16 @@ export const BookCover: React.FC<BookCoverProps> = ({ title, coverUrl, active, b
 
       {/* Glossy Overlay */}
       <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 pointer-events-none"></div>
+
+      {/* Read Today Green Checkmark Badge */}
+      {isReadToday && (
+        <div 
+          className="absolute top-1.5 right-1.5 bg-emerald-500 text-white rounded-full p-1 shadow-lg z-20 animate-fade-in flex items-center justify-center border border-white/30"
+          title="Read Today"
+        >
+          <Check size={10} className="stroke-[3]" />
+        </div>
+      )}
     </div>
   );
 };
