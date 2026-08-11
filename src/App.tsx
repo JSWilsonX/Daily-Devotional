@@ -29,7 +29,11 @@ import {
   Anchor,
   Calendar,
   X,
-  MoreHorizontal
+  MoreHorizontal,
+  Download,
+  Smartphone,
+  Wifi,
+  WifiOff
 } from "lucide-react";
 import { BookCover } from "./components/BookCover";
 import { ProjectIcon } from "./components/ProjectIcon";
@@ -752,6 +756,57 @@ export default function App() {
     return todayStr === storedLastReadDate;
   });
 
+  // PWA & Connectivity State
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isInstallable, setIsInstallable] = useState<boolean>(false);
+  const [isAppInstalled, setIsAppInstalled] = useState<boolean>(() => {
+    return window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true;
+  });
+  const [isOnline, setIsOnline] = useState<boolean>(() => navigator.onLine);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setIsInstallable(true);
+    };
+
+    const handleAppInstalled = () => {
+      setIsInstallable(false);
+      setIsAppInstalled(true);
+      setDeferredPrompt(null);
+    };
+
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  const handleInstallPWA = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setIsInstallable(false);
+        setIsAppInstalled(true);
+      }
+      setDeferredPrompt(null);
+    } else {
+      alert("Daily Devotionals Reader PWA Installation:\n\n• On Desktop / Android (Chrome, Edge): Click the Install icon in your browser address bar.\n• On iOS (Safari): Tap the Share icon, then select 'Add to Home Screen'.");
+    }
+  };
+
   // Action to complete reading for today and advance streak
   const completeDailyReading = () => {
     const todayStr = getLocalDateString(new Date());
@@ -1334,9 +1389,17 @@ export default function App() {
                   <ProjectIcon size={26} className="rounded-xl shadow-lg border border-slate-700/50 hover:scale-105 transition-transform duration-300" />
                 </div>
                 <div>
-                  <h1 className="font-display text-sm sm:text-base font-bold tracking-tight whitespace-nowrap">
-                    {isSlate ? "Ellen G. White Devotionals" : "EGW Daily Devotionals"}
-                  </h1>
+                  <div className="flex items-center space-x-2">
+                    <h1 className="font-display text-sm sm:text-base font-bold tracking-tight whitespace-nowrap">
+                      {isSlate ? "Ellen G. White Devotionals" : "EGW Daily Devotionals"}
+                    </h1>
+                    {!isOnline && (
+                      <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 animate-pulse">
+                        <WifiOff size={10} />
+                        <span>Offline</span>
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -1344,6 +1407,33 @@ export default function App() {
               <div className="flex items-center space-x-1 shrink-0">
                 {/* Full Desktop Action Buttons */}
                 <div className="hidden lg:flex items-center space-x-1">
+                  <button
+                    id="install-pwa-btn"
+                    onClick={handleInstallPWA}
+                    className={`p-1.5 px-2.5 rounded-lg border transition-all flex items-center space-x-1.5 text-xs font-mono font-bold cursor-pointer ${
+                      isAppInstalled
+                        ? isSlate
+                          ? "bg-emerald-950/40 border-emerald-500/30 text-emerald-400"
+                          : "bg-emerald-50 border-emerald-600/20 text-emerald-800"
+                        : isSlate
+                          ? "bg-cyan-950/60 border-cyan-500/40 text-cyan-300 hover:bg-cyan-900/50 shadow-sm shadow-cyan-500/10"
+                          : "bg-amber-100 border-amber-900/20 text-amber-900 hover:bg-amber-200"
+                    }`}
+                    title={isAppInstalled ? "PWA App Installed" : "Install PWA App"}
+                  >
+                    {isAppInstalled ? (
+                      <>
+                        <Check size={12} className="text-emerald-400 shrink-0" />
+                        <span className="text-[10px]">INSTALLED</span>
+                      </>
+                    ) : (
+                      <>
+                        <Download size={12} className="shrink-0 animate-bounce" />
+                        <span className="text-[10px]">INSTALL APP</span>
+                      </>
+                    )}
+                  </button>
+
                   <button
                     id="replay-tour-btn"
                     onClick={() => startTour("onboarding")}
@@ -1395,13 +1485,26 @@ export default function App() {
                         onClick={() => setShowMoreMenu(false)} 
                       />
                       <div 
-                        className={`absolute right-0 top-full mt-2 w-48 p-2 rounded-2xl border shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 ${
+                        className={`absolute right-0 top-full mt-2 w-52 p-2 rounded-2xl border shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 ${
                           isSlate 
                             ? "bg-slate-950 border-cyan-500/30 text-slate-100 shadow-[0_10px_35px_rgba(0,0,0,0.9)]" 
                             : "bg-amber-50 border-amber-900/20 text-stone-800 shadow-[0_10px_35px_rgba(0,0,0,0.2)]"
                         }`}
                       >
                         <div className="space-y-1">
+                          <button
+                            onClick={() => {
+                              handleInstallPWA();
+                              setShowMoreMenu(false);
+                            }}
+                            className={`w-full text-left px-2.5 py-2 rounded-xl text-xs font-mono font-medium transition-all flex items-center space-x-2 ${
+                              isSlate ? "hover:bg-slate-800/80 text-cyan-300" : "hover:bg-amber-100 text-amber-900"
+                            }`}
+                          >
+                            <Download size={13} className="text-cyan-400 shrink-0" />
+                            <span>{isAppInstalled ? "App Installed" : "Install PWA App"}</span>
+                          </button>
+
                           <button
                             onClick={() => {
                               startTour("onboarding");

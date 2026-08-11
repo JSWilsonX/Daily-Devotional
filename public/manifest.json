@@ -1,0 +1,25 @@
+{
+  "short_name": "Devotionals",
+  "name": "Daily Devotionals Reader",
+  "description": "An elegant, interactive reader for Ellen G. White Daily Devotionals, featuring cover carousels, automated web synchronization, speech audio playback, and offline reading.",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512",
+      "purpose": "maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "categories": ["books", "lifestyle", "education"]
+}
