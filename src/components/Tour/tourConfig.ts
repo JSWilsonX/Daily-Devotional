@@ -7,111 +7,63 @@ export const tours: TourDefinition[] = [
   {
     id: "onboarding",
     version: "1.0.0",
-    name: {
-      en: "Welcome Onboarding Tour",
-      es: "Recorrido de Bienvenida"
-    },
-    description: {
-      en: "Get familiar with the core layout and interactive panels.",
-      es: "Familiarízate con el diseño principal y los paneles interactivos."
-    },
+    name: "Welcome Onboarding Tour",
+    description: "Get familiar with the core layout and interactive panels.",
     isOnboarding: true,
     steps: [
       {
         id: "welcome",
         selector: "#app-root", // Highlight the whole screen first
-        title: {
-          en: "Welcome to EGW Devotionals",
-          es: "Bienvenido a Devocionales EGW"
-        },
-        explanation: {
-          en: "This app brings historic devotional libraries into a highly polished, interactive dashboard. Let's take a 60-second guided tour of our modern reading experience!",
-          es: "Esta aplicación reúne bibliotecas históricas de devocionales en un panel interactivo refinado. ¡Hagamos un recorrido guiado de 60 segundos por nuestra experiencia de lectura moderna!"
-        },
+        title: "Welcome to EGW Devotionals",
+        explanation: "Explore a modern devotional reading experience designed to make historic prophetic writings clear, accessible, and personally relevant. This app brings timeless spiritual insights into language that speaks to today’s readers, especially younger generations and those less familiar with 19th-century English. Take a 60-second guided tour to see how the experience works.",
         placement: "auto",
         allowInteraction: false
       },
       {
         id: "carousel",
         selector: "#carousel-viewport",
-        title: {
-          en: "Interactive Devotional Library",
-          es: "Biblioteca Devocional Interactiva"
-        },
-        explanation: {
-          en: "Scroll through beautiful, high-contrast book covers. Clicking any cover automatically fetches today's devotional reading directly from the estate database.",
-          es: "Desplázate por hermosas portadas de libros de alta fidelidad. Al hacer clic en cualquier portada se descarga automáticamente la lectura de hoy desde la base de datos."
-        },
+        title: "Interactive Devotional Library",
+        explanation: "Scroll through beautiful, high-contrast book covers. Clicking any cover automatically fetches today's devotional reading directly from the estate database.",
         placement: "bottom",
         allowInteraction: true
       },
       {
         id: "profile-switcher",
         selector: "#header-profile-switcher",
-        title: {
-          en: "AI Reader Profile Translation",
-          es: "Traducción de Perfil AI"
-        },
-        explanation: {
-          en: "Toggle between the original 19th-century text, a simplified clear and modern prose, a relatable conversational podcast-style, or even concrete story-driven kids' analogies.",
-          es: "Cambia entre el texto original, una prosa clara y moderna, un tono conversacional estilo podcast, o incluso analogías concretas para niños."
-        },
+        title: "Reading Style",
+        explanation: "Choose from reading styles tailored to different ages and needs: original **Classic** text, clearer **Clear & Modern** prose, simple **Easy Reading**, story-based **Kids & Primary**, relatable **Teens & Youth** guidance, or thoughtful **Young Adult** reflections on faith and modern life.",
         placement: "bottom",
         allowInteraction: true
       },
       {
         id: "calendar-date-picker",
         selector: "#header-calendar-button",
-        title: {
-          en: "Calendar Date Selector",
-          es: "Selector de Fecha de Calendario"
-        },
-        explanation: {
-          en: "Select any day of the year (e.g. July 4th or Christmas) to read historical devotional reflections for that specific date.",
-          es: "Selecciona cualquier día del año (por ejemplo, el 4 de julio o Navidad) para leer reflexiones devocionales históricas para esa fecha específica."
-        },
+        title: "Calendar Date Selector",
+        explanation: "Select any day of the year (e.g. July 4th or Christmas) to read historical devotional reflections for that specific date.",
         placement: "bottom",
         allowInteraction: true
       },
       {
         id: "audio-console",
         selector: "#audio-playback-dock",
-        title: {
-          en: "Vocal Stream Playback Console",
-          es: "Consola de Reproducción de Voz"
-        },
-        explanation: {
-          en: "Listen to the devotional read aloud with high-fidelity speech synthesis. Control playback speed, skip paragraphs, pause, and choose your favorite reading voice.",
-          es: "Escucha el devocional leído en voz alta con síntesis de voz de alta fidelidad. Controla la velocidad, salta párrafos, pausa y elige tu voz favorita."
-        },
+        title: "Vocal Stream Playback Console",
+        explanation: "Listen to the devotional read aloud with high-fidelity speech synthesis. Control playback speed, skip paragraphs, pause, and choose your favorite reading voice.",
         placement: "top",
         allowInteraction: true
       },
       {
         id: "streak-hud",
         selector: "#header-streak-badge",
-        title: {
-          en: "Daily Spiritual Reflection Streak",
-          es: "Racha de Reflexión Espiritual"
-        },
-        explanation: {
-          en: "Keep track of your consecutive days of spiritual study and character development. Stay accountable with our integrated real-time streak counter.",
-          es: "Sigue la cuenta de tus días consecutivos de estudio y crecimiento personal. Mantén el hábito con nuestro contador en tiempo real."
-        },
+        title: "Daily Spiritual Reflection Streak",
+        explanation: "Keep track of your consecutive days of spiritual study and character development. Stay accountable with our integrated real-time streak counter.",
         placement: "bottom",
         allowInteraction: false
       },
       {
         id: "theme-toggle-step",
         selector: "#theme-toggle",
-        title: {
-          en: "Aesthetic Environment Presets",
-          es: "Ajustes de Ambiente Estético"
-        },
-        explanation: {
-          en: "Toggle between our responsive, eye-safe 'Twilight Slate' dark mode and warm 'Cream' reading environment. On mobile or narrow screens, tap the '...' More Options menu to switch themes.",
-          es: "Cambia entre nuestro modo oscuro 'Twilight Slate' y el ambiente cálido 'Cream'. En pantallas móviles o pequeñas, toca el menú '...' de Más Opciones para cambiar de tema."
-        },
+        title: "Aesthetic Environment Presets",
+        explanation: "Toggle between our responsive, eye-safe 'Twilight Slate' dark mode and warm 'Cream' reading environment. On mobile or narrow screens, tap the '...' More Options menu to switch themes.",
         placement: "bottom",
         allowInteraction: true
       }
@@ -120,44 +72,27 @@ export const tours: TourDefinition[] = [
   {
     id: "whats-new-1.5.0",
     version: "1.5.0",
-    name: {
-      en: "What's New in Version 1.5.0",
-      es: "Novedades en Versión 1.5.0"
-    },
-    description: {
-      en: "Discover the latest premium features added in this release.",
-      es: "Descubre las últimas funciones premium añadidas en esta versión."
-    },
+    name: "What's New in Version 1.5.0",
+    description: "Discover the latest premium features added in this release.",
     isOnboarding: false,
     steps: [
       {
         id: "whats-new-profile",
         selector: "#header-profile-switcher",
-        title: {
-          en: "New AI Translation Profiles!",
-          es: "¡Nuevos Perfiles de Traducción AI!"
-        },
-        explanation: {
-          en: "You can now read in 'Everyday Conversational' (a personal podcast tone) or 'Discovery & Story' (easy-to-understand storytelling style for kids and families)!",
-          es: "¡Ahora puedes leer en estilo 'Conversacional Diario' (tono de podcast) o 'Descubrimiento e Historia' (estilo de narración fácil para niños y familias)!"
-        },
+        title: "Reading Style",
+        explanation: "Choose from reading styles tailored to different ages and needs: original **Classic** text, clearer **Clear & Modern** prose, simple **Easy Reading**, story-based **Kids & Primary**, relatable **Teens & Youth** guidance, or thoughtful **Young Adult** reflections on faith and modern life.",
         placement: "bottom",
         allowInteraction: true
       },
       {
         id: "whats-new-streak",
         selector: "#header-streak-badge",
-        title: {
-          en: "Integrated Reflection Tracker",
-          es: "Seguimiento de Reflexión Integrado"
-        },
-        explanation: {
-          en: "We added a streak completion HUD badge at the top! Mark your reading completed at the bottom of the article to increment your consecutive study counter.",
-          es: "¡Añadimos una insignia de racha en la cabecera! Marca tu lectura como completada al final del artículo para aumentar tu contador consecutivo."
-        },
+        title: "Integrated Reflection Tracker",
+        explanation: "We added a streak completion HUD badge at the top! Mark your reading completed at the bottom of the article to increment your consecutive study counter.",
         placement: "bottom",
         allowInteraction: false
       }
     ]
   }
 ];
+

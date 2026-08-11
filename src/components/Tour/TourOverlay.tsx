@@ -401,7 +401,24 @@ export function TourOverlay({
             id="tour-explanation"
             className="text-xs text-slate-300 mt-2.5 leading-relaxed font-normal"
           >
-            {translate(currentStep.explanation)}
+            {(() => {
+              const text = translate(currentStep.explanation);
+              const parts = text.split(/(\*\*.*?\*\*)/g);
+              return parts.map((part, i) => {
+                if (part.startsWith("**") && part.endsWith("**")) {
+                  const content = part.slice(2, -2);
+                  return (
+                    <strong
+                      key={i}
+                      className="font-bold text-cyan-300 bg-cyan-950/60 px-1.5 py-0.5 rounded-md border border-cyan-500/30 mx-0.5 inline-block shadow-sm"
+                    >
+                      {content}
+                    </strong>
+                  );
+                }
+                return part;
+              });
+            })()}
           </p>
 
           {/* More Menu Callout Badge if pointing to More Options button on smaller screens */}
@@ -409,9 +426,7 @@ export function TourOverlay({
             <div className="mt-3 text-[11px] font-mono font-semibold text-cyan-300 bg-cyan-950/80 border border-cyan-500/40 px-2.5 py-1.5 rounded-xl flex items-center space-x-1.5 shadow-sm">
               <span className="text-sm shrink-0">📍</span>
               <span className="leading-tight">
-                {locale === "es"
-                  ? "Control ubicado en el menú '...' de Más Opciones"
-                  : "Control located inside the '...' More Options menu"}
+                Control located inside the '...' More Options menu
               </span>
             </div>
           )}

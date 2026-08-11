@@ -847,7 +847,7 @@ export default function App() {
 
     if (availableVoices.length > 0) {
       // Find a matching voice
-      const engVoices = availableVoices.filter(v => v.lang.startsWith("en") || v.lang.startsWith("es"));
+      const engVoices = availableVoices.filter(v => v.lang.startsWith("en"));
       const searchPool = engVoices.length > 0 ? engVoices : availableVoices;
 
       let matchedVoice: SpeechSynthesisVoice | undefined;
@@ -907,7 +907,7 @@ export default function App() {
     const loadVoices = () => {
       const availableVoices = window.speechSynthesis.getVoices();
       // Filter for major English voices or natural ones
-      const filtered = availableVoices.filter(v => v.lang.startsWith("en") || v.lang.startsWith("es"));
+      const filtered = availableVoices.filter(v => v.lang.startsWith("en"));
       const finalVoices = filtered.length > 0 ? filtered : availableVoices;
       setVoices(finalVoices);
       
@@ -1352,7 +1352,7 @@ export default function App() {
                         ? "bg-slate-900/50 border-white/5 text-cyan-400 hover:bg-slate-800" 
                         : "bg-amber-50 border-amber-900/10 text-amber-800 hover:bg-amber-100"
                     }`}
-                    title="Replay onboarding tour / Repetir recorrido"
+                    title="Replay onboarding tour"
                   >
                     <Sparkles size={11} className="animate-pulse" />
                     <span className="hidden sm:inline text-[10px]">TOUR</span>
@@ -1513,7 +1513,7 @@ export default function App() {
                         ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 shadow-[0_0_12px_rgba(34,211,238,0.12)]" 
                         : "bg-amber-100/80 border-amber-300 text-amber-900 hover:bg-amber-200/80"
                     }`}
-                    title="Select Devotional Date / Seleccionar Fecha"
+                    title="Select Devotional Date"
                   >
                     <Calendar size={12} className="shrink-0 text-cyan-400" />
                     <span className="font-bold tracking-tight">{formatDateDisplay(selectedDate)}</span>
