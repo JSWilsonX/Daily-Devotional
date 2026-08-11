@@ -31,7 +31,7 @@ export const tours: TourDefinition[] = [
         id: "profile-switcher",
         selector: "#header-profile-switcher",
         title: "Reading Style",
-        explanation: "Choose from reading styles tailored to different ages and needs: original **Classic** text, clearer **Clear & Modern** prose, simple **Easy Reading**, story-based **Kids & Primary**, relatable **Teens & Youth** guidance, or thoughtful **Young Adult** reflections on faith and modern life.",
+        explanation: "Choose a devotional reading style that fits your age, reading preference, and spiritual needs. Select **Classic** for the original 19th-century text, **Clear & Modern** for the same spiritual depth in clearer language, or **Easy Reading** for a simpler, direct version. Younger readers can choose **Kids & Primary** for story-driven examples, **Teens & Youth** for relatable guidance, or **Young Adult** for an authentic, conversational, and intellectually engaging approach to faith in modern life.",
         placement: "bottom",
         allowInteraction: true
       },
@@ -80,7 +80,7 @@ export const tours: TourDefinition[] = [
         id: "whats-new-profile",
         selector: "#header-profile-switcher",
         title: "Reading Style",
-        explanation: "Choose from reading styles tailored to different ages and needs: original **Classic** text, clearer **Clear & Modern** prose, simple **Easy Reading**, story-based **Kids & Primary**, relatable **Teens & Youth** guidance, or thoughtful **Young Adult** reflections on faith and modern life.",
+        explanation: "Choose a devotional reading style that fits your age, reading preference, and spiritual needs. Select **Classic** for the original 19th-century text, **Clear & Modern** for the same spiritual depth in clearer language, or **Easy Reading** for a simpler, direct version. Younger readers can choose **Kids & Primary** for story-driven examples, **Teens & Youth** for relatable guidance, or **Young Adult** for an authentic, conversational, and intellectually engaging approach to faith in modern life.",
         placement: "bottom",
         allowInteraction: true
       },
