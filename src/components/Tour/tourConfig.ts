@@ -36,10 +36,26 @@ export const tours: TourDefinition[] = [
         allowInteraction: true
       },
       {
+        id: "install-pwa",
+        selector: "#install-pwa-btn",
+        title: "Progressive Web App & Offline Reading",
+        explanation: "Install the **Daily Devotionals Reader** directly to your phone or desktop home screen! Enjoy full **Offline Reading** for cached devotionals, instant loading, and a seamless standalone app experience with no app store downloads needed.",
+        placement: "bottom",
+        allowInteraction: true
+      },
+      {
+        id: "download-book-offline",
+        selector: "#download-book-btn",
+        title: "Download Book for Offline",
+        explanation: "Tap **OFFLINE BOOK** to pre-cache all 365 daily devotionals for your active book in the background! Once downloaded, every single day of the year will be available to read without an internet connection.",
+        placement: "bottom",
+        allowInteraction: true
+      },
+      {
         id: "calendar-date-picker",
         selector: "#header-calendar-button",
-        title: "Calendar Date Selector",
-        explanation: "Select any day of the year (e.g. July 4th or Christmas) to read historical devotional reflections for that specific date.",
+        title: "Calendar & Pre-cache Full Month",
+        explanation: "Select any day of the year to read historical reflections. You can also open the calendar picker and tap **Pre-cache Month for Offline** to download all 28-31 days of that month in a single click!",
         placement: "bottom",
         allowInteraction: true
       },
@@ -81,6 +97,14 @@ export const tours: TourDefinition[] = [
         selector: "#header-profile-switcher",
         title: "Reading Style",
         explanation: "Choose a devotional reading style that fits your age, reading preference, and spiritual needs. Select **Classic** for the original 19th-century text, **Clear & Modern** for the same spiritual depth in clearer language, or **Easy Reading** for a simpler, direct version. Younger readers can choose **Kids & Primary** for story-driven examples, **Teens & Youth** for relatable guidance, or **Young Adult** for an authentic, conversational, and intellectually engaging approach to faith in modern life.",
+        placement: "bottom",
+        allowInteraction: true
+      },
+      {
+        id: "whats-new-pwa",
+        selector: "#install-pwa-btn",
+        title: "Progressive Web App Support",
+        explanation: "You can now install the application directly as a **Progressive Web App**! Tap **INSTALL APP** to save it to your home screen or desktop with full **Offline Reading** support for previously cached devotionals.",
         placement: "bottom",
         allowInteraction: true
       },
