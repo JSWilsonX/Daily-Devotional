@@ -808,6 +808,15 @@ export default function App() {
   };
 
   // Offline Pre-cache Engine State
+  const [cachedBookIds, setCachedBookIds] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem("egw_cached_books");
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const [cacheProgress, setCacheProgress] = useState<{
     active: boolean;
     title: string;
@@ -828,67 +837,17 @@ export default function App() {
     cancelCacheRef.current = true;
   };
 
-  // Helper to pre-cache a specific month for a book
-  const handlePreCacheMonth = async (year: number, monthIndex: number, bookIdOverride?: string) => {
-    const targetBookId = bookIdOverride || selectedId || (sortedDevotionals.length > 0 ? sortedDevotionals[0].id : null);
-    if (!targetBookId) return;
-
-    const bookObj = devotionals.find(b => b.id === targetBookId);
-    if (!bookObj) return;
-
-    const monthName = new Date(year, monthIndex, 1).toLocaleString('en-US', { month: 'long' });
-    const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-
-    cancelCacheRef.current = false;
-    setCacheProgress({
-      active: true,
-      title: `Pre-caching ${monthName} for "${bookObj.title}"`,
-      current: 0,
-      total: daysInMonth,
-      isComplete: false
-    });
-
-    let completed = 0;
-    const batchSize = 3;
-
-    for (let i = 1; i <= daysInMonth; i += batchSize) {
-      if (cancelCacheRef.current) break;
-
-      const batch: Promise<any>[] = [];
-      for (let b = 0; b < batchSize && (i + b) <= daysInMonth; b++) {
-        const day = i + b;
-        const targetDate = new Date(year, monthIndex, day);
-        const mm = String(targetDate.getMonth() + 1).padStart(2, "0");
-        const dd = String(targetDate.getDate()).padStart(2, "0");
-        const dateSuffix = `${mm}_${dd}/`;
-        const dayParam = `${mm}_${dd}`;
-
-        let baseLink = bookObj.link;
-        if (!baseLink.endsWith("/")) baseLink += "/";
-        const dateSpecificUrl = `${baseLink}${dateSuffix}`;
-        const fetchUrl = `/api/fetch-devotional?url=${encodeURIComponent(dateSpecificUrl)}&profile=${selectedProfile}&book_id=${bookObj.id}&day=${dayParam}`;
-
-        batch.push(
-          fetch(fetchUrl)
-            .then(() => {
-              completed++;
-              setCacheProgress(prev => ({ ...prev, current: Math.min(completed, daysInMonth) }));
-            })
-            .catch(err => console.warn(`Failed caching ${dateSuffix}:`, err))
-        );
+  // Helper to clear offline cache for a book
+  const handleClearBookCache = (bookId: string) => {
+    setCachedBookIds(prev => {
+      const updated = prev.filter(id => id !== bookId);
+      try {
+        localStorage.setItem("egw_cached_books", JSON.stringify(updated));
+      } catch (e) {
+        console.error("Failed updating localStorage after clearing cache:", e);
       }
-
-      await Promise.all(batch);
-    }
-
-    if (!cancelCacheRef.current) {
-      setCacheProgress(prev => ({ ...prev, current: daysInMonth, isComplete: true }));
-      setTimeout(() => {
-        setCacheProgress({ active: false, title: "", current: 0, total: 0 });
-      }, 3500);
-    } else {
-      setCacheProgress({ active: false, title: "", current: 0, total: 0 });
-    }
+      return updated;
+    });
   };
 
   // Helper to pre-cache an entire book (365 days)
@@ -898,6 +857,20 @@ export default function App() {
 
     const bookObj = devotionals.find(b => b.id === targetBookId);
     if (!bookObj) return;
+
+    // Immediately update cachedBookIds state & localStorage so the OFFLINE badge appears instantly
+    setCachedBookIds(prev => {
+      if (!prev.includes(targetBookId)) {
+        const updated = [...prev, targetBookId];
+        try {
+          localStorage.setItem("egw_cached_books", JSON.stringify(updated));
+        } catch (e) {
+          console.error("Failed saving cached books to localStorage:", e);
+        }
+        return updated;
+      }
+      return prev;
+    });
 
     const sampleYear = new Date().getFullYear();
     const dates: Date[] = [];
@@ -954,7 +927,7 @@ export default function App() {
       setCacheProgress(prev => ({ ...prev, current: totalDays, isComplete: true }));
       setTimeout(() => {
         setCacheProgress({ active: false, title: "", current: 0, total: 0 });
-      }, 4000);
+      }, 3500);
     } else {
       setCacheProgress({ active: false, title: "", current: 0, total: 0 });
     }
@@ -1588,23 +1561,6 @@ export default function App() {
                   </button>
 
                   <button
-                    id="download-book-btn"
-                    onClick={() => handlePreCacheBook()}
-                    disabled={cacheProgress.active}
-                    className={`p-1.5 px-2.5 rounded-lg border transition-all flex items-center space-x-1 text-xs font-mono font-bold ${
-                      cacheProgress.active
-                        ? "opacity-50 cursor-not-allowed bg-slate-800 border-slate-700 text-slate-400"
-                        : isSlate 
-                          ? "bg-cyan-950/40 border-cyan-500/30 text-cyan-300 hover:bg-cyan-900/50" 
-                          : "bg-amber-100/90 border-amber-900/20 text-amber-900 hover:bg-amber-200"
-                    }`}
-                    title="Pre-cache all 365 daily devotionals for offline reading"
-                  >
-                    <Download size={12} className={cacheProgress.active ? "animate-spin text-cyan-400" : "text-cyan-400 shrink-0"} />
-                    <span className="text-[10px]">OFFLINE BOOK</span>
-                  </button>
-
-                  <button
                     id="replay-tour-btn"
                     onClick={() => startTour("onboarding")}
                     className={`p-1.5 rounded-lg border transition-all flex items-center space-x-1 text-xs font-mono font-bold ${
@@ -1673,20 +1629,6 @@ export default function App() {
                           >
                             <Download size={13} className="text-cyan-400 shrink-0" />
                             <span>{isAppInstalled ? "App Installed" : "Install PWA App"}</span>
-                          </button>
-
-                          <button
-                            onClick={() => {
-                              handlePreCacheBook();
-                              setShowMoreMenu(false);
-                            }}
-                            disabled={cacheProgress.active}
-                            className={`w-full text-left px-2.5 py-2 rounded-xl text-xs font-mono font-medium transition-all flex items-center space-x-2 ${
-                              isSlate ? "hover:bg-slate-800/80 text-cyan-300" : "hover:bg-amber-100 text-amber-900"
-                            }`}
-                          >
-                            <Download size={13} className="text-cyan-400 shrink-0" />
-                            <span>Download Book (365 Days)</span>
                           </button>
 
                           <button
@@ -1993,27 +1935,7 @@ export default function App() {
                       })()}
 
                       {/* Quick Action Footer */}
-                      <div className="mt-3 pt-2 border-t border-slate-700/30 flex flex-col gap-1.5 text-[10px] font-mono">
-                        <button
-                          id="precache-month-btn"
-                          type="button"
-                          disabled={cacheProgress.active}
-                          onClick={() => {
-                            handlePreCacheMonth(pickerYear, pickerMonth);
-                            setShowDatePicker(false);
-                          }}
-                          className={`w-full py-1.5 px-2 rounded-lg border font-bold text-center transition-all flex items-center justify-center space-x-1.5 ${
-                            cacheProgress.active
-                              ? "opacity-50 cursor-not-allowed bg-slate-800 border-slate-700 text-slate-400"
-                              : isSlate 
-                                ? "bg-cyan-950/60 border-cyan-500/40 text-cyan-300 hover:bg-cyan-900/60 shadow-sm" 
-                                : "bg-amber-100 border-amber-900/20 text-amber-900 hover:bg-amber-200"
-                          }`}
-                        >
-                          <Download size={11} className={cacheProgress.active ? "animate-spin text-cyan-400" : "text-cyan-400 shrink-0"} />
-                          <span>Pre-cache {new Date(pickerYear, pickerMonth, 1).toLocaleString('en-US', { month: 'short' })} for Offline</span>
-                        </button>
-
+                      <div className="mt-3 pt-2 border-t border-slate-700/30 flex justify-center text-[10px] font-mono">
                         <button
                           type="button"
                           onClick={() => {
@@ -2164,6 +2086,9 @@ export default function App() {
                             active={idx === selectedIdx}
                             bookId={book.id}
                             isReadToday={isBookReadToday(book.id)}
+                            isCachedOffline={cachedBookIds.includes(book.id)}
+                            onPreCache={(id) => handlePreCacheBook(id)}
+                            onClearCache={(id) => handleClearBookCache(id)}
                           />
                         </div>
                         <p className={`text-center text-[10px] mt-2 font-semibold truncate max-w-full px-1 ${isSlate ? "text-slate-200" : "text-stone-800"}`}>
@@ -2235,6 +2160,9 @@ export default function App() {
                           active={true}
                           bookId={sortedDevotionals[selectedIdx].id}
                           isReadToday={isBookReadToday(sortedDevotionals[selectedIdx].id)}
+                          isCachedOffline={cachedBookIds.includes(sortedDevotionals[selectedIdx].id)}
+                          onPreCache={(id) => handlePreCacheBook(id)}
+                          onClearCache={(id) => handleClearBookCache(id)}
                         />
                       </div>
                       {/* Subtle overlay hint */}
@@ -2252,18 +2180,6 @@ export default function App() {
                       }`}
                     >
                       <span>Change Book</span>
-                    </button>
-
-                    <button 
-                      onClick={() => handlePreCacheBook(sortedDevotionals[selectedIdx].id)}
-                      disabled={cacheProgress.active}
-                      className={`mt-1 text-[8px] sm:text-[9px] font-mono font-bold transition-colors flex items-center space-x-1 ${
-                        isSlate ? "text-cyan-300 hover:text-cyan-200" : "text-amber-900 hover:text-amber-950"
-                      }`}
-                      title="Pre-cache all 365 daily entries for offline reading"
-                    >
-                      <Download size={10} className="shrink-0 text-cyan-400" />
-                      <span>Cache Offline</span>
                     </button>
                   </div>
 

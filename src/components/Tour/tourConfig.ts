@@ -45,17 +45,17 @@ export const tours: TourDefinition[] = [
       },
       {
         id: "download-book-offline",
-        selector: "#download-book-btn",
-        title: "Download Book for Offline",
-        explanation: "Tap **OFFLINE BOOK** to pre-cache all 365 daily devotionals for your active book in the background! Once downloaded, every single day of the year will be available to read without an internet connection.",
-        placement: "bottom",
+        selector: "#carousel-viewport",
+        title: "Offline Book Caching",
+        explanation: "Tap the **CACHE** badge in the lower-left corner of any book cover to pre-cache all 365 daily devotionals for offline reading! Once cached, tap the **CACHED** badge anytime to manage or delete local storage.",
+        placement: "top",
         allowInteraction: true
       },
       {
         id: "calendar-date-picker",
         selector: "#header-calendar-button",
-        title: "Calendar & Pre-cache Full Month",
-        explanation: "Select any day of the year to read historical reflections. You can also open the calendar picker and tap **Pre-cache Month for Offline** to download all 28-31 days of that month in a single click!",
+        title: "Calendar Date Selector",
+        explanation: "Select any day of the year (e.g. July 4th or Christmas) to read historical devotional reflections for that specific date.",
         placement: "bottom",
         allowInteraction: true
       },

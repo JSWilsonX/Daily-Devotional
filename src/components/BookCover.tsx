@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Check } from "lucide-react";
+import { Check, Download, Trash2, RefreshCw, X } from "lucide-react";
 
 interface BookCoverProps {
   title: string;
@@ -7,6 +7,9 @@ interface BookCoverProps {
   active: boolean;
   bookId: string;
   isReadToday?: boolean;
+  isCachedOffline?: boolean;
+  onPreCache?: (bookId: string) => void;
+  onClearCache?: (bookId: string) => void;
 }
 
 const THEME_COLORS: Record<string, { bg: string; border: string; accent: string }> = {
@@ -34,9 +37,19 @@ const THEME_COLORS: Record<string, { bg: string; border: string; accent: string 
   jnn: { bg: "from-fuchsia-950 via-purple-900 to-fuchsia-950", border: "border-fuchsia-500/30", accent: "text-fuchsia-300" }
 };
 
-export const BookCover: React.FC<BookCoverProps> = ({ title, coverUrl, active, bookId, isReadToday }) => {
+export const BookCover: React.FC<BookCoverProps> = ({ 
+  title, 
+  coverUrl, 
+  active, 
+  bookId, 
+  isReadToday, 
+  isCachedOffline,
+  onPreCache,
+  onClearCache
+}) => {
   const [imageError, setImageError] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showMenu, setShowMenu] = useState(false);
 
   const colors = THEME_COLORS[bookId] || {
     bg: "from-stone-900 via-stone-800 to-stone-900",
@@ -128,6 +141,85 @@ export const BookCover: React.FC<BookCoverProps> = ({ title, coverUrl, active, b
           <Check size={10} className="stroke-[3]" />
         </div>
       )}
+
+      {/* Primary Lower-Left Cache Badge & Action */}
+      <div className="absolute bottom-1.5 left-1.5 z-30 select-none">
+        {isCachedOffline ? (
+          /* CACHED STATE: Checkmark Badge with Secondary Action Dropdown */
+          <div className="relative">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowMenu(!showMenu);
+              }}
+              className="bg-emerald-950/90 hover:bg-emerald-500 text-emerald-300 hover:text-slate-950 border border-emerald-400/80 shadow-lg rounded-md px-1.5 py-0.5 flex items-center space-x-1 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+              title="Book Cached Offline - Click to manage or delete download"
+            >
+              <Check size={10} className="stroke-[3] shrink-0" />
+              <span className="text-[8px] font-mono font-bold tracking-tight">CACHED</span>
+            </button>
+
+            {showMenu && (
+              <div 
+                className="absolute bottom-7 left-0 z-50 bg-slate-950/95 backdrop-blur-md border border-cyan-500/50 rounded-lg p-1.5 shadow-2xl min-w-[145px] text-xs font-mono animate-in fade-in zoom-in-95"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between pb-1 mb-1 border-b border-slate-800 text-[8px] font-bold text-slate-400 uppercase tracking-wider">
+                  <span>Offline Storage</span>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setShowMenu(false); }}
+                    className="text-slate-400 hover:text-white p-0.5"
+                  >
+                    <X size={10} />
+                  </button>
+                </div>
+                
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowMenu(false);
+                    onClearCache?.(bookId);
+                  }}
+                  className="w-full text-left px-1.5 py-1 rounded text-[9px] font-bold text-rose-300 hover:bg-rose-950/80 hover:text-rose-100 border border-transparent hover:border-rose-500/40 transition-all flex items-center space-x-1.5"
+                >
+                  <Trash2 size={11} className="text-rose-400 shrink-0" />
+                  <span>Delete Download</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowMenu(false);
+                    onPreCache?.(bookId);
+                  }}
+                  className="w-full text-left px-1.5 py-1 rounded text-[9px] font-bold text-cyan-300 hover:bg-cyan-950/80 hover:text-cyan-100 border border-transparent hover:border-cyan-500/40 transition-all flex items-center space-x-1.5 mt-0.5"
+                >
+                  <RefreshCw size={11} className="text-cyan-400 shrink-0" />
+                  <span>Re-download Book</span>
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* NOT CACHED STATE: Download Badge (Arrow pointing down to a tray) */
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onPreCache?.(bookId);
+            }}
+            className="bg-slate-950/90 hover:bg-cyan-500 text-cyan-300 hover:text-slate-950 border border-cyan-400/80 hover:border-cyan-200 shadow-lg rounded-md px-1.5 py-0.5 flex items-center space-x-1 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer group"
+            title="Click to download all 365 daily devotionals for offline reading"
+          >
+            <Download size={10} className="shrink-0 text-cyan-300 group-hover:text-slate-950" />
+            <span className="text-[8px] font-mono font-bold tracking-tight">CACHE</span>
+          </button>
+        )}
+      </div>
     </div>
   );
 };
+
