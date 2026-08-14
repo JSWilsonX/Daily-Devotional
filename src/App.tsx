@@ -33,11 +33,13 @@ import {
   Download,
   Smartphone,
   Wifi,
-  WifiOff
+  WifiOff,
+  Share2
 } from "lucide-react";
 import { BookCover } from "./components/BookCover";
 import { ProjectIcon } from "./components/ProjectIcon";
 import { useTour, TourManager } from "./components/Tour";
+import { ShareImageCardModal } from "./components/ShareImageCardModal";
 
 
 function getLocalDateString(date: Date): string {
@@ -805,6 +807,54 @@ export default function App() {
     } else {
       alert("Daily Devotionals Reader PWA Installation:\n\n• On Desktop / Android (Chrome, Edge): Click the Install icon in your browser address bar.\n• On iOS (Safari): Tap the Share icon, then select 'Add to Home Screen'.");
     }
+  };
+
+  // Share as Image Card Modal State & Selection Listener
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [shareCardText, setShareCardText] = useState("");
+  const [floatingSelectionText, setFloatingSelectionText] = useState("");
+  const [selectionPosition, setSelectionPosition] = useState<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    const handleSelectionChange = () => {
+      const sel = window.getSelection();
+      if (sel && !sel.isCollapsed) {
+        const text = sel.toString().trim();
+        if (text.length >= 4) {
+          setFloatingSelectionText(text);
+          try {
+            const range = sel.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            setSelectionPosition({
+              x: Math.min(Math.max(rect.left + rect.width / 2, 90), window.innerWidth - 90),
+              y: Math.max(rect.top - 12, 60)
+            });
+          } catch {
+            setSelectionPosition(null);
+          }
+          return;
+        }
+      }
+      setFloatingSelectionText("");
+      setSelectionPosition(null);
+    };
+
+    document.addEventListener("selectionchange", handleSelectionChange);
+    return () => {
+      document.removeEventListener("selectionchange", handleSelectionChange);
+    };
+  }, []);
+
+  const handleOpenShareCard = (customText?: string) => {
+    let passage = customText || floatingSelectionText;
+    if (!passage && content) {
+      const scriptureBlock = content.paragraphs.find(p => p.type === "scripture");
+      passage = scriptureBlock?.text || content.paragraphs[0]?.text || content.title;
+    }
+    setShareCardText(passage || "Search me, O God, and know my heart...");
+    setIsShareModalOpen(true);
+    setFloatingSelectionText("");
+    setSelectionPosition(null);
   };
 
   // Offline Pre-cache Engine State
@@ -2190,9 +2240,19 @@ export default function App() {
                         <span className={`font-display font-bold text-xs sm:text-sm md:text-base truncate max-w-[200px] xs:max-w-[250px] sm:max-w-md ${isSlate ? "text-cyan-300 text-glow-cyan" : "text-amber-800"}`}>
                           {sortedDevotionals[selectedIdx].title}
                         </span>
-                        <span className={`text-[7px] sm:text-[8px] font-mono font-bold px-1.5 py-0.5 rounded ${isSlate ? "bg-cyan-500/20 text-cyan-400" : "bg-amber-500/10 text-amber-800"}`}>
-                          ACTIVE BOOK
-                        </span>
+                        <button
+                          id="share-reflection-card-btn"
+                          onClick={() => handleOpenShareCard()}
+                          className={`text-[8px] sm:text-[9px] font-mono font-bold px-2 py-0.5 rounded-full border transition-all flex items-center space-x-1 cursor-pointer ${
+                            isSlate 
+                              ? "bg-cyan-950/60 hover:bg-cyan-900/80 border-cyan-500/40 text-cyan-300 shadow-sm shadow-cyan-500/10 hover:scale-105 active:scale-95" 
+                              : "bg-amber-100 hover:bg-amber-200 border-amber-900/20 text-amber-900 shadow-sm hover:scale-105 active:scale-95"
+                          }`}
+                          title="Share devotional reflection as an aesthetic image card"
+                        >
+                          <Share2 size={10} className="text-cyan-400 shrink-0" />
+                          <span>Share</span>
+                        </button>
                       </div>
                       <p className={`text-[10px] sm:text-xs mt-1 leading-relaxed font-sans line-clamp-4 ${subTextStyle}`}>
                         {sortedDevotionals[selectedIdx].description}
@@ -2312,6 +2372,7 @@ export default function App() {
                     );
                   })()}
                 </div>
+
                 <div className={`h-1 w-20 mx-auto mt-5 rounded-full ${isSlate ? "bg-gradient-to-r from-cyan-400 to-blue-500 shadow-[0_0_10px_#22d3ee]" : "bg-amber-600"}`}></div>
               </header>
 
@@ -2325,13 +2386,12 @@ export default function App() {
                       <div
                         key={block.id}
                         ref={el => { paragraphRefs.current[block.id] = el; }}
-                        onClick={() => speakParagraph(idx)}
-                        className={`relative pl-5 pr-4 py-4 border-l-4 rounded-r-2xl cursor-pointer transition-all duration-300 ${
+                        className={`relative pl-5 pr-4 py-4 border-l-4 rounded-r-2xl transition-all duration-300 ${
                           isActive 
                             ? "border-cyan-400 bg-cyan-500/10 shadow-[0_0_20px_rgba(34,211,238,0.1)] scale-[1.01]" 
                             : isSlate 
-                              ? "border-cyan-500/20 bg-slate-900/30 hover:bg-cyan-500/5 hover:border-cyan-400/60"
-                              : "border-amber-600/30 bg-black/[0.02] hover:bg-amber-500/5 hover:border-amber-600/50"
+                              ? "border-cyan-500/20 bg-slate-900/30"
+                              : "border-amber-600/30 bg-black/[0.02]"
                         }`}
                       >
                         <p className={`italic font-medium leading-relaxed ${isSlate ? "text-cyan-300" : "text-amber-900"}`}>
@@ -2352,15 +2412,14 @@ export default function App() {
                     <div
                       key={block.id}
                       ref={el => { paragraphRefs.current[block.id] = el; }}
-                      onClick={() => speakParagraph(idx)}
-                      className={`p-4 rounded-2xl cursor-pointer transition-all duration-300 ${
+                      className={`p-4 rounded-2xl transition-all duration-300 ${
                         isActive 
                           ? isSlate 
                             ? "bg-slate-800/40 shadow-xl border border-cyan-500/25 scale-[1.01]" 
                             : "bg-amber-500/10 shadow-sm border border-amber-500/15 scale-[1.01]"
                           : isSlate 
-                            ? "hover:bg-white/[0.015] text-slate-200" 
-                            : "hover:bg-black/[0.01] text-stone-800"
+                            ? "text-slate-200" 
+                            : "text-stone-800"
                       }`}
                     >
                       <p className="text-justify indent-5 leading-relaxed">
@@ -2697,6 +2756,37 @@ export default function App() {
         </div>
 
       </div>
+
+      {/* Floating Selection Action Trigger (Appears when text is highlighted) */}
+      {floatingSelectionText && selectionPosition && (
+        <div
+          style={{
+            left: `${selectionPosition.x}px`,
+            top: `${selectionPosition.y}px`
+          }}
+          className="fixed z-50 transform -translate-x-1/2 -translate-y-full transition-all duration-150 animate-in fade-in zoom-in-95 pointer-events-auto"
+        >
+          <button
+            type="button"
+            onClick={() => handleOpenShareCard(floatingSelectionText)}
+            className="bg-slate-950/95 hover:bg-cyan-500 text-cyan-300 hover:text-slate-950 border border-cyan-400/80 hover:border-cyan-200 shadow-2xl rounded-full px-4 py-2 text-xs font-mono font-bold flex items-center space-x-2 transition-all cursor-pointer group hover:scale-105 active:scale-95"
+          >
+            <Share2 size={13} className="text-cyan-400 group-hover:text-slate-950 shrink-0" />
+            <span>Share Selection as Image Card</span>
+          </button>
+        </div>
+      )}
+
+      {/* Share Reflection Image Card Customizer Modal */}
+      <ShareImageCardModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        initialText={shareCardText}
+        bookTitle={selectedIdx !== null && sortedDevotionals[selectedIdx] ? sortedDevotionals[selectedIdx].title : "Ellen G. White Devotional"}
+        dateStr={selectedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+        isSlateTheme={isSlate}
+      />
+
       <TourManager />
     </div>
   );

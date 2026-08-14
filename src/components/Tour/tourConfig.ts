@@ -1,7 +1,7 @@
 import { TourDefinition } from "./TourTypes";
 
 // Current application version
-export const CURRENT_APP_VERSION = "1.5.0";
+export const CURRENT_APP_VERSION = "1.6.0";
 
 export const tours: TourDefinition[] = [
   {
@@ -60,6 +60,14 @@ export const tours: TourDefinition[] = [
         allowInteraction: true
       },
       {
+        id: "share-reflection-card-step",
+        selector: "#share-reflection-card-btn",
+        title: "Share Reflection Card",
+        explanation: "Tap **Share** to turn the daily devotional reading into an aesthetic image card formatted for Instagram Stories, Reels, or messaging! Choose from curated background themes or upload your own, add personal reflections, and share directly to socials or download.",
+        placement: "bottom",
+        allowInteraction: true
+      },
+      {
         id: "audio-console",
         selector: "#audio-playback-dock",
         title: "Vocal Stream Playback Console",
@@ -86,12 +94,20 @@ export const tours: TourDefinition[] = [
     ]
   },
   {
-    id: "whats-new-1.5.0",
-    version: "1.5.0",
-    name: "What's New in Version 1.5.0",
+    id: "whats-new-1.6.0",
+    version: "1.6.0",
+    name: "What's New in Version 1.6.0",
     description: "Discover the latest premium features added in this release.",
     isOnboarding: false,
     steps: [
+      {
+        id: "whats-new-share-card",
+        selector: "#share-reflection-card-btn",
+        title: "Share Reflection Cards",
+        explanation: "Tap **Share** next to the active devotional book to turn the reading into an aesthetic image card formatted for Instagram Stories, Reels, or messaging! Choose from curated background themes or upload your own, add personal reflections, and share directly to socials or download.",
+        placement: "bottom",
+        allowInteraction: true
+      },
       {
         id: "whats-new-profile",
         selector: "#header-profile-switcher",
@@ -107,14 +123,6 @@ export const tours: TourDefinition[] = [
         explanation: "You can now install the application directly as a **Progressive Web App**! Tap **INSTALL APP** to save it to your home screen or desktop with full **Offline Reading** support for previously cached devotionals.",
         placement: "bottom",
         allowInteraction: true
-      },
-      {
-        id: "whats-new-streak",
-        selector: "#header-streak-badge",
-        title: "Integrated Reflection Tracker",
-        explanation: "We added a streak completion HUD badge at the top! Mark your reading completed at the bottom of the article to increment your consecutive study counter.",
-        placement: "bottom",
-        allowInteraction: false
       }
     ]
   }
