@@ -846,12 +846,23 @@ export default function App() {
   }, []);
 
   const handleOpenShareCard = (customText?: string) => {
-    let passage = customText || floatingSelectionText;
+    let passage = (typeof customText === "string" && customText.trim()) || 
+                  (typeof floatingSelectionText === "string" && floatingSelectionText.trim()) || 
+                  "";
     if (!passage && content) {
-      const scriptureBlock = content.paragraphs.find(p => p.type === "scripture");
-      passage = scriptureBlock?.text || content.paragraphs[0]?.text || content.title;
+      const scriptureBlock = content.paragraphs?.find(p => p.type === "scripture");
+      passage = scriptureBlock?.text?.trim() || 
+                content.paragraphs?.find(p => p.text?.trim())?.text?.trim() || 
+                content.title?.trim() || 
+                "";
     }
-    setShareCardText(passage || "Search me, O God, and know my heart...");
+    if (!passage && sortedDevotionals && sortedDevotionals[selectedIdx]) {
+      passage = sortedDevotionals[selectedIdx].description?.trim() || 
+                sortedDevotionals[selectedIdx].title?.trim() || 
+                "";
+    }
+    const finalPassage = passage.trim() || "Search me, O God, and know my heart: try me, and know my thoughts.";
+    setShareCardText(finalPassage);
     setIsShareModalOpen(true);
     setFloatingSelectionText("");
     setSelectionPosition(null);
@@ -2778,14 +2789,16 @@ export default function App() {
       )}
 
       {/* Share Reflection Image Card Customizer Modal */}
-      <ShareImageCardModal
-        isOpen={isShareModalOpen}
-        onClose={() => setIsShareModalOpen(false)}
-        initialText={shareCardText}
-        bookTitle={selectedIdx !== null && sortedDevotionals[selectedIdx] ? sortedDevotionals[selectedIdx].title : "Ellen G. White Devotional"}
-        dateStr={selectedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
-        isSlateTheme={isSlate}
-      />
+      {isShareModalOpen && (
+        <ShareImageCardModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          initialText={shareCardText}
+          bookTitle={selectedIdx !== null && sortedDevotionals[selectedIdx] ? sortedDevotionals[selectedIdx].title : "Ellen G. White Devotional"}
+          dateStr={selectedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+          isSlateTheme={isSlate}
+        />
+      )}
 
       <TourManager />
     </div>

@@ -70,6 +70,71 @@ const PRESET_TEMPLATES: BackgroundTemplate[] = [
   }
 ];
 
+// Robust, universal Canvas rounded rectangle using standard arcTo (supported on all browsers)
+const drawRoundedRect = (
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number
+) => {
+  if (w <= 0 || h <= 0) return;
+  const radius = Math.max(0, Math.min(r, Math.floor(w / 2), Math.floor(h / 2)));
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + w - radius, y);
+  ctx.arcTo(x + w, y, x + w, y + h, radius);
+  ctx.arcTo(x + w, y + h, x, y + h, radius);
+  ctx.arcTo(x, y + h, x, y, radius);
+  ctx.arcTo(x, y, x + w, y, radius);
+  ctx.closePath();
+};
+
+// Image Cache for high-performance atomic canvas rendering
+const imageCache = new Map<string, HTMLImageElement>();
+
+const preloadImage = (url: string): Promise<HTMLImageElement | null> => {
+  if (!url) return Promise.resolve(null);
+  const cached = imageCache.get(url);
+  if (cached && cached.complete && cached.naturalWidth > 0) {
+    return Promise.resolve(cached);
+  }
+
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      imageCache.set(url, img);
+      resolve(img);
+    };
+    img.onerror = () => {
+      // If CORS or anonymous mode fails, retry without crossOrigin
+      const fallbackImg = new Image();
+      fallbackImg.onload = () => {
+        imageCache.set(url, fallbackImg);
+        resolve(fallbackImg);
+      };
+      fallbackImg.onerror = () => {
+        resolve(null);
+      };
+      fallbackImg.src = url;
+    };
+    img.src = url;
+    if (img.complete && img.naturalWidth > 0) {
+      imageCache.set(url, img);
+      resolve(img);
+    }
+  });
+};
+
+// Eagerly preload preset images into memory
+if (typeof window !== "undefined") {
+  PRESET_TEMPLATES.forEach((tpl) => {
+    preloadImage(tpl.url).catch(() => {});
+  });
+}
+
 export const ShareImageCardModal: React.FC<ShareCardProps> = ({
   isOpen,
   onClose,
@@ -78,7 +143,7 @@ export const ShareImageCardModal: React.FC<ShareCardProps> = ({
   dateStr,
   isSlateTheme = true
 }) => {
-  const [quoteText, setQuoteText] = useState(initialText);
+  const [quoteText, setQuoteText] = useState(initialText || "");
   const [reflectionText, setReflectionText] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState<BackgroundTemplate>(PRESET_TEMPLATES[0]);
   const [aspectRatio, setAspectRatio] = useState<"9:16" | "1:1">("1:1");
@@ -92,10 +157,11 @@ export const ShareImageCardModal: React.FC<ShareCardProps> = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const renderReqIdRef = useRef<number>(0);
 
   // Sync initial text whenever modal opens or initialText changes
   useEffect(() => {
-    if (initialText) {
+    if (isOpen && initialText?.trim()) {
       setQuoteText(initialText.trim());
     }
   }, [initialText, isOpen]);
@@ -153,6 +219,7 @@ export const ShareImageCardModal: React.FC<ShareCardProps> = ({
   // Canvas Render Engine
   const renderCanvas = useCallback(
     async (targetCanvas: HTMLCanvasElement, isHighRes: boolean = true) => {
+      const reqId = ++renderReqIdRef.current;
       const ctx = targetCanvas.getContext("2d");
       if (!ctx) return;
 
@@ -160,267 +227,244 @@ export const ShareImageCardModal: React.FC<ShareCardProps> = ({
       const width = isHighRes ? (aspectRatio === "9:16" ? 1080 : 1080) : (aspectRatio === "9:16" ? 360 : 360);
       const height = isHighRes ? (aspectRatio === "9:16" ? 1920 : 1080) : (aspectRatio === "9:16" ? 640 : 360);
 
+      // Preload / acquire background image before touching the canvas
+      const bgUrl = selectedTemplate.id === "custom-user-img" && customImage ? customImage : selectedTemplate.url;
+      let loadedImg: HTMLImageElement | null = null;
+
+      try {
+        loadedImg = await preloadImage(bgUrl);
+      } catch {
+        loadedImg = null;
+      }
+
+      // If a newer render request started while waiting for image, bail out completely
+      if (reqId !== renderReqIdRef.current) return;
+
+      // ── ATOMIC SYNCHRONOUS CANVAS DRAW ──
       targetCanvas.width = width;
       targetCanvas.height = height;
 
-      // 1. Draw Background
-      const bgUrl = selectedTemplate.id === "custom-user-img" && customImage ? customImage : selectedTemplate.url;
-
-      const drawGradientFallback = () => {
-        const [c1, c2, c3] = selectedTemplate.gradientFallback;
-        const grad = ctx.createLinearGradient(0, 0, width, height);
-        grad.addColorStop(0, c1);
-        grad.addColorStop(0.5, c2);
-        grad.addColorStop(1, c3);
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, width, height);
-      };
-
       try {
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        
-        await new Promise<void>((resolve) => {
-          img.onload = () => {
-            // Center Crop (Object-fit: cover)
-            const imgAspect = img.width / img.height;
-            const canvasAspect = width / height;
-            let renderW = width;
-            let renderH = height;
-            let offsetX = 0;
-            let offsetY = 0;
+        // 1. Draw Background Image or Fallback Gradient
+        if (loadedImg && loadedImg.complete && loadedImg.naturalWidth > 0) {
+          const imgAspect = loadedImg.width / loadedImg.height;
+          const canvasAspect = width / height;
+          let renderW = width;
+          let renderH = height;
+          let offsetX = 0;
+          let offsetY = 0;
 
-            if (imgAspect > canvasAspect) {
-              renderW = height * imgAspect;
-              offsetX = (width - renderW) / 2;
-            } else {
-              renderH = width / imgAspect;
-              offsetY = (height - renderH) / 2;
-            }
-
-            ctx.drawImage(img, offsetX, offsetY, renderW, renderH);
-            resolve();
-          };
-          img.onerror = () => {
-            drawGradientFallback();
-            resolve();
-          };
-          img.src = bgUrl;
-        });
-      } catch {
-        drawGradientFallback();
-      }
-
-      // Helper to draw rounded rectangles across standard and legacy canvas contexts
-      const drawRoundedRect = (
-        x: number,
-        y: number,
-        w: number,
-        h: number,
-        radius: number
-      ) => {
-        ctx.beginPath();
-        if (typeof ctx.roundRect === "function") {
-          ctx.roundRect(x, y, w, h, radius);
-        } else {
-          ctx.moveTo(x + radius, y);
-          ctx.lineTo(x + w - radius, y);
-          ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
-          ctx.lineTo(x + w, y + h - radius);
-          ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
-          ctx.lineTo(x + radius, y + h);
-          ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
-          ctx.lineTo(x, y + radius);
-          ctx.quadraticCurveTo(x, y, x + radius, y);
-          ctx.closePath();
-        }
-      };
-
-      // Helper to wrap text into line arrays based on canvas measurement
-      const getWrappedLines = (text: string, maxWidth: number, font: string): string[] => {
-        ctx.font = font;
-        const words = text.split(" ");
-        let line = "";
-        const lines: string[] = [];
-
-        for (let n = 0; n < words.length; n++) {
-          const testLine = line + words[n] + " ";
-          const metrics = ctx.measureText(testLine);
-          if (metrics.width > maxWidth && n > 0) {
-            lines.push(line.trim());
-            line = words[n] + " ";
+          if (imgAspect > canvasAspect) {
+            renderW = height * imgAspect;
+            offsetX = (width - renderW) / 2;
           } else {
-            line = testLine;
+            renderH = width / imgAspect;
+            offsetY = (height - renderH) / 2;
           }
+
+          ctx.drawImage(loadedImg, offsetX, offsetY, renderW, renderH);
+        } else {
+          const [c1, c2, c3] = selectedTemplate.gradientFallback;
+          const grad = ctx.createLinearGradient(0, 0, width, height);
+          grad.addColorStop(0, c1);
+          grad.addColorStop(0.5, c2);
+          grad.addColorStop(1, c3);
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, width, height);
         }
-        lines.push(line.trim());
-        return lines;
-      };
 
-      // 2. Compute Main Quote Typography & Line Dimensions
-      const cardWidth = width * 0.88;
-      const cardX = (width - cardWidth) / 2;
-      const innerPaddingX = isHighRes ? 46 : 15;
-      const maxTextWidth = cardWidth - innerPaddingX * 2;
+        // Helper to wrap text into line arrays based on canvas measurement
+        const getWrappedLines = (text: string, maxWidth: number, font: string): string[] => {
+          ctx.font = font;
+          const words = text.split(" ");
+          let line = "";
+          const lines: string[] = [];
 
-      const cleanQuote = `“${quoteText.replace(/^[“"]|[”"]$/g, "")}”`;
-      let fontSize = isHighRes 
-        ? (cleanQuote.length > 280 ? 36 : cleanQuote.length > 180 ? 44 : 52)
-        : (cleanQuote.length > 280 ? 12 : cleanQuote.length > 180 ? 14 : 17);
+          for (let n = 0; n < words.length; n++) {
+            const testLine = line + words[n] + " ";
+            const metrics = ctx.measureText(testLine);
+            if (metrics.width > maxWidth && n > 0) {
+              lines.push(line.trim());
+              line = words[n] + " ";
+            } else {
+              line = testLine;
+            }
+          }
+          lines.push(line.trim());
+          return lines;
+        };
 
-      if (aspectRatio === "1:1") {
-        fontSize = Math.floor(fontSize * 0.82);
-      }
+        // 2. Compute Main Quote Typography & Line Dimensions
+        const cardWidth = width * 0.88;
+        const cardX = (width - cardWidth) / 2;
+        const innerPaddingX = isHighRes ? 46 : 15;
+        const maxTextWidth = Math.max(100, cardWidth - innerPaddingX * 2);
 
-      const quoteFont = `normal ${fontSize}px Georgia, serif`;
-      const quoteLines = getWrappedLines(cleanQuote, maxTextWidth, quoteFont);
-      const quoteLineHeight = fontSize * 1.45;
-      const quoteBlockHeight = quoteLines.length * quoteLineHeight;
+        // Fallback cleanly to initialText or default passage if quoteText was temporarily empty
+        const resolvedQuote = (quoteText && quoteText.trim()) || (initialText && initialText.trim()) || "Search me, O God, and know my heart: try me, and know my thoughts.";
+        const cleanQuote = `“${resolvedQuote.replace(/^[“"]|[”"]$/g, "").trim()}”`;
+        let fontSize = isHighRes 
+          ? (cleanQuote.length > 280 ? 36 : cleanQuote.length > 180 ? 44 : 52)
+          : (cleanQuote.length > 280 ? 12 : cleanQuote.length > 180 ? 14 : 17);
 
-      // 3. Compute Reflection Typography (if present)
-      const hasReflection = Boolean(reflectionText.trim());
-      let reflLines: string[] = [];
-      let reflFontSize = isHighRes ? 28 : 10;
-      if (aspectRatio === "1:1") {
-        reflFontSize = Math.floor(reflFontSize * 0.88);
-      }
-      const reflFont = `italic ${reflFontSize}px Georgia, serif`;
-      const reflLineHeight = reflFontSize * 1.4;
-      let reflBlockHeight = 0;
+        if (aspectRatio === "1:1") {
+          fontSize = Math.floor(fontSize * 0.82);
+        }
 
-      if (hasReflection) {
-        reflLines = getWrappedLines(`My Reflection: "${reflectionText.trim()}"`, maxTextWidth, reflFont);
-        reflBlockHeight = (isHighRes ? 40 : 14) + reflLines.length * reflLineHeight;
-      }
+        const quoteFont = `normal ${fontSize}px Georgia, serif`;
+        const quoteLines = getWrappedLines(cleanQuote, maxTextWidth, quoteFont);
+        const quoteLineHeight = fontSize * 1.45;
+        const quoteBlockHeight = quoteLines.length * quoteLineHeight;
 
-      // 4. Calculate Central Rounded Rectangular Vignette Bounds
-      const innerPaddingY = isHighRes ? 36 : 13;
-      const cardContentHeight = quoteBlockHeight + (hasReflection ? reflBlockHeight + (isHighRes ? 14 : 5) : 0);
-      const cardHeight = cardContentHeight + innerPaddingY * 2;
-      const cardRadius = isHighRes ? 26 : 10;
+        // 3. Compute Reflection Typography (if present)
+        const hasReflection = Boolean(reflectionText.trim());
+        let reflLines: string[] = [];
+        let reflFontSize = isHighRes ? 28 : 10;
+        if (aspectRatio === "1:1") {
+          reflFontSize = Math.floor(reflFontSize * 0.88);
+        }
+        const reflFont = `italic ${reflFontSize}px Georgia, serif`;
+        const reflLineHeight = reflFontSize * 1.4;
+        let reflBlockHeight = 0;
 
-      const topSafeZone = isHighRes ? 105 : 36;
-      const bottomSafeZone = height - (isHighRes ? 135 : 45);
-      const availableVerticalSpace = bottomSafeZone - topSafeZone;
-      const cardY = Math.max(topSafeZone, topSafeZone + (availableVerticalSpace - cardHeight) / 2);
+        if (hasReflection) {
+          reflLines = getWrappedLines(`My Reflection: "${reflectionText.trim()}"`, maxTextWidth, reflFont);
+          reflBlockHeight = (isHighRes ? 40 : 14) + reflLines.length * reflLineHeight;
+        }
 
-      // 5. Draw Central Rounded Rectangular Vignette Overlay for Text Contrast
-      ctx.save();
-      ctx.shadowColor = "rgba(0, 0, 0, 0.45)";
-      ctx.shadowBlur = isHighRes ? 30 : 10;
-      ctx.shadowOffsetY = isHighRes ? 6 : 2;
+        // 4. Calculate Central Rounded Rectangular Vignette Bounds
+        const innerPaddingY = isHighRes ? 36 : 13;
+        const cardContentHeight = quoteBlockHeight + (hasReflection ? reflBlockHeight + (isHighRes ? 14 : 5) : 0);
+        const cardHeight = cardContentHeight + innerPaddingY * 2;
+        const cardRadius = isHighRes ? 26 : 10;
 
-      drawRoundedRect(cardX, cardY, cardWidth, cardHeight, cardRadius);
-      const cardScrim = ctx.createLinearGradient(0, cardY, 0, cardY + cardHeight);
-      cardScrim.addColorStop(0, "rgba(8, 15, 30, 0.60)");
-      cardScrim.addColorStop(0.5, "rgba(4, 9, 22, 0.68)");
-      cardScrim.addColorStop(1, "rgba(8, 15, 30, 0.62)");
-      ctx.fillStyle = cardScrim;
-      ctx.fill();
-      ctx.restore();
+        const topSafeZone = isHighRes ? 105 : 36;
+        const bottomSafeZone = height - (isHighRes ? 135 : 45);
+        const availableVerticalSpace = bottomSafeZone - topSafeZone;
+        const cardY = Math.max(topSafeZone, topSafeZone + (availableVerticalSpace - cardHeight) / 2);
 
-      // Subtle hairline border on the text card
-      drawRoundedRect(cardX, cardY, cardWidth, cardHeight, cardRadius);
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.16)";
-      ctx.lineWidth = isHighRes ? 2 : 1;
-      ctx.stroke();
+        // 5. Draw Central Rounded Rectangular Vignette Overlay for Text Contrast
+        ctx.save();
+        ctx.shadowColor = "rgba(0, 0, 0, 0.45)";
+        ctx.shadowBlur = isHighRes ? 30 : 10;
+        ctx.shadowOffsetY = isHighRes ? 6 : 2;
 
-      // 6. Draw Top Header Pill (Scrim limited only around text)
-      const headerText = "✦  DAILY DEVOTIONAL REFLECTION  ✦";
-      const headerFontSize = isHighRes ? 24 : 8.5;
-      ctx.font = `bold ${headerFontSize}px monospace`;
-      const headerTextWidth = ctx.measureText(headerText).width;
-      const headerPillW = headerTextWidth + (isHighRes ? 36 : 13);
-      const headerPillH = isHighRes ? 42 : 15;
-      const headerPillX = (width - headerPillW) / 2;
-      const headerPillY = isHighRes ? 32 : 11;
-      const headerPillRadius = headerPillH / 2;
+        drawRoundedRect(ctx, cardX, cardY, cardWidth, cardHeight, cardRadius);
+        const cardScrim = ctx.createLinearGradient(0, cardY, 0, cardY + cardHeight);
+        cardScrim.addColorStop(0, "rgba(8, 15, 30, 0.60)");
+        cardScrim.addColorStop(0.5, "rgba(4, 9, 22, 0.68)");
+        cardScrim.addColorStop(1, "rgba(8, 15, 30, 0.62)");
+        ctx.fillStyle = cardScrim;
+        ctx.fill();
+        ctx.restore();
 
-      ctx.save();
-      ctx.shadowColor = "rgba(0, 0, 0, 0.35)";
-      ctx.shadowBlur = isHighRes ? 16 : 5;
-      drawRoundedRect(headerPillX, headerPillY, headerPillW, headerPillH, headerPillRadius);
-      ctx.fillStyle = "rgba(8, 15, 30, 0.55)";
-      ctx.fill();
-      ctx.restore();
-
-      drawRoundedRect(headerPillX, headerPillY, headerPillW, headerPillH, headerPillRadius);
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.14)";
-      ctx.lineWidth = isHighRes ? 1.5 : 1;
-      ctx.stroke();
-
-      ctx.fillStyle = selectedTemplate.accentColor || "#fde047";
-      ctx.textAlign = "center";
-      ctx.fillText(headerText, width / 2, headerPillY + headerPillH / 2 + (isHighRes ? 7 : 2.5));
-
-      // 7. Render Main Quote Text Inside Card
-      ctx.font = quoteFont;
-      ctx.fillStyle = "#ffffff";
-      ctx.textAlign = "center";
-
-      let textY = cardY + innerPaddingY + fontSize * 0.85;
-      for (let i = 0; i < quoteLines.length; i++) {
-        ctx.fillText(quoteLines[i], width / 2, textY);
-        textY += quoteLineHeight;
-      }
-
-      // 8. Render Reflection Text Inside Card (if present)
-      if (hasReflection) {
-        textY += isHighRes ? 12 : 4;
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.22)";
+        // Subtle hairline border on the text card
+        drawRoundedRect(ctx, cardX, cardY, cardWidth, cardHeight, cardRadius);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.16)";
         ctx.lineWidth = isHighRes ? 2 : 1;
-        ctx.beginPath();
-        ctx.moveTo(width * 0.38, textY);
-        ctx.lineTo(width * 0.62, textY);
         ctx.stroke();
 
-        textY += isHighRes ? 32 : 11;
-        ctx.font = reflFont;
-        ctx.fillStyle = selectedTemplate.accentColor || "#bae6fd";
-        for (let i = 0; i < reflLines.length; i++) {
-          ctx.fillText(reflLines[i], width / 2, textY);
-          textY += reflLineHeight;
+        // 6. Draw Top Header Pill (Scrim limited only around text)
+        const headerText = "✦  DAILY DEVOTIONAL REFLECTION  ✦";
+        const headerFontSize = isHighRes ? 24 : 8.5;
+        ctx.font = `bold ${headerFontSize}px monospace`;
+        const headerTextWidth = ctx.measureText(headerText).width;
+        const headerPillW = headerTextWidth + (isHighRes ? 36 : 13);
+        const headerPillH = isHighRes ? 42 : 15;
+        const headerPillX = (width - headerPillW) / 2;
+        const headerPillY = isHighRes ? 32 : 11;
+        const headerPillRadius = headerPillH / 2;
+
+        ctx.save();
+        ctx.shadowColor = "rgba(0, 0, 0, 0.35)";
+        ctx.shadowBlur = isHighRes ? 16 : 5;
+        drawRoundedRect(ctx, headerPillX, headerPillY, headerPillW, headerPillH, headerPillRadius);
+        ctx.fillStyle = "rgba(8, 15, 30, 0.55)";
+        ctx.fill();
+        ctx.restore();
+
+        drawRoundedRect(ctx, headerPillX, headerPillY, headerPillW, headerPillH, headerPillRadius);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.14)";
+        ctx.lineWidth = isHighRes ? 1.5 : 1;
+        ctx.stroke();
+
+        ctx.fillStyle = selectedTemplate.accentColor || "#fde047";
+        ctx.textAlign = "center";
+        ctx.fillText(headerText, width / 2, headerPillY + headerPillH / 2 + (isHighRes ? 7 : 2.5));
+
+        // 7. Render Main Quote Text Inside Card
+        ctx.font = quoteFont;
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "center";
+
+        let textY = cardY + innerPaddingY + fontSize * 0.85;
+        for (let i = 0; i < quoteLines.length; i++) {
+          ctx.fillText(quoteLines[i], width / 2, textY);
+          textY += quoteLineHeight;
         }
+
+        // 8. Render Reflection Text Inside Card (if present)
+        if (hasReflection) {
+          textY += isHighRes ? 12 : 4;
+          ctx.strokeStyle = "rgba(255, 255, 255, 0.22)";
+          ctx.lineWidth = isHighRes ? 2 : 1;
+          ctx.beginPath();
+          ctx.moveTo(width * 0.38, textY);
+          ctx.lineTo(width * 0.62, textY);
+          ctx.stroke();
+
+          textY += isHighRes ? 32 : 11;
+          ctx.font = reflFont;
+          ctx.fillStyle = selectedTemplate.accentColor || "#bae6fd";
+          for (let i = 0; i < reflLines.length; i++) {
+            ctx.fillText(reflLines[i], width / 2, textY);
+            textY += reflLineHeight;
+          }
+        }
+
+        // 9. Draw Bottom Footer Rounded Vignette Bar
+        const footerCardW = cardWidth;
+        const footerCardH = isHighRes ? 102 : 36;
+        const footerCardX = (width - footerCardW) / 2;
+        const footerCardY = height - footerCardH - (isHighRes ? 26 : 9);
+        const footerRadius = isHighRes ? 16 : 6;
+
+        ctx.save();
+        ctx.shadowColor = "rgba(0, 0, 0, 0.35)";
+        ctx.shadowBlur = isHighRes ? 20 : 7;
+        drawRoundedRect(ctx, footerCardX, footerCardY, footerCardW, footerCardH, footerRadius);
+        ctx.fillStyle = "rgba(8, 15, 30, 0.60)";
+        ctx.fill();
+        ctx.restore();
+
+        drawRoundedRect(ctx, footerCardX, footerCardY, footerCardW, footerCardH, footerRadius);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.16)";
+        ctx.lineWidth = isHighRes ? 1.5 : 1;
+        ctx.stroke();
+
+        // Book Title and Date on the same line (larger restored size)
+        ctx.fillStyle = "#f1f5f9";
+        ctx.font = `bold ${isHighRes ? 26 : 9}px sans-serif`;
+        ctx.textAlign = "center";
+        const safeBook = (bookTitle || "Ellen G. White Devotional").toUpperCase();
+        const safeDate = (dateStr || "").toUpperCase();
+        ctx.fillText(
+          safeDate ? `${safeBook} • ${safeDate}` : safeBook,
+          width / 2,
+          footerCardY + (isHighRes ? 38 : 13)
+        );
+
+        // Footer Attribution & Website link (regular weight, kept large size, in white)
+        ctx.fillStyle = "#ffffff";
+        ctx.font = `normal ${isHighRes ? 24 : 8.5}px sans-serif`;
+        ctx.fillText(
+          "Ellen G. White — https://egw-devotional.ai.studio",
+          width / 2,
+          footerCardY + (isHighRes ? 74 : 26)
+        );
+      } catch (err) {
+        console.error("Error drawing share card canvas:", err);
       }
-
-      // 9. Draw Bottom Footer Rounded Vignette Bar
-      const footerCardW = cardWidth;
-      const footerCardH = isHighRes ? 102 : 36;
-      const footerCardX = (width - footerCardW) / 2;
-      const footerCardY = height - footerCardH - (isHighRes ? 26 : 9);
-      const footerRadius = isHighRes ? 16 : 6;
-
-      ctx.save();
-      ctx.shadowColor = "rgba(0, 0, 0, 0.35)";
-      ctx.shadowBlur = isHighRes ? 20 : 7;
-      drawRoundedRect(footerCardX, footerCardY, footerCardW, footerCardH, footerRadius);
-      ctx.fillStyle = "rgba(8, 15, 30, 0.60)";
-      ctx.fill();
-      ctx.restore();
-
-      drawRoundedRect(footerCardX, footerCardY, footerCardW, footerCardH, footerRadius);
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.16)";
-      ctx.lineWidth = isHighRes ? 1.5 : 1;
-      ctx.stroke();
-
-      // Book Title and Date on the same line (larger restored size)
-      ctx.fillStyle = "#f1f5f9";
-      ctx.font = `bold ${isHighRes ? 26 : 9}px sans-serif`;
-      ctx.textAlign = "center";
-      ctx.fillText(
-        `${bookTitle.toUpperCase()} • ${dateStr.toUpperCase()}`,
-        width / 2,
-        footerCardY + (isHighRes ? 38 : 13)
-      );
-
-      // Footer Attribution & Website link (regular weight, kept large size, in white)
-      ctx.fillStyle = "#ffffff";
-      ctx.font = `normal ${isHighRes ? 24 : 8.5}px sans-serif`;
-      ctx.fillText(
-        "Ellen G. White — https://egw-devotional.ai.studio",
-        width / 2,
-        footerCardY + (isHighRes ? 74 : 26)
-      );
     },
     [quoteText, reflectionText, selectedTemplate, aspectRatio, customImage, bookTitle, dateStr]
   );
@@ -459,9 +503,10 @@ export const ShareImageCardModal: React.FC<ShareCardProps> = ({
         type: "image/jpeg"
       });
 
+      const currentQuote = quoteText.trim() || initialText?.trim() || "Search me, O God, and know my heart...";
       const fullShareText = reflectionText.trim()
-        ? `"${quoteText}"\n\nMy Reflection: ${reflectionText}\n\n— ${bookTitle} (${dateStr})\nEllen G. White - https://egw-devotional.ai.studio`
-        : `"${quoteText}"\n\n— ${bookTitle} (${dateStr})\nEllen G. White - https://egw-devotional.ai.studio`;
+        ? `"${currentQuote}"\n\nMy Reflection: ${reflectionText}\n\n— ${bookTitle} (${dateStr})\nEllen G. White - https://egw-devotional.ai.studio`
+        : `"${currentQuote}"\n\n— ${bookTitle} (${dateStr})\nEllen G. White - https://egw-devotional.ai.studio`;
 
       // 3. Try Native Web Share API if supported with files
       if (canNativeShare && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -521,9 +566,10 @@ export const ShareImageCardModal: React.FC<ShareCardProps> = ({
 
   // Dedicated Copy Text Only Action
   const handleCopyTextOnly = async () => {
+    const currentQuote = quoteText.trim() || initialText?.trim() || "Search me, O God, and know my heart...";
     const fullText = reflectionText.trim()
-      ? `"${quoteText}"\n\nMy Reflection: ${reflectionText}\n\n— ${bookTitle} (${dateStr})\nEllen G. White - https://egw-devotional.ai.studio`
-      : `"${quoteText}"\n\n— ${bookTitle} (${dateStr})\nEllen G. White - https://egw-devotional.ai.studio`;
+      ? `"${currentQuote}"\n\nMy Reflection: ${reflectionText}\n\n— ${bookTitle} (${dateStr})\nEllen G. White - https://egw-devotional.ai.studio`
+      : `"${currentQuote}"\n\n— ${bookTitle} (${dateStr})\nEllen G. White - https://egw-devotional.ai.studio`;
 
     try {
       await navigator.clipboard.writeText(fullText);
