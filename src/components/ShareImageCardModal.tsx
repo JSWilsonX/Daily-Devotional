@@ -81,7 +81,7 @@ export const ShareImageCardModal: React.FC<ShareCardProps> = ({
   const [quoteText, setQuoteText] = useState(initialText);
   const [reflectionText, setReflectionText] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState<BackgroundTemplate>(PRESET_TEMPLATES[0]);
-  const [aspectRatio, setAspectRatio] = useState<"9:16" | "1:1">("9:16");
+  const [aspectRatio, setAspectRatio] = useState<"9:16" | "1:1">("1:1");
   const [customImage, setCustomImage] = useState<string | null>(null);
   
   const [isSharing, setIsSharing] = useState(false);
@@ -328,14 +328,16 @@ export const ShareImageCardModal: React.FC<ShareCardProps> = ({
       ctx.lineTo(width * 0.8, bottomY - (isHighRes ? 35 : 12));
       ctx.stroke();
 
+      // Book Title and Date on the same line
       ctx.fillStyle = "#f1f5f9";
-      ctx.font = `bold ${isHighRes ? 28 : 10}px sans-serif`;
+      ctx.font = `bold ${isHighRes ? 24 : 8.5}px sans-serif`;
       ctx.textAlign = "center";
-      ctx.fillText(bookTitle.toUpperCase(), width / 2, bottomY);
+      ctx.fillText(`${bookTitle.toUpperCase()} • ${dateStr.toUpperCase()}`, width / 2, bottomY);
 
-      ctx.fillStyle = "rgba(203, 213, 225, 0.8)";
-      ctx.font = `${isHighRes ? 22 : 8}px monospace`;
-      ctx.fillText(`${dateStr.toUpperCase()} • ELLEN G. WHITE ESTATE`, width / 2, bottomY + (isHighRes ? 32 : 11));
+      // Footer Attribution & Website link
+      ctx.fillStyle = "rgba(203, 213, 225, 0.85)";
+      ctx.font = `${isHighRes ? 19 : 7}px monospace`;
+      ctx.fillText("Ellen G. White - https://egw-devotional.ai.studio", width / 2, bottomY + (isHighRes ? 30 : 10));
     },
     [quoteText, reflectionText, selectedTemplate, aspectRatio, customImage, bookTitle, dateStr]
   );
@@ -375,8 +377,8 @@ export const ShareImageCardModal: React.FC<ShareCardProps> = ({
       });
 
       const fullShareText = reflectionText.trim()
-        ? `"${quoteText}"\n\nMy Reflection: ${reflectionText}\n\n— ${bookTitle} (${dateStr})`
-        : `"${quoteText}"\n\n— ${bookTitle} (${dateStr})`;
+        ? `"${quoteText}"\n\nMy Reflection: ${reflectionText}\n\n— ${bookTitle} (${dateStr})\nEllen G. White - https://egw-devotional.ai.studio`
+        : `"${quoteText}"\n\n— ${bookTitle} (${dateStr})\nEllen G. White - https://egw-devotional.ai.studio`;
 
       // 3. Try Native Web Share API if supported with files
       if (canNativeShare && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -437,8 +439,8 @@ export const ShareImageCardModal: React.FC<ShareCardProps> = ({
   // Dedicated Copy Text Only Action
   const handleCopyTextOnly = async () => {
     const fullText = reflectionText.trim()
-      ? `"${quoteText}"\n\nMy Reflection: ${reflectionText}\n\n— ${bookTitle} (${dateStr})`
-      : `"${quoteText}"\n\n— ${bookTitle} (${dateStr})`;
+      ? `"${quoteText}"\n\nMy Reflection: ${reflectionText}\n\n— ${bookTitle} (${dateStr})\nEllen G. White - https://egw-devotional.ai.studio`
+      : `"${quoteText}"\n\n— ${bookTitle} (${dateStr})\nEllen G. White - https://egw-devotional.ai.studio`;
 
     try {
       await navigator.clipboard.writeText(fullText);
@@ -487,17 +489,6 @@ export const ShareImageCardModal: React.FC<ShareCardProps> = ({
             <div className="flex items-center space-x-1 bg-slate-800/80 p-0.5 rounded-lg border border-white/10 text-[10px] font-mono">
               <button
                 type="button"
-                onClick={() => setAspectRatio("9:16")}
-                className={`px-2 py-1 rounded-md transition-all font-bold ${
-                  aspectRatio === "9:16" 
-                    ? "bg-cyan-500 text-slate-950 shadow-sm" 
-                    : "text-slate-400 hover:text-white"
-                }`}
-              >
-                9:16 Story
-              </button>
-              <button
-                type="button"
                 onClick={() => setAspectRatio("1:1")}
                 className={`px-2 py-1 rounded-md transition-all font-bold ${
                   aspectRatio === "1:1" 
@@ -506,6 +497,17 @@ export const ShareImageCardModal: React.FC<ShareCardProps> = ({
                 }`}
               >
                 1:1 Square
+              </button>
+              <button
+                type="button"
+                onClick={() => setAspectRatio("9:16")}
+                className={`px-2 py-1 rounded-md transition-all font-bold ${
+                  aspectRatio === "9:16" 
+                    ? "bg-cyan-500 text-slate-950 shadow-sm" 
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                9:16 Story
               </button>
             </div>
           </div>
