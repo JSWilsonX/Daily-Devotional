@@ -37,20 +37,20 @@ const PRESET_TEMPLATES: BackgroundTemplate[] = [
     accentColor: "#6ee7b7"
   },
   {
-    id: "celestial-night",
-    name: "Celestial Night",
-    url: "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=1200&q=80",
+    id: "mountain-stream",
+    name: "Forest Stream",
+    url: "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=1200&q=80",
     type: "preset",
-    gradientFallback: ["#090d16", "#0f172a", "#1e1b4b"],
-    accentColor: "#a5f3fc"
+    gradientFallback: ["#082f49", "#0e7490", "#155e75"],
+    accentColor: "#7dd3fc"
   },
   {
-    id: "parchment-grace",
-    name: "Parchment",
-    url: "https://images.unsplash.com/photo-1516962215378-7fa2e137ae93?auto=format&fit=crop&w=1200&q=80",
+    id: "radiant-sunset",
+    name: "Golden Sunset",
+    url: "https://images.unsplash.com/photo-1495616811223-4d98c6e9c869?auto=format&fit=crop&w=1200&q=80",
     type: "preset",
-    gradientFallback: ["#292524", "#44403c", "#78350f"],
-    accentColor: "#fde68a"
+    gradientFallback: ["#451a03", "#7c2d12", "#9a3412"],
+    accentColor: "#fed7aa"
   },
   {
     id: "ocean-sunset",
@@ -211,48 +211,34 @@ export const ShareImageCardModal: React.FC<ShareCardProps> = ({
         drawGradientFallback();
       }
 
-      // 2. Dark Scrim / Vignette Overlay for Contrast
-      const scrim = ctx.createLinearGradient(0, 0, 0, height);
-      scrim.addColorStop(0, "rgba(0, 0, 0, 0.45)");
-      scrim.addColorStop(0.3, "rgba(0, 0, 0, 0.65)");
-      scrim.addColorStop(0.7, "rgba(0, 0, 0, 0.85)");
-      scrim.addColorStop(1, "rgba(0, 0, 0, 0.95)");
-      ctx.fillStyle = scrim;
-      ctx.fillRect(0, 0, width, height);
+      // Helper to draw rounded rectangles across standard and legacy canvas contexts
+      const drawRoundedRect = (
+        x: number,
+        y: number,
+        w: number,
+        h: number,
+        radius: number
+      ) => {
+        ctx.beginPath();
+        if (typeof ctx.roundRect === "function") {
+          ctx.roundRect(x, y, w, h, radius);
+        } else {
+          ctx.moveTo(x + radius, y);
+          ctx.lineTo(x + w - radius, y);
+          ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+          ctx.lineTo(x + w, y + h - radius);
+          ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+          ctx.lineTo(x + radius, y + h);
+          ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+          ctx.lineTo(x, y + radius);
+          ctx.quadraticCurveTo(x, y, x + radius, y);
+          ctx.closePath();
+        }
+      };
 
-      // Subtle border frame
-      const framePadding = width * 0.04;
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
-      ctx.lineWidth = isHighRes ? 2 : 1;
-      ctx.strokeRect(framePadding, framePadding, width - framePadding * 2, height - framePadding * 2);
-
-      // 3. Top Decorative Header (App Brand / Quote Icon)
-      const topY = height * 0.08;
-      ctx.fillStyle = selectedTemplate.accentColor || "#fde047";
-      ctx.font = `bold ${isHighRes ? 32 : 14}px monospace`;
-      ctx.textAlign = "center";
-      ctx.fillText("✦  DAILY DEVOTIONAL REFLECTION  ✦", width / 2, topY);
-
-      // 4. Draw Main Quote
-      const contentPadding = width * 0.1;
-      const maxTextWidth = width - contentPadding * 2;
-
-      // Dynamic Font Scaling based on text length & aspect ratio
-      const cleanQuote = `“${quoteText.replace(/^[“"]|[”"]$/g, "")}”`;
-      let fontSize = isHighRes 
-        ? (cleanQuote.length > 280 ? 38 : cleanQuote.length > 180 ? 46 : 56)
-        : (cleanQuote.length > 280 ? 13 : cleanQuote.length > 180 ? 15 : 18);
-
-      if (aspectRatio === "1:1") {
-        fontSize = Math.floor(fontSize * 0.82);
-      }
-
-      ctx.fillStyle = "#ffffff";
-      ctx.font = `normal ${fontSize}px Georgia, serif`;
-      ctx.textAlign = "center";
-
-      // Text wrapping function
-      const wrapText = (text: string, x: number, startY: number, maxWidth: number, lineHeight: number) => {
+      // Helper to wrap text into line arrays based on canvas measurement
+      const getWrappedLines = (text: string, maxWidth: number, font: string): string[] => {
+        ctx.font = font;
         const words = text.split(" ");
         let line = "";
         const lines: string[] = [];
@@ -260,8 +246,7 @@ export const ShareImageCardModal: React.FC<ShareCardProps> = ({
         for (let n = 0; n < words.length; n++) {
           const testLine = line + words[n] + " ";
           const metrics = ctx.measureText(testLine);
-          const testWidth = metrics.width;
-          if (testWidth > maxWidth && n > 0) {
+          if (metrics.width > maxWidth && n > 0) {
             lines.push(line.trim());
             line = words[n] + " ";
           } else {
@@ -269,75 +254,173 @@ export const ShareImageCardModal: React.FC<ShareCardProps> = ({
           }
         }
         lines.push(line.trim());
-
-        let currentY = startY;
-        for (let i = 0; i < lines.length; i++) {
-          ctx.fillText(lines[i], x, currentY);
-          currentY += lineHeight;
-        }
-        return currentY;
+        return lines;
       };
 
+      // 2. Compute Main Quote Typography & Line Dimensions
+      const cardWidth = width * 0.88;
+      const cardX = (width - cardWidth) / 2;
+      const innerPaddingX = isHighRes ? 46 : 15;
+      const maxTextWidth = cardWidth - innerPaddingX * 2;
+
+      const cleanQuote = `“${quoteText.replace(/^[“"]|[”"]$/g, "")}”`;
+      let fontSize = isHighRes 
+        ? (cleanQuote.length > 280 ? 36 : cleanQuote.length > 180 ? 44 : 52)
+        : (cleanQuote.length > 280 ? 12 : cleanQuote.length > 180 ? 14 : 17);
+
+      if (aspectRatio === "1:1") {
+        fontSize = Math.floor(fontSize * 0.82);
+      }
+
+      const quoteFont = `normal ${fontSize}px Georgia, serif`;
+      const quoteLines = getWrappedLines(cleanQuote, maxTextWidth, quoteFont);
       const quoteLineHeight = fontSize * 1.45;
-      // Calculate total text height to center vertically
-      const tempWords = cleanQuote.split(" ");
-      let lineCount = 1;
-      let tempLine = "";
-      for (let w = 0; w < tempWords.length; w++) {
-        const testL = tempLine + tempWords[w] + " ";
-        if (ctx.measureText(testL).width > maxTextWidth && w > 0) {
-          lineCount++;
-          tempLine = tempWords[w] + " ";
-        } else {
-          tempLine = testL;
-        }
+      const quoteBlockHeight = quoteLines.length * quoteLineHeight;
+
+      // 3. Compute Reflection Typography (if present)
+      const hasReflection = Boolean(reflectionText.trim());
+      let reflLines: string[] = [];
+      let reflFontSize = isHighRes ? 28 : 10;
+      if (aspectRatio === "1:1") {
+        reflFontSize = Math.floor(reflFontSize * 0.88);
       }
-      const totalQuoteHeight = lineCount * quoteLineHeight;
-      const quoteStartY = (height - totalQuoteHeight) / 2 - (reflectionText ? height * 0.05 : 0);
+      const reflFont = `italic ${reflFontSize}px Georgia, serif`;
+      const reflLineHeight = reflFontSize * 1.4;
+      let reflBlockHeight = 0;
 
-      const afterQuoteY = wrapText(cleanQuote, width / 2, quoteStartY, maxTextWidth, quoteLineHeight);
-
-      // 5. Draw User Personal Reflection (if entered)
-      if (reflectionText.trim()) {
-        const reflY = afterQuoteY + (isHighRes ? 40 : 14);
-        
-        // Reflection Divider
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
-        ctx.lineWidth = isHighRes ? 2 : 1;
-        ctx.beginPath();
-        ctx.moveTo(width * 0.35, reflY);
-        ctx.lineTo(width * 0.65, reflY);
-        ctx.stroke();
-
-        const reflFontSize = isHighRes ? 32 : 11;
-        ctx.font = `italic ${reflFontSize}px Georgia, serif`;
-        ctx.fillStyle = selectedTemplate.accentColor || "#bae6fd";
-        
-        const reflText = `My Reflection: "${reflectionText.trim()}"`;
-        wrapText(reflText, width / 2, reflY + (isHighRes ? 45 : 15), maxTextWidth, reflFontSize * 1.4);
+      if (hasReflection) {
+        reflLines = getWrappedLines(`My Reflection: "${reflectionText.trim()}"`, maxTextWidth, reflFont);
+        reflBlockHeight = (isHighRes ? 40 : 14) + reflLines.length * reflLineHeight;
       }
 
-      // 6. Draw Bottom Attribution & Date
-      const bottomY = height - (isHighRes ? 110 : 36);
+      // 4. Calculate Central Rounded Rectangular Vignette Bounds
+      const innerPaddingY = isHighRes ? 36 : 13;
+      const cardContentHeight = quoteBlockHeight + (hasReflection ? reflBlockHeight + (isHighRes ? 14 : 5) : 0);
+      const cardHeight = cardContentHeight + innerPaddingY * 2;
+      const cardRadius = isHighRes ? 26 : 10;
 
-      // Subtle separator line
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+      const topSafeZone = isHighRes ? 105 : 36;
+      const bottomSafeZone = height - (isHighRes ? 135 : 45);
+      const availableVerticalSpace = bottomSafeZone - topSafeZone;
+      const cardY = Math.max(topSafeZone, topSafeZone + (availableVerticalSpace - cardHeight) / 2);
+
+      // 5. Draw Central Rounded Rectangular Vignette Overlay for Text Contrast
+      ctx.save();
+      ctx.shadowColor = "rgba(0, 0, 0, 0.45)";
+      ctx.shadowBlur = isHighRes ? 30 : 10;
+      ctx.shadowOffsetY = isHighRes ? 6 : 2;
+
+      drawRoundedRect(cardX, cardY, cardWidth, cardHeight, cardRadius);
+      const cardScrim = ctx.createLinearGradient(0, cardY, 0, cardY + cardHeight);
+      cardScrim.addColorStop(0, "rgba(8, 15, 30, 0.60)");
+      cardScrim.addColorStop(0.5, "rgba(4, 9, 22, 0.68)");
+      cardScrim.addColorStop(1, "rgba(8, 15, 30, 0.62)");
+      ctx.fillStyle = cardScrim;
+      ctx.fill();
+      ctx.restore();
+
+      // Subtle hairline border on the text card
+      drawRoundedRect(cardX, cardY, cardWidth, cardHeight, cardRadius);
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.16)";
       ctx.lineWidth = isHighRes ? 2 : 1;
-      ctx.beginPath();
-      ctx.moveTo(width * 0.2, bottomY - (isHighRes ? 35 : 12));
-      ctx.lineTo(width * 0.8, bottomY - (isHighRes ? 35 : 12));
       ctx.stroke();
 
-      // Book Title and Date on the same line
-      ctx.fillStyle = "#f1f5f9";
-      ctx.font = `bold ${isHighRes ? 24 : 8.5}px sans-serif`;
-      ctx.textAlign = "center";
-      ctx.fillText(`${bookTitle.toUpperCase()} • ${dateStr.toUpperCase()}`, width / 2, bottomY);
+      // 6. Draw Top Header Pill (Scrim limited only around text)
+      const headerText = "✦  DAILY DEVOTIONAL REFLECTION  ✦";
+      const headerFontSize = isHighRes ? 24 : 8.5;
+      ctx.font = `bold ${headerFontSize}px monospace`;
+      const headerTextWidth = ctx.measureText(headerText).width;
+      const headerPillW = headerTextWidth + (isHighRes ? 36 : 13);
+      const headerPillH = isHighRes ? 42 : 15;
+      const headerPillX = (width - headerPillW) / 2;
+      const headerPillY = isHighRes ? 32 : 11;
+      const headerPillRadius = headerPillH / 2;
 
-      // Footer Attribution & Website link
-      ctx.fillStyle = "rgba(203, 213, 225, 0.85)";
-      ctx.font = `${isHighRes ? 19 : 7}px monospace`;
-      ctx.fillText("Ellen G. White - https://egw-devotional.ai.studio", width / 2, bottomY + (isHighRes ? 30 : 10));
+      ctx.save();
+      ctx.shadowColor = "rgba(0, 0, 0, 0.35)";
+      ctx.shadowBlur = isHighRes ? 16 : 5;
+      drawRoundedRect(headerPillX, headerPillY, headerPillW, headerPillH, headerPillRadius);
+      ctx.fillStyle = "rgba(8, 15, 30, 0.55)";
+      ctx.fill();
+      ctx.restore();
+
+      drawRoundedRect(headerPillX, headerPillY, headerPillW, headerPillH, headerPillRadius);
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.14)";
+      ctx.lineWidth = isHighRes ? 1.5 : 1;
+      ctx.stroke();
+
+      ctx.fillStyle = selectedTemplate.accentColor || "#fde047";
+      ctx.textAlign = "center";
+      ctx.fillText(headerText, width / 2, headerPillY + headerPillH / 2 + (isHighRes ? 7 : 2.5));
+
+      // 7. Render Main Quote Text Inside Card
+      ctx.font = quoteFont;
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "center";
+
+      let textY = cardY + innerPaddingY + fontSize * 0.85;
+      for (let i = 0; i < quoteLines.length; i++) {
+        ctx.fillText(quoteLines[i], width / 2, textY);
+        textY += quoteLineHeight;
+      }
+
+      // 8. Render Reflection Text Inside Card (if present)
+      if (hasReflection) {
+        textY += isHighRes ? 12 : 4;
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.22)";
+        ctx.lineWidth = isHighRes ? 2 : 1;
+        ctx.beginPath();
+        ctx.moveTo(width * 0.38, textY);
+        ctx.lineTo(width * 0.62, textY);
+        ctx.stroke();
+
+        textY += isHighRes ? 32 : 11;
+        ctx.font = reflFont;
+        ctx.fillStyle = selectedTemplate.accentColor || "#bae6fd";
+        for (let i = 0; i < reflLines.length; i++) {
+          ctx.fillText(reflLines[i], width / 2, textY);
+          textY += reflLineHeight;
+        }
+      }
+
+      // 9. Draw Bottom Footer Rounded Vignette Bar
+      const footerCardW = cardWidth;
+      const footerCardH = isHighRes ? 102 : 36;
+      const footerCardX = (width - footerCardW) / 2;
+      const footerCardY = height - footerCardH - (isHighRes ? 26 : 9);
+      const footerRadius = isHighRes ? 16 : 6;
+
+      ctx.save();
+      ctx.shadowColor = "rgba(0, 0, 0, 0.35)";
+      ctx.shadowBlur = isHighRes ? 20 : 7;
+      drawRoundedRect(footerCardX, footerCardY, footerCardW, footerCardH, footerRadius);
+      ctx.fillStyle = "rgba(8, 15, 30, 0.60)";
+      ctx.fill();
+      ctx.restore();
+
+      drawRoundedRect(footerCardX, footerCardY, footerCardW, footerCardH, footerRadius);
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.16)";
+      ctx.lineWidth = isHighRes ? 1.5 : 1;
+      ctx.stroke();
+
+      // Book Title and Date on the same line (larger restored size)
+      ctx.fillStyle = "#f1f5f9";
+      ctx.font = `bold ${isHighRes ? 26 : 9}px sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText(
+        `${bookTitle.toUpperCase()} • ${dateStr.toUpperCase()}`,
+        width / 2,
+        footerCardY + (isHighRes ? 38 : 13)
+      );
+
+      // Footer Attribution & Website link (regular weight, kept large size, in white)
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `normal ${isHighRes ? 24 : 8.5}px sans-serif`;
+      ctx.fillText(
+        "Ellen G. White — https://egw-devotional.ai.studio",
+        width / 2,
+        footerCardY + (isHighRes ? 74 : 26)
+      );
     },
     [quoteText, reflectionText, selectedTemplate, aspectRatio, customImage, bookTitle, dateStr]
   );
