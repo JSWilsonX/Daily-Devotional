@@ -83,7 +83,7 @@ interface DevotionalBlock {
 
 export const PRONUNCIATION_REPLACEMENTS: Record<string, string> = {
   LIVE_VERB: "liv",
-  LIVE_ADJECTIVE: "lyve",
+  LIVE_ADJECTIVE: "live",
   READ_PRESENT: "reed",
   READ_PAST: "red",
   LEAD_VERB: "leed",
@@ -98,11 +98,11 @@ export const PRONUNCIATION_REPLACEMENTS: Record<string, string> = {
   CLOSE_SHUT: "cloze",
   MINUTE_TIME: "minnit",
   MINUTE_TINY: "mynewt",
-  OBJECT_NOUN: "objikt",
+  OBJECT_NOUN: "objekt",
   OBJECT_VERB: "ubjekt",
   RECORD_NOUN: "rekurd",
   RECORD_VERB: "rikord",
-  PRESENT_NOUN: "prezunt",
+  PRESENT_NOUN: "present",
   PRESENT_VERB: "pruzent"
 };
 
