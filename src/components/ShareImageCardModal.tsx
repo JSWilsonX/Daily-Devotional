@@ -19,6 +19,35 @@ interface BackgroundTemplate {
   accentColor: string;
 }
 
+export interface FontOption {
+  id: string;
+  name: string;
+  family: string;
+}
+
+export const FONT_OPTIONS: FontOption[] = [
+  {
+    id: "geometric-sans",
+    name: "Geometric (Jakarta)",
+    family: '"Plus Jakarta Sans", "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+  },
+  {
+    id: "roboto-sans",
+    name: "Roboto",
+    family: '"Roboto", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif'
+  },
+  {
+    id: "system-ui",
+    name: "Clean System",
+    family: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+  },
+  {
+    id: "classic-serif",
+    name: "Classic Serif",
+    family: 'Georgia, Cambria, "Times New Roman", Times, serif'
+  }
+];
+
 const PRESET_TEMPLATES: BackgroundTemplate[] = [
   {
     id: "golden-dawn",
@@ -147,6 +176,7 @@ export const ShareImageCardModal: React.FC<ShareCardProps> = ({
   const [reflectionText, setReflectionText] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState<BackgroundTemplate>(PRESET_TEMPLATES[0]);
   const [aspectRatio, setAspectRatio] = useState<"9:16" | "1:1">("1:1");
+  const [selectedFontId, setSelectedFontId] = useState<string>("geometric-sans");
   const [customImage, setCustomImage] = useState<string | null>(null);
   
   const [isSharing, setIsSharing] = useState(false);
@@ -223,6 +253,15 @@ export const ShareImageCardModal: React.FC<ShareCardProps> = ({
       const ctx = targetCanvas.getContext("2d");
       if (!ctx) return;
 
+      // Ensure all web fonts are fully loaded before rendering
+      if (typeof document !== "undefined" && document.fonts) {
+        try {
+          await document.fonts.ready;
+        } catch {
+          // Continue gracefully
+        }
+      }
+
       // Define width & height
       const width = isHighRes ? (aspectRatio === "9:16" ? 1080 : 1080) : (aspectRatio === "9:16" ? 360 : 360);
       const height = isHighRes ? (aspectRatio === "9:16" ? 1920 : 1080) : (aspectRatio === "9:16" ? 640 : 360);
@@ -273,74 +312,106 @@ export const ShareImageCardModal: React.FC<ShareCardProps> = ({
           ctx.fillRect(0, 0, width, height);
         }
 
-        // Helper to wrap text into line arrays based on canvas measurement
+        // Helper to wrap text into line arrays based on canvas measurement, supporting multiple paragraphs
         const getWrappedLines = (text: string, maxWidth: number, font: string): string[] => {
           ctx.font = font;
-          const words = text.split(" ");
-          let line = "";
+          const rawParagraphs = text.split(/\r?\n/);
           const lines: string[] = [];
 
-          for (let n = 0; n < words.length; n++) {
-            const testLine = line + words[n] + " ";
-            const metrics = ctx.measureText(testLine);
-            if (metrics.width > maxWidth && n > 0) {
-              lines.push(line.trim());
-              line = words[n] + " ";
-            } else {
-              line = testLine;
+          for (let p = 0; p < rawParagraphs.length; p++) {
+            const pText = rawParagraphs[p].trim();
+            if (!pText) {
+              if (lines.length > 0 && p < rawParagraphs.length - 1) {
+                lines.push(""); // Preserve paragraph separation
+              }
+              continue;
+            }
+            const words = pText.split(/\s+/);
+            let currentLine = "";
+
+            for (let n = 0; n < words.length; n++) {
+              const testLine = currentLine ? `${currentLine} ${words[n]}` : words[n];
+              const metrics = ctx.measureText(testLine);
+              if (metrics.width > maxWidth && currentLine) {
+                lines.push(currentLine.trim());
+                currentLine = words[n];
+              } else {
+                currentLine = testLine;
+              }
+            }
+            if (currentLine) {
+              lines.push(currentLine.trim());
             }
           }
-          lines.push(line.trim());
-          return lines;
+          return lines.length > 0 ? lines : [text];
         };
 
         // 2. Compute Main Quote Typography & Line Dimensions
         const cardWidth = width * 0.88;
         const cardX = (width - cardWidth) / 2;
         const innerPaddingX = isHighRes ? 46 : 15;
+        const innerPaddingY = isHighRes ? 32 : 11;
         const maxTextWidth = Math.max(100, cardWidth - innerPaddingX * 2);
 
         // Fallback cleanly to initialText or default passage if quoteText was temporarily empty
         const resolvedQuote = (quoteText && quoteText.trim()) || (initialText && initialText.trim()) || "Search me, O God, and know my heart: try me, and know my thoughts.";
-        const cleanQuote = `“${resolvedQuote.replace(/^[“"]|[”"]$/g, "").trim()}”`;
+        let cleanQuote = resolvedQuote.trim();
+        if (!cleanQuote.includes("\n") && !cleanQuote.startsWith("“") && !cleanQuote.startsWith('"')) {
+          cleanQuote = `“${cleanQuote}”`;
+        }
+
+        const topSafeZone = isHighRes ? 105 : 36;
+        const bottomSafeZone = height - (isHighRes ? 135 : 45);
+        const availableVerticalSpace = bottomSafeZone - topSafeZone;
+
+        const activeFontObj = FONT_OPTIONS.find((f) => f.id === selectedFontId) || FONT_OPTIONS[0];
+        const SANS_STACK = activeFontObj.family;
+
+        // 3. Compute Reflection Typography (if present)
+        const hasReflection = Boolean(reflectionText.trim());
+        let reflLines: string[] = [];
+        let reflFontSize = isHighRes ? 26 : 9.5;
+        if (aspectRatio === "1:1") {
+          reflFontSize = Math.floor(reflFontSize * 0.88);
+        }
+        const reflFont = `italic 400 ${Math.round(reflFontSize)}px ${SANS_STACK}`;
+        const reflLineHeight = reflFontSize * 1.38;
+        let reflBlockHeight = 0;
+
+        if (hasReflection) {
+          reflLines = getWrappedLines(`My Reflection: "${reflectionText.trim()}"`, maxTextWidth, reflFont);
+          reflBlockHeight = (isHighRes ? 36 : 12) + reflLines.length * reflLineHeight;
+        }
+
+        // Adaptive font size calculation for multi-paragraph scripture
         let fontSize = isHighRes 
-          ? (cleanQuote.length > 280 ? 36 : cleanQuote.length > 180 ? 44 : 52)
-          : (cleanQuote.length > 280 ? 12 : cleanQuote.length > 180 ? 14 : 17);
+          ? (cleanQuote.length > 400 ? 28 : cleanQuote.length > 240 ? 34 : cleanQuote.length > 140 ? 42 : 50)
+          : (cleanQuote.length > 400 ? 9.5 : cleanQuote.length > 240 ? 11.5 : cleanQuote.length > 140 ? 14 : 16.5);
 
         if (aspectRatio === "1:1") {
           fontSize = Math.floor(fontSize * 0.82);
         }
 
-        const quoteFont = `normal ${fontSize}px Georgia, serif`;
-        const quoteLines = getWrappedLines(cleanQuote, maxTextWidth, quoteFont);
-        const quoteLineHeight = fontSize * 1.45;
-        const quoteBlockHeight = quoteLines.length * quoteLineHeight;
+        let quoteFont = `500 ${Math.round(fontSize)}px ${SANS_STACK}`;
+        let quoteLines = getWrappedLines(cleanQuote, maxTextWidth, quoteFont);
+        let quoteLineHeight = fontSize * 1.42;
+        let quoteBlockHeight = quoteLines.reduce((acc, line) => acc + (line === "" ? quoteLineHeight * 0.5 : quoteLineHeight), 0);
 
-        // 3. Compute Reflection Typography (if present)
-        const hasReflection = Boolean(reflectionText.trim());
-        let reflLines: string[] = [];
-        let reflFontSize = isHighRes ? 28 : 10;
-        if (aspectRatio === "1:1") {
-          reflFontSize = Math.floor(reflFontSize * 0.88);
-        }
-        const reflFont = `italic ${reflFontSize}px Georgia, serif`;
-        const reflLineHeight = reflFontSize * 1.4;
-        let reflBlockHeight = 0;
-
-        if (hasReflection) {
-          reflLines = getWrappedLines(`My Reflection: "${reflectionText.trim()}"`, maxTextWidth, reflFont);
-          reflBlockHeight = (isHighRes ? 40 : 14) + reflLines.length * reflLineHeight;
+        // Dynamically shrink font if needed to guarantee no overflow in the viewport
+        const maxAllowedQuoteHeight = availableVerticalSpace - innerPaddingY * 2 - (hasReflection ? reflBlockHeight + (isHighRes ? 14 : 5) : 0);
+        const minFontSize = isHighRes ? (aspectRatio === "1:1" ? 18 : 22) : (aspectRatio === "1:1" ? 6.5 : 7.5);
+        while (quoteBlockHeight > maxAllowedQuoteHeight && fontSize > minFontSize) {
+          fontSize -= isHighRes ? 2 : 0.75;
+          quoteFont = `500 ${Math.round(fontSize)}px ${SANS_STACK}`;
+          quoteLines = getWrappedLines(cleanQuote, maxTextWidth, quoteFont);
+          quoteLineHeight = fontSize * 1.40;
+          quoteBlockHeight = quoteLines.reduce((acc, line) => acc + (line === "" ? quoteLineHeight * 0.5 : quoteLineHeight), 0);
         }
 
         // 4. Calculate Central Rounded Rectangular Vignette Bounds
-        const innerPaddingY = isHighRes ? 36 : 13;
         const cardContentHeight = quoteBlockHeight + (hasReflection ? reflBlockHeight + (isHighRes ? 14 : 5) : 0);
-        const cardHeight = cardContentHeight + innerPaddingY * 2;
-        const cardRadius = isHighRes ? 26 : 10;
-
-        const topSafeZone = isHighRes ? 105 : 36;
-        const bottomSafeZone = height - (isHighRes ? 135 : 45);
-        const availableVerticalSpace = bottomSafeZone - topSafeZone;
+        const cardHeight = Math.min(availableVerticalSpace, cardContentHeight + innerPaddingY * 2);
+        const cardRadius = isHighRes ? 24 : 9;
         const cardY = Math.max(topSafeZone, topSafeZone + (availableVerticalSpace - cardHeight) / 2);
 
         // 5. Draw Central Rounded Rectangular Vignette Overlay for Text Contrast
@@ -366,8 +437,8 @@ export const ShareImageCardModal: React.FC<ShareCardProps> = ({
 
         // 6. Draw Top Header Pill (Scrim limited only around text)
         const headerText = "✦  DAILY DEVOTIONAL REFLECTION  ✦";
-        const headerFontSize = isHighRes ? 24 : 8.5;
-        ctx.font = `bold ${headerFontSize}px monospace`;
+        const headerFontSize = isHighRes ? 22 : 8;
+        ctx.font = `bold ${Math.round(headerFontSize)}px ${SANS_STACK}`;
         const headerTextWidth = ctx.measureText(headerText).width;
         const headerPillW = headerTextWidth + (isHighRes ? 36 : 13);
         const headerPillH = isHighRes ? 42 : 15;
@@ -399,8 +470,12 @@ export const ShareImageCardModal: React.FC<ShareCardProps> = ({
 
         let textY = cardY + innerPaddingY + fontSize * 0.85;
         for (let i = 0; i < quoteLines.length; i++) {
-          ctx.fillText(quoteLines[i], width / 2, textY);
-          textY += quoteLineHeight;
+          if (quoteLines[i] !== "") {
+            ctx.fillText(quoteLines[i], width / 2, textY);
+            textY += quoteLineHeight;
+          } else {
+            textY += quoteLineHeight * 0.5;
+          }
         }
 
         // 8. Render Reflection Text Inside Card (if present)
@@ -444,7 +519,7 @@ export const ShareImageCardModal: React.FC<ShareCardProps> = ({
 
         // Book Title and Date on the same line (larger restored size)
         ctx.fillStyle = "#f1f5f9";
-        ctx.font = `bold ${isHighRes ? 26 : 9}px sans-serif`;
+        ctx.font = `bold ${Math.round(isHighRes ? 26 : 9)}px ${SANS_STACK}`;
         ctx.textAlign = "center";
         const safeBook = (bookTitle || "Ellen G. White Devotional").toUpperCase();
         const safeDate = (dateStr || "").toUpperCase();
@@ -456,7 +531,7 @@ export const ShareImageCardModal: React.FC<ShareCardProps> = ({
 
         // Footer Attribution & Website link (regular weight, kept large size, in white)
         ctx.fillStyle = "#ffffff";
-        ctx.font = `normal ${isHighRes ? 24 : 8.5}px sans-serif`;
+        ctx.font = `normal ${Math.round(isHighRes ? 24 : 8.5)}px ${SANS_STACK}`;
         ctx.fillText(
           "Ellen G. White — https://egw-devotional.ai.studio",
           width / 2,
@@ -466,7 +541,7 @@ export const ShareImageCardModal: React.FC<ShareCardProps> = ({
         console.error("Error drawing share card canvas:", err);
       }
     },
-    [quoteText, reflectionText, selectedTemplate, aspectRatio, customImage, bookTitle, dateStr]
+    [quoteText, reflectionText, selectedTemplate, aspectRatio, selectedFontId, customImage, bookTitle, dateStr]
   );
 
   // Re-render preview canvas whenever inputs change
@@ -684,9 +759,9 @@ export const ShareImageCardModal: React.FC<ShareCardProps> = ({
               <textarea
                 value={quoteText}
                 onChange={(e) => setQuoteText(e.target.value)}
-                rows={3}
-                className="w-full text-xs font-serif leading-relaxed p-3 rounded-xl bg-slate-950/80 border border-slate-700/60 focus:border-cyan-400 focus:outline-none text-slate-100 resize-none"
-                placeholder="Devotional passage quote..."
+                rows={4}
+                className="w-full text-xs font-sans leading-relaxed p-3 rounded-xl bg-slate-950/80 border border-slate-700/60 focus:border-cyan-400 focus:outline-none text-slate-100 resize-y max-h-40"
+                placeholder="Devotional scripture passage quote..."
               />
             </div>
 
@@ -703,6 +778,35 @@ export const ShareImageCardModal: React.FC<ShareCardProps> = ({
                 placeholder="Write a prayer, thought, or takeaway to include on your card..."
                 className="w-full text-xs font-sans leading-normal p-3 rounded-xl bg-slate-950/80 border border-slate-700/60 focus:border-cyan-400 focus:outline-none text-cyan-200 placeholder:text-slate-500 resize-none"
               />
+            </div>
+
+            {/* Typography Font Selector */}
+            <div>
+              <label className="block text-xs font-mono font-bold text-slate-300 mb-1.5 flex items-center justify-between">
+                <span>Typography Font Style:</span>
+                <span className="text-[10px] text-cyan-400 font-normal">
+                  {FONT_OPTIONS.find(f => f.id === selectedFontId)?.name}
+                </span>
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                {FONT_OPTIONS.map((f) => {
+                  const isSel = selectedFontId === f.id;
+                  return (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => setSelectedFontId(f.id)}
+                      className={`px-2.5 py-1.5 rounded-xl text-xs font-medium border transition-all text-center truncate ${
+                        isSel
+                          ? "bg-cyan-500/20 border-cyan-400 text-cyan-200 font-bold shadow-sm"
+                          : "bg-slate-950/60 border-slate-700/60 text-slate-400 hover:text-slate-200 hover:border-slate-500"
+                      }`}
+                    >
+                      {f.name}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* 3. Background Image Carousel / Selector */}

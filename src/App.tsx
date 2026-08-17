@@ -850,11 +850,14 @@ export default function App() {
                   (typeof floatingSelectionText === "string" && floatingSelectionText.trim()) || 
                   "";
     if (!passage && content) {
-      const scriptureBlock = content.paragraphs?.find(p => p.type === "scripture");
-      passage = scriptureBlock?.text?.trim() || 
-                content.paragraphs?.find(p => p.text?.trim())?.text?.trim() || 
-                content.title?.trim() || 
-                "";
+      const scriptureBlocks = content.paragraphs?.filter(p => p.type === "scripture" && p.text?.trim());
+      if (scriptureBlocks && scriptureBlocks.length > 0) {
+        passage = scriptureBlocks.map(p => p.text.trim()).join("\n\n");
+      } else {
+        passage = content.paragraphs?.find(p => p.text?.trim())?.text?.trim() || 
+                  content.title?.trim() || 
+                  "";
+      }
     }
     if (!passage && sortedDevotionals && sortedDevotionals[selectedIdx]) {
       passage = sortedDevotionals[selectedIdx].description?.trim() || 
