@@ -103,7 +103,7 @@ export const PRONUNCIATION_REPLACEMENTS: Record<string, string> = {
   RECORD_NOUN: "rekurd",
   RECORD_VERB: "rikord",
   PRESENT_NOUN: "present",
-  PRESENT_VERB: "pruzent"
+  PRESENT_VERB: "prescent"
 };
 
 function replaceNthWord(paragraphText: string, targetWord: string, occurrence: number, replacement: string): string {
@@ -470,6 +470,42 @@ function verbalizeBook(book: string): string {
   return b;
 }
 
+function formatVerseList(verseGroupStr: string): string {
+  const segments = verseGroupStr
+    .split(/(?:,\s*(?:and\s+)?|\s+and\s+)/i)
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  if (segments.length === 0) return "";
+
+  const spokenParts = segments.map(seg => {
+    const rangeMatch = seg.match(/^(\d+)\s*[-—–]\s*(\d+)$/);
+    if (rangeMatch) {
+      const start = numberToWords(parseInt(rangeMatch[1]));
+      const end = numberToWords(parseInt(rangeMatch[2]));
+      return `${start} through ${end}`;
+    }
+    const singleMatch = seg.match(/^(\d+)$/);
+    if (singleMatch) {
+      return numberToWords(parseInt(singleMatch[1]));
+    }
+    return seg;
+  });
+
+  if (spokenParts.length === 1) {
+    const isRange = /^(\d+)\s*[-—–]\s*(\d+)$/.test(segments[0]);
+    return isRange ? `verses ${spokenParts[0]}` : `verse ${spokenParts[0]}`;
+  }
+  
+  if (spokenParts.length === 2) {
+    return `verse ${spokenParts[0]} and ${spokenParts[1]}`;
+  }
+
+  const allButLast = spokenParts.slice(0, -1).join(", ");
+  const last = spokenParts[spokenParts.length - 1];
+  return `verse ${allButLast}, and ${last}`;
+}
+
 function verbalizeScripture(text: string): string {
   if (!text) return text;
 
@@ -498,6 +534,7 @@ function verbalizeScripture(text: string): string {
     return { vBook, hasOrdinal };
   };
 
+  // Cross-chapter range: e.g. John 1:1 - 2:3
   const p1 = new RegExp(`\\b(${bookPatternStr})\\.?\\s+(\\d+)\\s*:\\s*(\\d+)\\s*[-—–]\\s*(\\d+)\\s*:\\s*(\\d+)\\b`, 'gi');
   result = result.replace(p1, (match, book, c1, v1, c2, v2) => {
     const { vBook, hasOrdinal } = getPrefixAndBook(book);
@@ -510,46 +547,45 @@ function verbalizeScripture(text: string): string {
     return `${vBook}${connector}chapter ${ch1}, verse ${vr1} through chapter ${ch2}, verse ${vr2}`;
   });
 
-  const p2 = new RegExp(`\\b(${bookPatternStr})\\.?\\s+(\\d+)\\s*:\\s*(\\d+)\\s*[-—–]\\s*(\\d+)\\b`, 'gi');
-  result = result.replace(p2, (match, book, c, v1, v2) => {
+  // Chapter and verse or verse list: e.g. Jeremiah 35:18, 19 or Romans 8:28, 31, 38 or John 3:16 or Genesis 1:1-3
+  const pChapterVerseList = new RegExp(
+    `\\b(${bookPatternStr})\\.?\\s+(\\d+)\\s*:\\s*(\\d+(?:\\s*[-—–]\\s*\\d+)?(?:\\s*(?:,\\s*(?:and\\s+)?|\\s+and\\s+)\\d+(?:\\s*[-—–]\\s*\\d+)?)*)\\b`,
+    'gi'
+  );
+  result = result.replace(pChapterVerseList, (match, book, c, verseGroup) => {
     const { vBook, hasOrdinal } = getPrefixAndBook(book);
     const ch = numberToWords(parseInt(c));
-    const vr1 = numberToWords(parseInt(v1));
-    const vr2 = numberToWords(parseInt(v2));
+    const verseText = formatVerseList(verseGroup);
 
     const isPsalm = vBook.toLowerCase() === "psalm";
     if (isPsalm) {
-      return `${vBook} ${ch}, verses ${vr1} through ${vr2}`;
+      return `${vBook} ${ch}, ${verseText}`;
     }
 
     const connector = hasOrdinal ? ", " : " ";
-    return `${vBook}${connector}chapter ${ch}, verses ${vr1} through ${vr2}`;
+    return `${vBook}${connector}chapter ${ch}, ${verseText}`;
   });
 
-  const p3 = new RegExp(`\\b(${bookPatternStr})\\.?\\s+(\\d+)\\s*:\\s*(\\d+)\\b`, 'gi');
-  result = result.replace(p3, (match, book, c, v) => {
-    const { vBook, hasOrdinal } = getPrefixAndBook(book);
-    const ch = numberToWords(parseInt(c));
-    const vr = numberToWords(parseInt(v));
-
-    const isPsalm = vBook.toLowerCase() === "psalm";
-    if (isPsalm) {
-      return `${vBook} ${ch}, verse ${vr}`;
+  // Single-chapter books with verse lists or ranges without a colon: e.g. Jude 18, 19 or Jude 1-4
+  const pSingleChapterBookList = new RegExp(
+    `\\b(${bookPatternStr})\\.?\\s+(\\d+(?:\\s*[-—–]\\s*\\d+)?(?:\\s*(?:,\\s*(?:and\\s+)?|\\s+and\\s+)\\d+(?:\\s*[-—–]\\s*\\d+)?)*)\\b`,
+    'gi'
+  );
+  result = result.replace(pSingleChapterBookList, (match, book, verseGroup) => {
+    const { vBook } = getPrefixAndBook(book);
+    if (!isSingleChapterBook(vBook)) {
+      return match;
     }
-
-    const connector = hasOrdinal ? ", " : " ";
-    return `${vBook}${connector}chapter ${ch}, verse ${vr}`;
+    const verseText = formatVerseList(verseGroup);
+    return `${vBook} ${verseText}`;
   });
 
-  const p4 = new RegExp(`\\b(${bookPatternStr})\\.?\\s+(\\d+)\\s*[-—–]\\s*(\\d+)\\b`, 'gi');
-  result = result.replace(p4, (match, book, num1, num2) => {
+  // Chapter ranges: e.g. Genesis 1-3 or Psalm 1-3
+  const pChapterRange = new RegExp(`\\b(${bookPatternStr})\\.?\\s+(\\d+)\\s*[-—–]\\s*(\\d+)\\b`, 'gi');
+  result = result.replace(pChapterRange, (match, book, num1, num2) => {
     const { vBook, hasOrdinal } = getPrefixAndBook(book);
     const n1 = numberToWords(parseInt(num1));
     const n2 = numberToWords(parseInt(num2));
-
-    if (isSingleChapterBook(vBook)) {
-      return `${vBook} verses ${n1} through ${n2}`;
-    }
 
     const isPsalm = vBook.toLowerCase() === "psalm";
     if (isPsalm) {
@@ -560,14 +596,11 @@ function verbalizeScripture(text: string): string {
     return `${vBook}${connector}chapters ${n1} through ${n2}`;
   });
 
-  const p5 = new RegExp(`\\b(${bookPatternStr})\\.?\\s+(\\d+)\\b`, 'gi');
-  result = result.replace(p5, (match, book, num) => {
+  // Single chapters: e.g. Genesis 1 or Psalm 23
+  const pSingleChapter = new RegExp(`\\b(${bookPatternStr})\\.?\\s+(\\d+)\\b`, 'gi');
+  result = result.replace(pSingleChapter, (match, book, num) => {
     const { vBook, hasOrdinal } = getPrefixAndBook(book);
     const n = numberToWords(parseInt(num));
-
-    if (isSingleChapterBook(vBook)) {
-      return `${vBook} verse ${n}`;
-    }
 
     const isPsalm = vBook.toLowerCase() === "psalm";
     if (isPsalm) {
