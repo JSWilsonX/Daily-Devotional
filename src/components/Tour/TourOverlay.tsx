@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { TourDefinition, TourStep, TourPlacement } from "./TourTypes";
+import { FormattedTourText } from "./FormattedTourText";
 
 interface TourOverlayProps {
   tour: TourDefinition;
@@ -66,8 +67,6 @@ export function TourOverlay({
 
   // 1. Target Tracking: Scroll & Resize listening to keep bounds updated
   useEffect(() => {
-    let animationFrameId: number;
-
     const updateBounds = () => {
       const { element, isFallback } = getVisibleTarget(currentStep.selector);
       setIsFallbackMoreMenu(isFallback);
@@ -94,21 +93,13 @@ export function TourOverlay({
 
     updateBounds();
 
-    // Listen to resize, scroll, and layout changes
+    // Listen to resize and scroll
     window.addEventListener("resize", updateBounds, { passive: true });
     window.addEventListener("scroll", updateBounds, { passive: true });
-    
-    // Check multiple frames in case scrolling is smooth
-    const pollBounds = () => {
-      updateBounds();
-      animationFrameId = requestAnimationFrame(pollBounds);
-    };
-    animationFrameId = requestAnimationFrame(pollBounds);
 
     return () => {
       window.removeEventListener("resize", updateBounds);
       window.removeEventListener("scroll", updateBounds);
-      cancelAnimationFrame(animationFrameId);
     };
   }, [currentStep.selector, stepIdx]);
 
@@ -229,243 +220,177 @@ export function TourOverlay({
     };
 
     window.addEventListener("click", blockGlobalInputs, true);
-    window.addEventListener("mousedown", blockGlobalInputs, true);
-    window.addEventListener("mouseup", blockGlobalInputs, true);
+    return () => window.removeEventListener("click", blockGlobalInputs, true);
+  }, [currentStep.selector, currentStep.allowInteraction, targetRect]);
 
-    return () => {
-      window.removeEventListener("click", blockGlobalInputs, true);
-      window.removeEventListener("mousedown", blockGlobalInputs, true);
-      window.removeEventListener("mouseup", blockGlobalInputs, true);
-    };
-  }, [currentStep.selector, targetRect, currentStep.allowInteraction]);
-
-  // 4. Keyboard Shortcuts: Esc to skip, Left to back, Right/Space to next
+  // 4. Keyboard Shortcuts: Escape to exit, Arrows to step
   useEffect(() => {
-    const handleKeys = (e: KeyboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        e.preventDefault();
         onSkip();
-      } else if (e.key === "ArrowLeft" && stepIdx > 0) {
-        e.preventDefault();
-        onPrev();
       } else if (e.key === "ArrowRight") {
-        e.preventDefault();
-        if (isLastStep) {
-          onFinish();
-        } else {
-          onNext();
-        }
+        if (!isLastStep) onNext();
+        else onFinish();
+      } else if (e.key === "ArrowLeft" && stepIdx > 0) {
+        onPrev();
       }
     };
 
-    window.addEventListener("keydown", handleKeys);
-    return () => window.removeEventListener("keydown", handleKeys);
-  }, [stepIdx, isLastStep, onNext, onPrev, onSkip, onFinish]);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isLastStep, onFinish, onNext, onPrev, onSkip, stepIdx]);
 
-  // 5. Accessible Focus Lock (Tab-Trapping inside popover)
-  useEffect(() => {
-    const popover = popoverRef.current;
-    if (!popover) return;
-
-    const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-    const focusableElements = popover.querySelectorAll<HTMLElement>(focusableSelector);
-    const firstFocusable = focusableElements[0];
-    const lastFocusable = focusableElements[focusableElements.length - 1];
-
-    // Focus first element on mount/step change
-    if (firstFocusable) firstFocusable.focus();
-
-    const trapFocus = (e: KeyboardEvent) => {
-      if (e.key !== "Tab") return;
-
-      if (e.shiftKey) {
-        // Shift + Tab
-        if (document.activeElement === firstFocusable) {
-          lastFocusable.focus();
-          e.preventDefault();
-        }
-      } else {
-        // Tab
-        if (document.activeElement === lastFocusable) {
-          firstFocusable.focus();
-          e.preventDefault();
-        }
-      }
-    };
-
-    window.addEventListener("keydown", trapFocus);
-    return () => window.removeEventListener("keydown", trapFocus);
-  }, [stepIdx]);
-
-  // Spotlight dimensions with safe padding offsets
-  const padding = 8;
-  const spotlightX = targetRect ? targetRect.x - padding : 0;
-  const spotlightY = targetRect ? targetRect.y - padding : 0;
-  const spotlightW = targetRect ? targetRect.width + padding * 2 : 0;
-  const spotlightH = targetRect ? targetRect.height + padding * 2 : 0;
+  // Padding buffer for the spotlight bounding box
+  const pad = 6;
+  const spotlightX = targetRect ? Math.max(0, targetRect.left - pad) : 0;
+  const spotlightY = targetRect ? Math.max(0, targetRect.top - pad) : 0;
+  const spotlightW = targetRect ? targetRect.width + pad * 2 : 0;
+  const spotlightH = targetRect ? targetRect.height + pad * 2 : 0;
+  const spotlightR = 12;
 
   return (
-    <div className="fixed inset-0 z-[100] overflow-hidden select-none font-sans">
-      {/* 1. Backdrop SVG Mask overlay for elegant visual dimming */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none">
+    <div className="fixed inset-0 z-50 overflow-hidden font-sans pointer-events-auto">
+      {/* Dynamic SVG Spotlight Backdrop with Smooth Smooth Transition */}
+      <svg className="absolute inset-0 h-full w-full pointer-events-none transition-all duration-300">
         <defs>
-          <mask id="tour-spotlight-svg-mask">
-            {/* White represents opaque canvas (fully dimmed background) */}
+          <mask id="spotlight-mask">
+            {/* White covers entire screen (opaque) */}
             <rect x="0" y="0" width="100%" height="100%" fill="white" />
-            
-            {/* Black represents fully transparent cut-out (spotlight highlighting target control) */}
+            {/* Black cuts out the spotlight hole for the active target */}
             {targetRect && (
               <rect
                 x={spotlightX}
                 y={spotlightY}
                 width={spotlightW}
                 height={spotlightH}
-                rx={12}
-                ry={12}
+                rx={spotlightR}
+                ry={spotlightR}
                 fill="black"
+                className="transition-all duration-300 ease-out"
               />
             )}
           </mask>
         </defs>
-
-        {/* Ambient semi-transparent backdrop rectangle */}
+        {/* Dark Backdrop with mask applied */}
         <rect
           x="0"
           y="0"
           width="100%"
           height="100%"
-          fill="rgba(2, 6, 23, 0.72)"
-          className="backdrop-blur-[2px] transition-all duration-300 pointer-events-auto"
-          mask="url(#tour-spotlight-svg-mask)"
+          fill="rgba(2, 6, 23, 0.78)"
+          mask="url(#spotlight-mask)"
+          className="backdrop-blur-[2px] pointer-events-auto"
         />
       </svg>
 
-      {/* Interactive highlight pointer border glow effect */}
+      {/* Target Glowing Ring Outline */}
       {targetRect && (
-        <div
-          className="absolute border-2 border-cyan-400 rounded-xl pointer-events-none shadow-[0_0_15px_rgba(34,211,238,0.5)] transition-all duration-300"
-          style={{
+        <motion.div
+          initial={false}
+          animate={{
             top: spotlightY,
             left: spotlightX,
             width: spotlightW,
             height: spotlightH,
           }}
+          transition={{ type: "spring", stiffness: 350, damping: 30 }}
+          className="absolute rounded-xl border-2 border-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.4)] pointer-events-none z-50"
         />
       )}
 
-      {/* 2. Floating popover card */}
+      {/* Interactive Floating Popover Bubble */}
       <AnimatePresence mode="wait">
         <motion.div
-          ref={popoverRef}
           key={currentStep.id}
-          initial={{ opacity: 0, scale: 0.95, y: 10 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: -10 }}
-          transition={{ duration: 0.22, ease: "easeOut" }}
-          style={{
-            position: "absolute",
+          ref={popoverRef}
+          initial={{ opacity: 0, scale: 0.95, y: 4 }}
+          animate={{
+            opacity: 1,
+            scale: 1,
             top: popoverPosition.top,
             left: popoverPosition.left,
           }}
-          className="w-[calc(100vw-32px)] sm:w-[340px] z-[110] rounded-2xl p-5 border shadow-2xl bg-[#0f172a] border-slate-800 text-slate-100 flex flex-col focus:outline-none pointer-events-auto"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="tour-heading"
-          aria-describedby="tour-explanation"
+          exit={{ opacity: 0, scale: 0.95, y: 4 }}
+          transition={{ duration: 0.2 }}
+          style={{ position: "absolute" }}
+          className="w-80 sm:w-96 rounded-2xl border border-white/15 bg-slate-950/95 text-slate-100 p-5 shadow-[0_15px_40px_rgba(0,0,0,0.85)] backdrop-blur-xl z-50 pointer-events-auto"
         >
-          {/* Arrow pointing at highlighted control */}
-          <div
-            className={`${arrowClass} bg-[#0f172a] border-slate-800 transition-all duration-300 pointer-events-none`}
-            style={arrowStyle}
-          />
+          {/* Subtle Pointer Arrow */}
+          {targetRect && (
+            <div
+              className={`${arrowClass} border-white/15 bg-slate-950`}
+              style={arrowStyle}
+            />
+          )}
 
-          {/* Header */}
-          <div className="flex items-start justify-between gap-2">
-            <h3
-              id="tour-heading"
-              className="font-bold text-sm leading-snug tracking-tight text-white flex-1"
-            >
-              {translate(currentStep.title)}
-            </h3>
+          {/* Popover Header: Title & Close Action */}
+          <div className="flex items-start justify-between gap-2 mb-2">
+            <div className="flex items-center space-x-2">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500/20 text-cyan-300 font-mono text-[10px] font-bold border border-cyan-500/30">
+                {stepIdx + 1}
+              </span>
+              <h3 className="font-display text-sm font-bold text-cyan-300 tracking-tight">
+                {translate(currentStep.title)}
+              </h3>
+            </div>
             <button
               onClick={onSkip}
-              className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/80 transition-colors cursor-pointer"
-              aria-label="Skip guided tour"
+              className="p-1 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800/80 transition-colors"
+              title="Skip Tour"
             >
-              <X size={15} />
+              <X size={14} />
             </button>
           </div>
 
-          {/* Explanation Body */}
-          <p
-            id="tour-explanation"
-            className="text-xs text-slate-300 mt-2.5 leading-relaxed font-normal"
-          >
-            {(() => {
-              const text = translate(currentStep.explanation);
-              const parts = text.split(/(\*\*.*?\*\*)/g);
-              return parts.map((part, i) => {
-                if (part.startsWith("**") && part.endsWith("**")) {
-                  const content = part.slice(2, -2);
-                  return (
-                    <strong
-                      key={i}
-                      className="font-bold text-cyan-300 bg-cyan-950/60 px-1.5 py-0.5 rounded-md border border-cyan-500/30 mx-0.5 inline-block shadow-sm"
-                    >
-                      {content}
-                    </strong>
-                  );
-                }
-                return part;
-              });
-            })()}
-          </p>
-
-          {/* More Menu Callout Badge if pointing to More Options button on smaller screens */}
+          {/* Collapsed Target Notice (if pointing to more menu) */}
           {isFallbackMoreMenu && (
-            <div className="mt-3 text-[11px] font-mono font-semibold text-cyan-300 bg-cyan-950/80 border border-cyan-500/40 px-2.5 py-1.5 rounded-xl flex items-center space-x-1.5 shadow-sm">
-              <span className="text-sm shrink-0">📍</span>
-              <span className="leading-tight">
-                Control located inside the '...' More Options menu
-              </span>
+            <div className="mb-2 p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[10px] font-mono leading-tight">
+              Note: This tool is nested inside the <strong>More Menu (•••)</strong> on this screen size.
             </div>
           )}
 
-          {/* Navigation Controls */}
-          <div className="flex items-center justify-between mt-5 pt-3 border-t border-slate-800/80">
-            {/* Progress Label */}
-            <span className="text-[10px] font-mono text-slate-400 font-medium">
-              {stepIdx + 1} of {tour.steps.length}
-            </span>
+          {/* Body Content */}
+          <div className="mb-5">
+            <FormattedTourText text={translate(currentStep.explanation)} />
+          </div>
 
-            {/* Action buttons */}
-            <div className="flex items-center gap-2">
+          {/* Interactive Footer Controls */}
+          <div className="flex items-center justify-between pt-3 border-t border-white/10">
+            {/* Step Progress Bullets */}
+            <div className="flex items-center space-x-1.5">
+              {tour.steps.map((_, idx) => (
+                <div
+                  key={idx}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    idx === stepIdx
+                      ? "w-5 bg-gradient-to-r from-cyan-400 to-blue-400"
+                      : idx < stepIdx
+                      ? "w-1.5 bg-cyan-600/50"
+                      : "w-1.5 bg-slate-800"
+                  }`}
+                />
+              ))}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center space-x-2">
               {stepIdx > 0 && (
                 <button
                   onClick={onPrev}
-                  className="px-2.5 py-1.5 rounded-lg border text-[11px] font-mono font-bold flex items-center gap-1 border-slate-800 bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800 hover:border-slate-700 transition-all cursor-pointer"
+                  className="px-2.5 py-1.5 rounded-xl border border-white/10 bg-slate-900/60 hover:bg-slate-800 text-slate-300 text-xs font-mono font-medium transition-all flex items-center space-x-1"
                 >
                   <ChevronLeft size={12} />
-                  <span>PREV</span>
+                  <span>Back</span>
                 </button>
               )}
 
-              {isLastStep ? (
-                <button
-                  onClick={onFinish}
-                  className="px-3.5 py-1.5 rounded-lg text-[11px] font-mono font-bold bg-gradient-to-r from-cyan-400 to-blue-500 hover:opacity-95 text-white shadow-lg shadow-cyan-500/20 active:scale-95 transition-all cursor-pointer"
-                >
-                  FINISH
-                </button>
-              ) : (
-                <button
-                  onClick={onNext}
-                  className="px-3 py-1.5 rounded-lg text-[11px] font-mono font-bold bg-slate-800 hover:bg-slate-700 text-white flex items-center gap-1 active:scale-95 transition-all cursor-pointer"
-                >
-                  <span>NEXT</span>
-                  <ChevronRight size={12} />
-                </button>
-              )}
+              <button
+                onClick={isLastStep ? onFinish : onNext}
+                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 hover:opacity-90 text-white shadow-lg shadow-cyan-500/20 text-xs font-mono font-bold transition-all flex items-center space-x-1"
+              >
+                <span>{isLastStep ? "Finish" : "Next"}</span>
+                {!isLastStep && <ChevronRight size={12} />}
+              </button>
             </div>
           </div>
         </motion.div>

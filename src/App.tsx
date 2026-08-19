@@ -278,7 +278,7 @@ export default function App() {
   // Sync selection to localStorage and fetch content
   useEffect(() => {
     if (selectedId !== null) {
-      const activeBook = sortedDevotionals.find(d => d.id === selectedId);
+      const activeBook = devotionals.find(d => d.id === selectedId);
       if (activeBook) {
         localStorage.setItem("egw_selected_devotional_id", selectedId);
         localStorage.setItem("egw_selected_profile", selectedProfile);
@@ -286,7 +286,7 @@ export default function App() {
         stopSpeech();
       }
     }
-  }, [selectedId, selectedProfile, selectedDate, fetchActiveDevotionalContent, stopSpeech, sortedDevotionals]);
+  }, [selectedId, selectedProfile, selectedDate, devotionals, fetchActiveDevotionalContent, stopSpeech]);
 
   // Initial load
   useEffect(() => {

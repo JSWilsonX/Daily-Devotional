@@ -62,8 +62,8 @@ export const tours: TourDefinition[] = [
       {
         id: "share-reflection-card-step",
         selector: "#share-reflection-card-btn",
-        title: "Share Reflection Card",
-        explanation: "Tap **Share** to turn the daily devotional reading into an aesthetic image card formatted for Instagram Stories, Reels, or messaging! Choose from curated background themes or upload your own, add personal reflections, and share directly to socials or download.",
+        title: "Share Reflection Cards & Text Selection",
+        explanation: "Tap **Share** to turn the daily devotional's scripture reading into an aesthetic image card formatted for Instagram Stories, Reels, or messaging! You can also **highlight/select any passage of text** while reading to instantly share that specific quote as a customized image card. Choose from curated background themes or upload your own, add personal reflections, and share directly to socials or download.",
         placement: "bottom",
         allowInteraction: true
       },
@@ -103,8 +103,8 @@ export const tours: TourDefinition[] = [
       {
         id: "whats-new-share-card",
         selector: "#share-reflection-card-btn",
-        title: "Share Reflection Cards",
-        explanation: "Tap **Share** next to the active devotional book to turn the reading into an aesthetic image card formatted for Instagram Stories, Reels, or messaging! Choose from curated background themes or upload your own, add personal reflections, and share directly to socials or download.",
+        title: "Share Reflection Cards & Text Selection",
+        explanation: "Tap **Share** next to the active devotional book to turn the daily devotional's scripture reading into an aesthetic image card formatted for Instagram Stories, Reels, or messaging! You can also **highlight/select any passage of text** while reading to instantly open the image card generator with that specific quote.",
         placement: "bottom",
         allowInteraction: true
       },

@@ -15,19 +15,74 @@ export function useTTS({ content, onCompleteReading }: UseTTSProps) {
   const [speechRate, setSpeechRate] = useState<number>(1.0);
   const [speechPitch, setSpeechPitch] = useState<number>(1.0);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [selectedVoiceName, setSelectedVoiceName] = useState<string>("");
+  const [selectedVoiceName, setSelectedVoiceName] = useState<string>(() => {
+    return typeof window !== "undefined" ? localStorage.getItem("egw_selected_voice_name") || "" : "";
+  });
 
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const onCompleteReadingRef = useRef(onCompleteReading);
+  useEffect(() => {
+    onCompleteReadingRef.current = onCompleteReading;
+  }, [onCompleteReading]);
+
+  // Keep ref for current selected voice, voices list, pitch, rate, and content
+  const selectedVoiceNameRef = useRef(selectedVoiceName);
+  const voicesRef = useRef(voices);
+  const speechRateRef = useRef(speechRate);
+  const speechPitchRef = useRef(speechPitch);
+  const contentRef = useRef(content);
+
+  useEffect(() => {
+    selectedVoiceNameRef.current = selectedVoiceName;
+  }, [selectedVoiceName]);
+
+  useEffect(() => {
+    voicesRef.current = voices;
+  }, [voices]);
+
+  useEffect(() => {
+    speechRateRef.current = speechRate;
+  }, [speechRate]);
+
+  useEffect(() => {
+    speechPitchRef.current = speechPitch;
+  }, [speechPitch]);
+
+  useEffect(() => {
+    contentRef.current = content;
+  }, [content]);
+
+  // Custom setter for selectedVoiceName that also persists to localStorage
+  const handleSelectVoiceName = useCallback((voiceName: string) => {
+    setSelectedVoiceName(voiceName);
+    selectedVoiceNameRef.current = voiceName;
+    try {
+      localStorage.setItem("egw_selected_voice_name", voiceName);
+    } catch {
+      // Ignore storage errors
+    }
+  }, []);
 
   // Apply voice config settings for a specific profile style
-  const applyProfileVoiceSettings = useCallback((profile: string, availableVoices: SpeechSynthesisVoice[] = voices) => {
+  const applyProfileVoiceSettings = useCallback((profile: string, availableVoices?: SpeechSynthesisVoice[]) => {
     const config = PROFILE_VOICE_CONFIGS[profile] || PROFILE_VOICE_CONFIGS.clear_modern;
     setSpeechRate(config.rate);
     setSpeechPitch(config.pitch);
 
-    if (availableVoices.length > 0) {
-      const engVoices = availableVoices.filter(v => v.lang.startsWith("en"));
-      const searchPool = engVoices.length > 0 ? engVoices : availableVoices;
+    const pool = (availableVoices && availableVoices.length > 0)
+      ? availableVoices
+      : (typeof window !== "undefined" && window.speechSynthesis ? window.speechSynthesis.getVoices() : []);
+
+    if (pool.length > 0) {
+      // If user previously selected a voice that exists in the current pool, keep it
+      const storedVoiceName = localStorage.getItem("egw_selected_voice_name");
+      if (storedVoiceName && pool.some(v => v.name === storedVoiceName)) {
+        setSelectedVoiceName(storedVoiceName);
+        return;
+      }
+
+      const engVoices = pool.filter(v => v.lang.startsWith("en"));
+      const searchPool = engVoices.length > 0 ? engVoices : pool;
 
       let matchedVoice: SpeechSynthesisVoice | undefined;
 
@@ -62,9 +117,9 @@ export function useTTS({ content, onCompleteReading }: UseTTSProps) {
         setSelectedVoiceName(matchedVoice.name);
       }
     }
-  }, [voices]);
+  }, []);
 
-  // Load available speech voices
+  // Load available speech voices on mount once
   useEffect(() => {
     const loadVoices = () => {
       if (typeof window === "undefined" || !window.speechSynthesis) return;
@@ -103,7 +158,8 @@ export function useTTS({ content, onCompleteReading }: UseTTSProps) {
   }, []);
 
   const speakParagraph = useCallback((idx: number) => {
-    if (typeof window === "undefined" || !window.speechSynthesis || !content || idx < 0 || idx >= content.paragraphs.length) {
+    const activeContent = contentRef.current;
+    if (typeof window === "undefined" || !window.speechSynthesis || !activeContent || idx < 0 || idx >= activeContent.paragraphs.length) {
       stopSpeech();
       return;
     }
@@ -118,7 +174,7 @@ export function useTTS({ content, onCompleteReading }: UseTTSProps) {
     setIsPlaying(true);
     setIsPaused(false);
 
-    const block = content.paragraphs[idx];
+    const block = activeContent.paragraphs[idx];
     if (!block) return;
     let speechText = block.text || "";
 
@@ -137,7 +193,7 @@ export function useTTS({ content, onCompleteReading }: UseTTSProps) {
 
     // Announce title on first paragraph
     if (idx === 0) {
-      speechText = `${content.title}. ${speechText}`;
+      speechText = `${activeContent.title}. ${speechText}`;
     }
 
     // Convert scripture references into naturally spoken text
@@ -146,20 +202,24 @@ export function useTTS({ content, onCompleteReading }: UseTTSProps) {
     const utterance = new SpeechSynthesisUtterance(speechText);
     utteranceRef.current = utterance;
 
-    if (selectedVoiceName) {
-      const voice = voices.find(v => v.name === selectedVoiceName);
+    // Use current ref values so we always speak with the user's selected voice
+    const currentVoiceName = selectedVoiceNameRef.current;
+    const currentVoices = voicesRef.current;
+    if (currentVoiceName) {
+      const voice = currentVoices.find(v => v.name === currentVoiceName);
       if (voice) utterance.voice = voice;
     }
-    utterance.rate = speechRate;
-    utterance.pitch = speechPitch;
+    utterance.rate = speechRateRef.current;
+    utterance.pitch = speechPitchRef.current;
 
     utterance.onend = () => {
-      if (idx + 1 < content.paragraphs.length) {
+      const freshContent = contentRef.current;
+      if (freshContent && idx + 1 < freshContent.paragraphs.length) {
         speakParagraph(idx + 1);
       } else {
         stopSpeech();
-        if (onCompleteReading) {
-          onCompleteReading();
+        if (onCompleteReadingRef.current) {
+          onCompleteReadingRef.current();
         }
       }
     };
@@ -174,10 +234,11 @@ export function useTTS({ content, onCompleteReading }: UseTTSProps) {
     setTimeout(() => {
       window.speechSynthesis.speak(utterance);
     }, 30);
-  }, [content, onCompleteReading, selectedVoiceName, speechPitch, speechRate, stopSpeech, voices]);
+  }, [stopSpeech]);
 
   const startSpeech = useCallback(() => {
-    if (typeof window === "undefined" || !window.speechSynthesis || !content) return;
+    const activeContent = contentRef.current;
+    if (typeof window === "undefined" || !window.speechSynthesis || !activeContent) return;
     if (isPaused && utteranceRef.current) {
       window.speechSynthesis.resume();
       setIsPlaying(true);
@@ -186,7 +247,7 @@ export function useTTS({ content, onCompleteReading }: UseTTSProps) {
       const startIdx = activeParagraphIdx !== -1 ? activeParagraphIdx : 0;
       speakParagraph(startIdx);
     }
-  }, [activeParagraphIdx, content, isPaused, speakParagraph]);
+  }, [activeParagraphIdx, isPaused, speakParagraph]);
 
   const pauseSpeech = useCallback(() => {
     if (typeof window === "undefined" || !window.speechSynthesis) return;
@@ -196,20 +257,22 @@ export function useTTS({ content, onCompleteReading }: UseTTSProps) {
   }, []);
 
   const skipForward = useCallback(() => {
-    if (!content) return;
+    const activeContent = contentRef.current;
+    if (!activeContent) return;
     const nextIdx = activeParagraphIdx + 1;
-    if (nextIdx < content.paragraphs.length) {
+    if (nextIdx < activeContent.paragraphs.length) {
       speakParagraph(nextIdx);
     }
-  }, [activeParagraphIdx, content, speakParagraph]);
+  }, [activeParagraphIdx, speakParagraph]);
 
   const skipBackward = useCallback(() => {
-    if (!content) return;
+    const activeContent = contentRef.current;
+    if (!activeContent) return;
     const prevIdx = activeParagraphIdx - 1;
     if (prevIdx >= 0) {
       speakParagraph(prevIdx);
     }
-  }, [activeParagraphIdx, content, speakParagraph]);
+  }, [activeParagraphIdx, speakParagraph]);
 
   return {
     isPlaying,
@@ -221,7 +284,7 @@ export function useTTS({ content, onCompleteReading }: UseTTSProps) {
     setSpeechPitch,
     voices,
     selectedVoiceName,
-    setSelectedVoiceName,
+    setSelectedVoiceName: handleSelectVoiceName,
     startSpeech,
     pauseSpeech,
     stopSpeech,
