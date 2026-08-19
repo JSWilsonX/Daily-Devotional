@@ -1,121 +1,144 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
   <defs>
-    <!-- Background Gradient -->
-    <radialGradient id="bgGrad" cx="50%" cy="55%" r="65%">
-      <stop offset="0%" stop-color="#1e40af"/>
-      <stop offset="35%" stop-color="#1e1b4b"/>
-      <stop offset="75%" stop-color="#0f172a"/>
-      <stop offset="100%" stop-color="#020617"/>
+    <!-- Background Radial Gradient (Deep Midnight Cyan / Blue Navy) -->
+    <radialGradient id="bgGrad" cx="50%" cy="45%" r="70%">
+      <stop offset="0%" stop-color="#0e3a5d" />
+      <stop offset="45%" stop-color="#0c2340" />
+      <stop offset="80%" stop-color="#030c1b" />
+      <stop offset="100%" stop-color="#01060f" />
     </radialGradient>
 
-    <!-- Golden Line Gradients -->
-    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#fef08a"/>
-      <stop offset="50%" stop-color="#eab308"/>
-      <stop offset="100%" stop-color="#ca8a04"/>
+    <!-- Top Glow / Volumetric Light Beam (Cyan / Sky) -->
+    <radialGradient id="topGlow" cx="50%" cy="10%" r="60%">
+      <stop offset="0%" stop-color="#67e8f9" stop-opacity="0.45" />
+      <stop offset="40%" stop-color="#38bdf8" stop-opacity="0.18" />
+      <stop offset="100%" stop-color="#0c2340" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Central Book Luminous Aura (Cyan -> Blue) -->
+    <radialGradient id="bookAura" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#a5f3fc" stop-opacity="0.8" />
+      <stop offset="35%" stop-color="#38bdf8" stop-opacity="0.45" />
+      <stop offset="70%" stop-color="#0284c7" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#0c2340" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Outer Page Layer Fill (Translucent Frosted Cyan Glass) -->
+    <linearGradient id="glassLayer3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a5f3fc" stop-opacity="0.35" />
+      <stop offset="50%" stop-color="#67e8f9" stop-opacity="0.20" />
+      <stop offset="100%" stop-color="#0284c7" stop-opacity="0.30" />
     </linearGradient>
 
-    <!-- Warm Glowing Core -->
-    <radialGradient id="glowGrad" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#fef08a" stop-opacity="1"/>
-      <stop offset="30%" stop-color="#facc15" stop-opacity="0.8"/>
-      <stop offset="60%" stop-color="#eab308" stop-opacity="0.3"/>
-      <stop offset="100%" stop-color="#ca8a04" stop-opacity="0"/>
-    </radialGradient>
+    <!-- Middle Page Layer Fill (Cyan-Blue Translucent) -->
+    <linearGradient id="glassLayer2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#cffafe" stop-opacity="0.55" />
+      <stop offset="50%" stop-color="#a5f3fc" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.30" />
+    </linearGradient>
 
-    <!-- Star Glow -->
-    <radialGradient id="starGlow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
-      <stop offset="100%" stop-color="#fef08a" stop-opacity="0"/>
-    </radialGradient>
+    <!-- Front Open Page Layer Fill (Brightest Frosted Cyan / Ice White) -->
+    <linearGradient id="glassLayer1" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#ecfeff" stop-opacity="0.88" />
+      <stop offset="40%" stop-color="#cffafe" stop-opacity="0.72" />
+      <stop offset="100%" stop-color="#a5f3fc" stop-opacity="0.60" />
+    </linearGradient>
+
+    <!-- Glass Rim Neon Stroke Gradients (Cyan & Cobalt) -->
+    <linearGradient id="neonRimFront" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
+      <stop offset="40%" stop-color="#a5f3fc" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.6" />
+    </linearGradient>
+
+    <linearGradient id="neonRimOuter" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#67e8f9" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#0284c7" stop-opacity="0.4" />
+    </linearGradient>
   </defs>
 
-  <!-- Rounded App Icon Background -->
-  <rect width="480" height="480" x="16" y="16" rx="108" fill="url(#bgGrad)" stroke="#1e293b" stroke-width="4"/>
-
-  <!-- Glowing Swirls / Celestial Trails -->
-  <!-- Outer Swirl 1 -->
-  <path d="M 90,320 C 60,200 150,90 256,90 C 370,90 440,190 410,290 C 380,390 280,430 200,410 C 130,390 90,320 110,260" 
-        fill="none" stroke="url(#goldGrad)" stroke-width="3" stroke-linecap="round" opacity="0.35"/>
+  <!-- Base Icon Canvas Background (Rounded Square) -->
+  <rect width="480" height="480" x="16" y="16" rx="112" fill="url(#bgGrad)" stroke="#0284c7" stroke-width="2.5" stroke-opacity="0.35" />
   
-  <!-- Inner Swirl 2 -->
-  <path d="M 130,220 C 150,130 240,110 310,140 C 380,170 390,260 340,330 C 290,400 180,380 150,310 C 130,260 160,200 220,190" 
-        fill="none" stroke="url(#goldGrad)" stroke-width="4" stroke-linecap="round" stroke-dasharray="10 6" opacity="0.5"/>
+  <!-- Top Atmospheric Light Beam -->
+  <rect width="480" height="480" x="16" y="16" rx="112" fill="url(#topGlow)" />
 
-  <!-- Centered Glow behind the Book -->
-  <circle cx="256" cy="270" r="140" fill="url(#glowGrad)"/>
+  <!-- Volumetric Radial Glow Behind Glass Book -->
+  <circle cx="256" cy="256" r="170" fill="url(#bookAura)" />
 
-  <!-- Sparkling 4-Pointed Stars (Background layer) -->
-  <!-- Main top sparkle -->
-  <path d="M 256,55 Q 256,75 236,75 Q 256,75 256,95 Q 256,75 276,75 Q 256,75 256,55 Z" fill="#ffffff" opacity="0.9"/>
-  <!-- Top Left Sparkle -->
-  <path d="M 120,110 Q 120,125 105,125 Q 120,125 120,140 Q 120,125 135,125 Q 120,125 120,110 Z" fill="#fef08a" opacity="0.8"/>
-  <!-- Top Right Sparkle -->
-  <path d="M 380,110 Q 380,125 365,125 Q 380,125 380,140 Q 380,125 395,125 Q 380,125 380,110 Z" fill="#fef08a" opacity="0.8"/>
-  <!-- Bottom Left Sparkle -->
-  <path d="M 120,380 Q 120,395 105,395 Q 120,395 120,410 Q 120,395 135,395 Q 120,395 120,380 Z" fill="#fef08a" opacity="0.8"/>
-  <!-- Bottom Right Sparkle -->
-  <path d="M 380,380 Q 380,395 365,395 Q 380,395 380,410 Q 380,395 395,395 Q 380,395 380,380 Z" fill="#fef08a" opacity="0.8"/>
+  <!-- Top Halo Sparkles -->
+  <circle cx="345" cy="85" r="4.5" fill="#ecfeff" opacity="0.85" />
+  <circle cx="165" cy="95" r="3" fill="#a5f3fc" opacity="0.65" />
+  <circle cx="256" cy="70" r="2.5" fill="#ffffff" opacity="0.75" />
 
-  <!-- Tiny Stardust dots -->
-  <circle cx="190" cy="80" r="3" fill="#ffffff" opacity="0.7"/>
-  <circle cx="320" cy="80" r="3" fill="#ffffff" opacity="0.7"/>
-  <circle cx="90" cy="180" r="2.5" fill="#fef08a" opacity="0.6"/>
-  <circle cx="430" cy="180" r="2.5" fill="#fef08a" opacity="0.6"/>
-  <circle cx="80" cy="300" r="3" fill="#ffffff" opacity="0.7"/>
-  <circle cx="440" cy="300" r="3" fill="#ffffff" opacity="0.7"/>
-  <circle cx="200" cy="440" r="2.5" fill="#fef08a" opacity="0.8"/>
-  <circle cx="310" cy="440" r="2.5" fill="#fef08a" opacity="0.8"/>
+  <!-- LAYER 3: Outermost Background Spread Pages -->
+  <g opacity="0.85">
+    <!-- Left Outer Sheet -->
+    <path d="M 256,410 C 210,395 125,385 64,360 C 56,357 52,348 52,340 L 52,168 C 52,158 60,152 70,156 C 130,178 215,190 256,238 Z"
+          fill="url(#glassLayer3)"
+          stroke="url(#neonRimOuter)"
+          stroke-width="3"
+          stroke-linejoin="round" />
 
-  <!-- GLOWING OPEN BOOK -->
-  <g id="book-drawing" transform="translate(0, 15)">
-    <!-- Book 3D Shadow / Cover Base -->
-    <path d="M 256,325 C 295,302 345,310 395,330 L 405,210 C 355,190 305,182 256,205 C 207,182 157,190 107,210 L 117,330 C 167,310 217,302 256,325 Z" 
-          fill="#451a03" stroke="#270f01" stroke-width="4" stroke-linejoin="round"/>
-    
-    <!-- Outer Pages Thickness (Stacked Look) -->
-    <path d="M 256,320 C 294,297 342,305 390,325 L 398,205 C 350,185 302,177 256,200 C 210,177 162,185 114,205 L 122,325 C 170,305 218,297 256,320 Z" 
-          fill="#d97706" opacity="0.95"/>
-
-    <!-- Active Open Pages (Main Glowing Body) -->
-    <!-- Left Page -->
-    <path d="M 256,195 C 212,172 166,180 120,200 L 128,315 C 174,295 220,287 256,310 Z" 
-          fill="#fef9c3" stroke="#b45309" stroke-width="2" stroke-linejoin="round"/>
-    <!-- Right Page -->
-    <path d="M 256,195 C 300,172 346,180 392,200 L 384,315 C 338,295 292,287 256,310 Z" 
-          fill="#fef9c3" stroke="#b45309" stroke-width="2" stroke-linejoin="round"/>
-
-    <!-- Spine details -->
-    <path d="M 256,195 L 256,310" stroke="#78350f" stroke-width="3" stroke-linecap="round"/>
-
-    <!-- Script / Text lines inside the book -->
-    <!-- Left Page Text Lines -->
-    <path d="M 145,225 C 165,216 190,210 215,218" fill="none" stroke="#b45309" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
-    <path d="M 143,242 C 163,233 188,227 218,234" fill="none" stroke="#b45309" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
-    <path d="M 146,259 C 166,250 191,244 221,250" fill="none" stroke="#b45309" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
-    <path d="M 148,276 C 168,267 193,261 223,267" fill="none" stroke="#b45309" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
-    <path d="M 152,293 C 172,284 197,278 221,283" fill="none" stroke="#b45309" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
-
-    <!-- Right Page Text Lines -->
-    <path d="M 297,218 C 322,210 347,216 367,225" fill="none" stroke="#b45309" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
-    <path d="M 294,234 C 319,227 344,233 369,242" fill="none" stroke="#b45309" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
-    <path d="M 291,250 C 316,244 341,250 366,259" fill="none" stroke="#b45309" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
-    <path d="M 289,267 C 314,261 339,267 364,276" fill="none" stroke="#b45309" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
-    <path d="M 291,283 C 315,278 340,284 360,293" fill="none" stroke="#b45309" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
-
-    <!-- Elegant Vintage Corner Detailing / Filigree -->
-    <path d="M 125,208 L 132,205 L 129,215" fill="none" stroke="#78350f" stroke-width="1.5"/>
-    <path d="M 387,208 L 380,205 L 383,215" fill="none" stroke="#78350f" stroke-width="1.5"/>
-    <path d="M 134,310 L 141,304 L 140,311" fill="none" stroke="#78350f" stroke-width="1.5"/>
-    <path d="M 378,310 L 371,304 L 372,311" fill="none" stroke="#78350f" stroke-width="1.5"/>
+    <!-- Right Outer Sheet -->
+    <path d="M 256,410 C 302,395 387,385 448,360 C 456,357 460,348 460,340 L 460,168 C 460,158 452,152 442,156 C 382,178 297,190 256,238 Z"
+          fill="url(#glassLayer3)"
+          stroke="url(#neonRimOuter)"
+          stroke-width="3"
+          stroke-linejoin="round" />
   </g>
 
-  <!-- Giant Golden Star Lightburst coming out of the book -->
-  <g transform="translate(256, 275)" opacity="0.95">
-    <line x1="0" y1="-85" x2="0" y2="70" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
-    <line x1="-80" y1="0" x2="80" y2="0" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
-    <line x1="-50" y1="-50" x2="50" y2="50" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
-    <line x1="50" y1="-50" x2="-50" y2="50" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
-    <circle cx="0" cy="0" r="14" fill="#ffffff" filter="drop-shadow(0px 0px 8px #fef08a)"/>
+  <!-- LAYER 2: Middle Translucent Glass Pages -->
+  <g opacity="0.92">
+    <!-- Left Mid Sheet -->
+    <path d="M 256,412 C 205,392 135,370 82,342 C 74,338 70,329 70,320 L 70,136 C 70,126 78,120 88,124 C 142,148 210,165 256,215 Z"
+          fill="url(#glassLayer2)"
+          stroke="url(#neonRimOuter)"
+          stroke-width="3.5"
+          stroke-linejoin="round" />
+
+    <!-- Right Mid Sheet -->
+    <path d="M 256,412 C 307,392 377,370 430,342 C 438,338 442,329 442,320 L 442,136 C 442,126 434,120 424,124 C 370,148 302,165 256,215 Z"
+          fill="url(#glassLayer2)"
+          stroke="url(#neonRimOuter)"
+          stroke-width="3.5"
+          stroke-linejoin="round" />
+  </g>
+
+  <!-- LAYER 1: Foreground Open Glass Pages (Curved Glowing Leaf) -->
+  <g id="front-pages">
+    <!-- Left Fore Leaf -->
+    <path d="M 256,418 C 218,375 140,348 106,310 C 98,301 96,290 96,280 L 96,98 C 96,87 106,80 116,84 C 158,102 225,135 256,182 Z"
+          fill="url(#glassLayer1)"
+          stroke="url(#neonRimFront)"
+          stroke-width="4.5"
+          stroke-linejoin="round" />
+
+    <!-- Right Fore Leaf -->
+    <path d="M 256,418 C 294,375 372,348 406,310 C 414,301 416,290 416,280 L 416,98 C 416,87 406,80 396,84 C 354,102 287,135 256,182 Z"
+          fill="url(#glassLayer1)"
+          stroke="url(#neonRimFront)"
+          stroke-width="4.5"
+          stroke-linejoin="round" />
+
+    <!-- Frosted Glass Center Spine Flare -->
+    <path d="M 256,182 L 256,424" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round" opacity="0.9" />
+
+    <!-- Bright Corner Gleams / Prismatic Highlights -->
+    <!-- Left Top Rim Gleam -->
+    <path d="M 106,94 C 120,87 140,94 154,102" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity="0.95" />
+    <circle cx="106" cy="94" r="5" fill="#ffffff" />
+
+    <!-- Right Top Rim Gleam (Specular Flare) -->
+    <path d="M 406,94 C 392,87 372,94 358,102" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity="0.95" />
+    <circle cx="366" cy="96" r="6" fill="#ffffff" />
+    <circle cx="366" cy="96" r="14" fill="#a5f3fc" opacity="0.4" />
+
+    <!-- Inner Page Arc Highlights (Glass Edge Refraction) -->
+    <path d="M 125,120 C 170,145 220,172 245,210" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.6" />
+    <path d="M 387,120 C 342,145 292,172 267,210" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.6" />
+
+    <!-- Bottom Page Spine Curved Base Flare -->
+    <path d="M 224,428 C 242,434 270,434 288,428" fill="none" stroke="#38bdf8" stroke-width="5" stroke-linecap="round" opacity="0.8" />
   </g>
 </svg>
