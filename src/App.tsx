@@ -88,7 +88,7 @@ export default function App() {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [shareCardText, setShareCardText] = useState("");
   const [floatingSelectionText, setFloatingSelectionText] = useState("");
-  const [selectionPosition, setSelectionPosition] = useState<{ x: number; y: number } | null>(null);
+  const [selectionPosition, setSelectionPosition] = useState<{ x: number; y: number; placement?: "top" | "bottom" } | null>(null);
 
   // Refs
   const paragraphRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -313,9 +313,43 @@ export default function App() {
           try {
             const range = sel.getRangeAt(0);
             const rect = range.getBoundingClientRect();
+            
+            // Check if touch device or mobile/tablet viewport
+            const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+            const viewportHeight = window.innerHeight;
+            
+            // On touch devices (iOS/Android/iPadOS), mobile callout bars ("Copy | Search | Explain") sit 40-70px ABOVE the top edge.
+            // Positioning BELOW the selection (rect.bottom + 14) prevents collision with the native context bar.
+            // If the selection is near the bottom of viewport, fall back to well above the context bar.
+            let posX = Math.min(Math.max(rect.left + rect.width / 2, 140), window.innerWidth - 140);
+            let posY = 0;
+            let placement: "top" | "bottom" = "bottom";
+
+            if (isTouchDevice) {
+              // Prefer placing below the selection so native "Copy/Share" callout above is completely unobstructed
+              if (rect.bottom + 65 < viewportHeight - 80) {
+                posY = rect.bottom + 12;
+                placement = "bottom";
+              } else {
+                // If touching bottom edge, place above the native callout bar
+                posY = Math.max(rect.top - 68, 60);
+                placement = "top";
+              }
+            } else {
+              // On desktop pointer devices, place 14px above or below if near top
+              if (rect.top > 70) {
+                posY = rect.top - 12;
+                placement = "top";
+              } else {
+                posY = rect.bottom + 12;
+                placement = "bottom";
+              }
+            }
+
             setSelectionPosition({
-              x: Math.min(Math.max(rect.left + rect.width / 2, 90), window.innerWidth - 90),
-              y: Math.max(rect.top - 12, 60)
+              x: posX,
+              y: posY,
+              placement
             });
           } catch {
             setSelectionPosition(null);
@@ -641,12 +675,14 @@ export default function App() {
             left: `${selectionPosition.x}px`,
             top: `${selectionPosition.y}px`
           }}
-          className="fixed z-50 transform -translate-x-1/2 -translate-y-full transition-all duration-150 animate-in fade-in zoom-in-95 pointer-events-auto"
+          className={`fixed z-50 transform -translate-x-1/2 ${
+            selectionPosition.placement === "bottom" ? "translate-y-0" : "-translate-y-full"
+          } transition-all duration-150 animate-in fade-in zoom-in-95 pointer-events-auto`}
         >
           <button
             type="button"
             onClick={() => handleOpenShareCard(floatingSelectionText)}
-            className="bg-slate-950/95 hover:bg-cyan-500 text-cyan-300 hover:text-slate-950 border border-cyan-400/80 hover:border-cyan-200 shadow-2xl rounded-full px-4 py-2 text-xs font-mono font-bold flex items-center space-x-2 transition-all cursor-pointer group hover:scale-105 active:scale-95"
+            className="bg-slate-950/95 hover:bg-cyan-500 text-cyan-300 hover:text-slate-950 border border-cyan-400/80 hover:border-cyan-200 shadow-2xl rounded-full px-4 py-2 text-xs font-mono font-bold flex items-center space-x-2 transition-all cursor-pointer group hover:scale-105 active:scale-95 whitespace-nowrap"
           >
             <Share2 size={13} className="text-cyan-400 group-hover:text-slate-950 shrink-0" />
             <span>Share Selection as Image Card</span>
