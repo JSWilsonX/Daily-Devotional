@@ -30,37 +30,54 @@
       <stop offset="100%" stop-color="#7dd3fc" />
     </linearGradient>
 
-    <!-- Outer Page Layer Fill (Translucent Frosted Cyan Glass) -->
-    <linearGradient id="glassLayer3" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#a5f3fc" stop-opacity="0.35" />
-      <stop offset="50%" stop-color="#67e8f9" stop-opacity="0.20" />
-      <stop offset="100%" stop-color="#0284c7" stop-opacity="0.30" />
-    </linearGradient>
-
-    <!-- Middle Page Layer Fill (Cyan-Blue Translucent) -->
-    <linearGradient id="glassLayer2" x1="0%" y1="0%" x2="100%" y2="100%">
+    <!-- LAYER 4: Outermost Base Page (Set to what Layer 2 originally was) -->
+    <linearGradient id="glassLayer4" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#cffafe" stop-opacity="0.55" />
       <stop offset="50%" stop-color="#a5f3fc" stop-opacity="0.35" />
       <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.30" />
     </linearGradient>
 
-    <!-- Front Open Page Layer Fill (Brightest Frosted Cyan / Ice White) -->
+    <!-- LAYER 3: Equally spaced between Layer 4 and Layer 1 (Step 1/3 toward Layer 1) -->
+    <linearGradient id="glassLayer3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d9fbfb" stop-opacity="0.66" />
+      <stop offset="50%" stop-color="#b2f5fb" stop-opacity="0.47" />
+      <stop offset="100%" stop-color="#5cd2fa" stop-opacity="0.40" />
+    </linearGradient>
+
+    <!-- LAYER 2: Equally spaced between Layer 4 and Layer 1 (Step 2/3 toward Layer 1) -->
+    <linearGradient id="glassLayer2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e3fdfe" stop-opacity="0.77" />
+      <stop offset="50%" stop-color="#c1f8fc" stop-opacity="0.59" />
+      <stop offset="100%" stop-color="#80e2fc" stop-opacity="0.50" />
+    </linearGradient>
+
+    <!-- LAYER 1: Center Front Open Pages (Unchanged Vibrant Luminous Ice Cyan) -->
     <linearGradient id="glassLayer1" x1="20%" y1="0%" x2="80%" y2="100%">
       <stop offset="0%" stop-color="#ecfeff" stop-opacity="0.88" />
       <stop offset="40%" stop-color="#cffafe" stop-opacity="0.72" />
       <stop offset="100%" stop-color="#a5f3fc" stop-opacity="0.60" />
     </linearGradient>
 
-    <!-- Glass Rim Neon Stroke Gradients -->
+    <!-- Neon Rim Strokes -->
     <linearGradient id="neonRimFront" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
       <stop offset="40%" stop-color="#a5f3fc" stop-opacity="0.85" />
       <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.6" />
     </linearGradient>
 
+    <linearGradient id="neonRimLayer2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.90" />
+      <stop offset="100%" stop-color="#67e8f9" stop-opacity="0.75" />
+    </linearGradient>
+
     <linearGradient id="neonRimOuter" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#67e8f9" stop-opacity="0.8" />
-      <stop offset="100%" stop-color="#0284c7" stop-opacity="0.4" />
+      <stop offset="0%" stop-color="#cffafe" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.60" />
+    </linearGradient>
+
+    <linearGradient id="neonRimBase" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#67e8f9" stop-opacity="0.80" />
+      <stop offset="100%" stop-color="#0284c7" stop-opacity="0.45" />
     </linearGradient>
   </defs>
 
@@ -113,42 +130,56 @@
   </g>
 
   <!-- SHRUNK OPEN BOOK (Scaled to 70% and centered at the bottom) -->
-  <!-- Center is x=256, y=345. transform="translate(256, 345) scale(0.7) translate(-256, -260)" -->
   <g id="shrunk-book" transform="matrix(0.7 0 0 0.7 76.8 163)">
     <!-- Volumetric Radial Glow Behind Glass Book -->
     <circle cx="256" cy="270" r="160" fill="url(#bookAura)" />
 
-    <!-- LAYER 3: Outermost Background Spread Pages -->
-    <g opacity="0.85">
+    <!-- LAYER 4: Outermost Base Page (Set to what Layer 2 originally was) -->
+    <g opacity="0.90">
+      <path d="M 256,408 C 215,400 115,398 46,378 C 38,375 34,367 34,358 L 34,200 C 34,190 42,184 52,188 C 118,208 218,212 256,260 Z"
+            fill="url(#glassLayer4)"
+            stroke="url(#neonRimBase)"
+            stroke-width="3"
+            stroke-linejoin="round" />
+
+      <path d="M 256,408 C 297,400 397,398 466,378 C 474,375 478,367 478,358 L 478,200 C 478,190 470,184 460,188 C 394,208 294,212 256,260 Z"
+            fill="url(#glassLayer4)"
+            stroke="url(#neonRimBase)"
+            stroke-width="3"
+            stroke-linejoin="round" />
+    </g>
+
+    <!-- LAYER 3: Outer Spread Page (Equally spaced, lightened) -->
+    <g opacity="0.93">
       <path d="M 256,410 C 210,395 125,385 64,360 C 56,357 52,348 52,340 L 52,168 C 52,158 60,152 70,156 C 130,178 215,190 256,238 Z"
             fill="url(#glassLayer3)"
             stroke="url(#neonRimOuter)"
-            stroke-width="3"
+            stroke-width="3.5"
             stroke-linejoin="round" />
 
       <path d="M 256,410 C 302,395 387,385 448,360 C 456,357 460,348 460,340 L 460,168 C 460,158 452,152 442,156 C 382,178 297,190 256,238 Z"
             fill="url(#glassLayer3)"
             stroke="url(#neonRimOuter)"
-            stroke-width="3"
+            stroke-width="3.5"
             stroke-linejoin="round" />
     </g>
 
-    <!-- LAYER 2: Middle Translucent Glass Pages -->
-    <g opacity="0.92">
+    <!-- LAYER 2: Middle Translucent Glass Pages (Equally spaced, lightened) -->
+    <g opacity="0.96">
       <path d="M 256,412 C 205,392 135,370 82,342 C 74,338 70,329 70,320 L 70,136 C 70,126 78,120 88,124 C 142,148 210,165 256,215 Z"
             fill="url(#glassLayer2)"
-            stroke="url(#neonRimOuter)"
-            stroke-width="3.5"
+            stroke="url(#neonRimLayer2)"
+            stroke-width="4"
             stroke-linejoin="round" />
 
       <path d="M 256,412 C 307,392 377,370 430,342 C 438,338 442,329 442,320 L 442,136 C 442,126 434,120 424,124 C 370,148 302,165 256,215 Z"
             fill="url(#glassLayer2)"
-            stroke="url(#neonRimOuter)"
-            stroke-width="3.5"
+            stroke="url(#neonRimLayer2)"
+            stroke-width="4"
             stroke-linejoin="round" />
     </g>
 
-    <!-- LAYER 1: Foreground Open Glass Pages (Curved Glowing Leaf) -->
+    <!-- LAYER 1: Foreground Open Glass Pages (Center Pages: Unchanged vibrant luminous color) -->
     <g id="front-pages">
       <path d="M 256,418 C 218,375 140,348 106,310 C 98,301 96,290 96,280 L 96,98 C 96,87 106,80 116,84 C 158,102 225,135 256,182 Z"
             fill="url(#glassLayer1)"
