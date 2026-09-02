@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 420" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #020617; }
+      .b-node { fill: #0f172a; stroke: #38bdf8; stroke-width: 2; }
+      .b-yes { fill: #064e3b; stroke: #34d399; stroke-width: 2; }
+      .b-no { fill: #451a03; stroke: #f59e0b; stroke-width: 2; }
+      .t-t { font-family: system-ui, sans-serif; font-size: 13px; font-weight: bold; fill: #ffffff; }
+      .t-b { font-family: system-ui, sans-serif; font-size: 11px; fill: #cbd5e1; }
+      .t-lbl { font-family: system-ui, sans-serif; font-size: 11px; font-weight: bold; fill: #38bdf8; }
+      .t-lbl-y { font-family: system-ui, sans-serif; font-size: 11px; font-weight: bold; fill: #34d399; }
+      .t-lbl-n { font-family: system-ui, sans-serif; font-size: 11px; font-weight: bold; fill: #fbbf24; }
+      .al { stroke: #94a3b8; stroke-width: 1.5; fill: none; }
+      .al-y { stroke: #34d399; stroke-width: 1.8; fill: none; }
+      .al-n { stroke: #f59e0b; stroke-width: 1.8; fill: none; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+    </marker>
+    <marker id="arrow-y" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#34d399" />
+    </marker>
+    <marker id="arrow-n" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b" />
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" class="bg" />
+  
+  <!-- Request node -->
+  <rect x="20" y="30" width="180" height="60" rx="6" class="b-node" />
+  <text x="35" y="55" class="t-t">Fetch Devotional Request</text>
+  <text x="35" y="72" class="t-b">(ID, Day, Profile Style)</text>
+
+  <!-- Level 1 Node -->
+  <rect x="260" y="30" width="180" height="60" rx="6" class="b-node" />
+  <text x="275" y="55" class="t-t">Level 1: Local DB Cache?</text>
+  <text x="275" y="72" class="t-b">Query (profile, book, day)</text>
+
+  <!-- Level 1 Hit Success -->
+  <rect x="520" y="30" width="180" height="60" rx="6" class="b-yes" />
+  <text x="535" y="55" class="t-t">Serve Cached Record</text>
+  <text x="535" y="72" class="t-b">Source: "database" (sub-5ms)</text>
+
+  <!-- Level 2 Node -->
+  <rect x="260" y="150" width="180" height="60" rx="6" class="b-node" />
+  <text x="275" y="172" class="t-t">Level 2: Web Scrape?</text>
+  <text x="275" y="189" class="t-b">Query whiteestate.org</text>
+
+  <!-- Level 3 Node -->
+  <rect x="260" y="270" width="180" height="60" rx="6" class="b-node" />
+  <text x="275" y="292" class="t-t">Level 3: Paraphrase AI</text>
+  <text x="275" y="309" class="t-b">Google Gemini 3.5 SDK</text>
+
+  <!-- Level 3 Success Node -->
+  <rect x="520" y="270" width="180" height="60" rx="6" class="b-yes" />
+  <text x="535" y="295" class="t-t">Save to DB &amp; Serve</text>
+  <text x="535" y="312" class="t-b">Source: "website" (paraphrased)</text>
+
+  <!-- Level 4 Node -->
+  <rect x="20" y="270" width="180" height="60" rx="6" class="b-no" />
+  <text x="35" y="295" class="t-t">Level 4: Classic Verbatim</text>
+  <text x="35" y="312" class="t-b">Serve local unedited text</text>
+
+  <!-- Connectors -->
+  <!-- Request to Level 1 -->
+  <path d="M 200 60 L 260 60" class="al" marker-end="url(#arrow)" />
+
+  <!-- Level 1 to Hit Success (YES) -->
+  <path d="M 440 60 L 520 60" class="al-y" marker-end="url(#arrow-y)" />
+  <text x="460" y="52" class="t-lbl-y">YES (Hit)</text>
+
+  <!-- Level 1 to Level 2 (NO) -->
+  <path d="M 350 90 L 350 150" class="al-n" marker-end="url(#arrow-n)" />
+  <text x="358" y="120" class="t-lbl-n">NO (Miss)</text>
+
+  <!-- Level 2 to Level 3 (Success) -->
+  <path d="M 350 210 L 350 270" class="al-y" marker-end="url(#arrow-y)" />
+  <text x="358" y="240" class="t-lbl-y">YES</text>
+
+  <!-- Level 2 to Level 4 (Failure / Offline) -->
+  <path d="M 260 180 L 110 180 L 110 270" class="al-n" marker-end="url(#arrow-n)" />
+  <text x="140" y="172" class="t-lbl-n">NO / Offline</text>
+
+  <!-- Level 3 to Success -->
+  <path d="M 440 300 L 520 300" class="al-y" marker-end="url(#arrow-y)" />
+  <text x="460" y="292" class="t-lbl-y">YES</text>
+
+  <!-- Level 3 to Level 4 (Gemini Failure / Quota) -->
+  <path d="M 260 300 L 200 300" class="al-n" marker-end="url(#arrow-n)" />
+  <text x="215" y="292" class="t-lbl-n">NO</text>
+</svg>

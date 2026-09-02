@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 360" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #020617; }
+      .b-state { fill: #0f172a; stroke: #38bdf8; stroke-width: 2; }
+      .b-active { fill: #1e1b4b; stroke: #818cf8; stroke-width: 2.5; }
+      .t-t { font-family: system-ui, sans-serif; font-size: 14px; font-weight: bold; fill: #ffffff; }
+      .t-b { font-family: system-ui, sans-serif; font-size: 11px; fill: #cbd5e1; }
+      .t-lbl { font-family: system-ui, sans-serif; font-size: 11px; font-weight: bold; fill: #38bdf8; }
+      .al { stroke: #94a3b8; stroke-width: 1.5; fill: none; }
+      .al-a { stroke: #38bdf8; stroke-width: 2; fill: none; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+    </marker>
+    <marker id="arrow-active" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" class="bg" />
+
+  <!-- State Nodes -->
+  <!-- IDLE State -->
+  <rect x="50" y="130" width="150" height="90" rx="45" class="b-state" />
+  <text x="105" y="170" class="t-t" text-anchor="middle">IDLE</text>
+  <text x="105" y="190" class="t-b" text-anchor="middle">No active utterances</text>
+
+  <!-- PLAYING State -->
+  <rect x="310" y="30" width="160" height="100" rx="20" class="b-active" />
+  <text x="390" y="75" class="t-t" text-anchor="middle" fill="#38bdf8">PLAYING</text>
+  <text x="390" y="95" class="t-b" text-anchor="middle">Speaking paragraph text</text>
+  <text x="390" y="110" class="t-b" text-anchor="middle">Paragraph Highlighted</text>
+
+  <!-- PAUSED State -->
+  <rect x="310" y="230" width="160" height="100" rx="20" class="b-state" />
+  <text x="390" y="275" class="t-t" text-anchor="middle">PAUSED</text>
+  <text x="390" y="295" class="t-b" text-anchor="middle">speech.pause() active</text>
+  <text x="390" y="310" class="t-b" text-anchor="middle">Position locked</text>
+
+  <!-- TRANSITIONING State -->
+  <rect x="570" y="130" width="160" height="90" rx="20" class="b-state" />
+  <text x="650" y="170" class="t-t" text-anchor="middle">TRANSITIONING</text>
+  <text x="650" y="190" class="t-b" text-anchor="middle">Next/Prev parse &amp; load</text>
+
+  <!-- Transitions (Arrows) -->
+  <!-- IDLE to PLAYING -->
+  <path d="M 170 130 C 210 90, 260 70, 310 70" class="al-a" marker-end="url(#arrow-active)" />
+  <text x="210" y="58" class="t-lbl">Play triggered</text>
+
+  <!-- PLAYING to PAUSED -->
+  <path d="M 370 130 L 370 230" class="al-a" marker-end="url(#arrow-active)" />
+  <text x="290" y="210" class="t-lbl">Pause Action</text>
+
+  <!-- PAUSED to PLAYING -->
+  <path d="M 410 230 L 410 130" class="al-a" marker-end="url(#arrow-active)" />
+  <text x="425" y="210" class="t-lbl">Resume Action</text>
+
+  <!-- PLAYING to TRANSITIONING -->
+  <path d="M 470 70 C 520 70, 580 90, 620 130" class="al" marker-end="url(#arrow)" />
+  <text x="575" y="84" class="t-lbl">Paragraph ends / Skip</text>
+
+  <!-- TRANSITIONING to PLAYING -->
+  <path d="M 600 130 C 550 110, 510 100, 470 100" class="al-a" marker-end="url(#arrow-active)" />
+  <text x="480" y="125" class="t-lbl">Speak next</text>
+
+  <!-- TRANSITIONING to IDLE -->
+  <path d="M 570 185 L 200 185" class="al" marker-end="url(#arrow)" />
+  <text x="500" y="165" class="t-lbl" text-anchor="middle">
+    <tspan x="500" dy="0">Final paragraph ended /</tspan>
+    <tspan x="500" dy="14">Stop</tspan>
+  </text>
+
+  <!-- PLAYING to IDLE -->
+  <path d="M 310 90 C 260 100, 210 110, 170 130" class="al" marker-end="url(#arrow)" />
+  <text x="220" y="125" class="t-lbl">Stop action</text>
+</svg>

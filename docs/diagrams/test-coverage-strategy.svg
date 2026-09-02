@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 420" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #020617; }
+      .b-unit { fill: #0f172a; stroke: #38bdf8; stroke-width: 2; }
+      .b-int { fill: #1e1b4b; stroke: #818cf8; stroke-width: 2; }
+      .b-e2e { fill: #064e3b; stroke: #34d399; stroke-width: 2; }
+      .t-t { font-family: system-ui, sans-serif; font-size: 13px; font-weight: bold; fill: #ffffff; }
+      .t-b { font-family: system-ui, sans-serif; font-size: 11px; fill: #cbd5e1; }
+      .t-lbl-u { font-family: system-ui, sans-serif; font-size: 12px; font-weight: bold; fill: #38bdf8; }
+      .t-lbl-i { font-family: system-ui, sans-serif; font-size: 12px; font-weight: bold; fill: #a5b4fc; }
+      .t-lbl-e { font-family: system-ui, sans-serif; font-size: 12px; font-weight: bold; fill: #34d399; }
+    </style>
+  </defs>
+  <rect width="100%" height="100%" class="bg" />
+
+  <!-- Unit Test Card -->
+  <rect x="30" y="40" width="240" height="340" rx="8" class="b-unit" />
+  <text x="45" y="70" class="t-lbl-u">UNIT TESTING (Vitest)</text>
+  <path d="M 45 85 L 255 85" stroke="#38bdf8" stroke-width="1.5" />
+  <text x="45" y="110" class="t-t">Target Utilities &amp; Hooks</text>
+  <text x="45" y="135" class="t-b" fill="#38bdf8">1. utils/text.ts (Verbalizer)</text>
+  <text x="45" y="150" class="t-b">- Verify regex matches for verse lists.</text>
+  <text x="45" y="165" class="t-b">- Confirm spelling translations.</text>
+  
+  <text x="45" y="195" class="t-b" fill="#38bdf8">2. utils/date.ts (Habit system)</text>
+  <text x="45" y="210" class="t-b">- Mock timeframes (consecutive dates).</text>
+  <text x="45" y="225" class="t-b">- Assert streak values update.</text>
+
+  <text x="45" y="255" class="t-b" fill="#38bdf8">3. useTTS.ts (Voice Configs)</text>
+  <text x="45" y="270" class="t-b">- Assert locale filtering logic.</text>
+  <text x="45" y="285" class="t-b">- Verify phonetic swap indexing.</text>
+
+  <text x="45" y="315" class="t-b" fill="#cbd5e1">- Focus: Fast execution (sub-10ms)</text>
+  <text x="45" y="330" class="t-b">- Scope: isolated, zero-network logic</text>
+
+
+  <!-- Integration Card -->
+  <rect x="310" y="40" width="260" height="340" rx="8" class="b-int" />
+  <text x="325" y="70" class="t-lbl-i">INTEGRATION TESTING (Supertest)</text>
+  <path d="M 325 85 L 555 85" stroke="#818cf8" stroke-width="1.5" />
+  <text x="325" y="110" class="t-t">API Controllers &amp; DB Contracts</text>
+  
+  <text x="325" y="135" class="t-b" fill="#a5b4fc">1. GET /api/scrape-devotionals</text>
+  <text x="325" y="150" class="t-b">- Match payload format constraints.</text>
+  <text x="325" y="165" class="t-b">- Confirm book list schema integrity.</text>
+
+  <text x="325" y="195" class="t-b" fill="#a5b4fc">2. GET /api/fetch-devotional</text>
+  <text x="325" y="210" class="t-b">- DB Cache Hits (Fast bypass paths).</text>
+  <text x="325" y="225" class="t-b">- DB Miss: trigger scraping mock mock.</text>
+  <text x="325" y="240" class="t-b">- Gemini mock translations parsing.</text>
+  <text x="325" y="255" class="t-b">- DB automatic caching confirm.</text>
+
+  <text x="325" y="285" class="t-b" fill="#a5b4fc">3. Fallback Degrade Paths</text>
+  <text x="325" y="300" class="t-b">- Mock Gemini 429 quota block limit.</text>
+  <text x="325" y="315" class="t-b">- Confirm classic verbatim rendering.</text>
+
+
+  <!-- E2E Card -->
+  <rect x="610" y="40" width="240" height="340" rx="8" class="b-e2e" />
+  <text x="625" y="70" class="t-lbl-e">END-TO-END (Playwright)</text>
+  <path d="M 625 85 L 835 85" stroke="#34d399" stroke-width="1.5" />
+  <text x="625" y="110" class="t-t">Complete Visual User Workflows</text>
+
+  <text x="625" y="135" class="t-b" fill="#34d399">1. Visual Onboarding Tours</text>
+  <text x="625" y="150" class="t-b">- Auto-gated triggers check.</text>
+  <text x="625" y="165" class="t-b">- Overlay focus alignments tracking.</text>
+
+  <text x="625" y="195" class="t-b" fill="#34d399">2. Dynamic Card Customizer</text>
+  <text x="625" y="210" class="t-b">- Select highlighted texts.</text>
+  <text x="625" y="225" class="t-b">- Click presets, custom uploads.</text>
+  <text x="625" y="240" class="t-b">- Assert Canvas drawing export blobs.</text>
+
+  <text x="625" y="270" class="t-b" fill="#34d399">3. Service Worker Offline Syncs</text>
+  <text x="625" y="285" class="t-b">- Simulate complete offline status.</text>
+  <text x="625" y="300" class="t-b">- SW intercept checks (cached reads).</text>
+  <text x="625" y="315" class="t-b">- Verify offline guide displays.</text>
+</svg>

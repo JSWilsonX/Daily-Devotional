@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 340" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #020617; }
+      .b-step { fill: #0f172a; stroke: #38bdf8; stroke-width: 2; }
+      .b-branch { fill: #1e1b4b; stroke: #818cf8; stroke-width: 1.5; }
+      .b-term { fill: #064e3b; stroke: #34d399; stroke-width: 2.5; }
+      .t-t { font-family: system-ui, sans-serif; font-size: 13px; font-weight: bold; fill: #ffffff; }
+      .t-b { font-family: system-ui, sans-serif; font-size: 11px; fill: #cbd5e1; }
+      .t-lbl { font-family: system-ui, sans-serif; font-size: 10px; font-weight: bold; fill: #38bdf8; }
+      .al { stroke: #94a3b8; stroke-width: 1.5; fill: none; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" class="bg" />
+
+  <!-- Steps in sequence -->
+  <!-- Step 1 -->
+  <rect x="20" y="110" width="130" height="90" rx="8" class="b-step" />
+  <text x="35" y="135" class="t-t">1. Open PWA</text>
+  <text x="35" y="155" class="t-b">- Standard load</text>
+  <text x="35" y="170" class="t-b">- SW serves shell</text>
+  <text x="35" y="185" class="t-b">- Check streaks</text>
+
+  <!-- Step 2 -->
+  <rect x="180" y="110" width="130" height="90" rx="8" class="b-step" />
+  <text x="195" y="135" class="t-t">2. Select Book</text>
+  <text x="195" y="155" class="t-b">- Carousel click</text>
+  <text x="195" y="170" class="t-b">- Loads article</text>
+  <text x="195" y="185" class="t-b">- Query SQLite</text>
+
+  <!-- Step 3 -->
+  <rect x="340" y="110" width="130" height="90" rx="8" class="b-step" />
+  <text x="355" y="135" class="t-t">3. Read &amp; Speak</text>
+  <text x="355" y="155" class="t-b">- Select profiles</text>
+  <text x="355" y="170" class="t-b">- Trigger TTS play</text>
+  <text x="355" y="185" class="t-b">- Word highlights</text>
+
+  <!-- Step 4 Branch A: Share card -->
+  <rect x="500" y="30" width="160" height="90" rx="8" class="b-branch" />
+  <text x="515" y="55" class="t-t">Custom Share Card</text>
+  <text x="515" y="75" class="t-b">- Select quote texts</text>
+  <text x="515" y="90" class="t-b">- Canvas compiles card</text>
+  <text x="515" y="105" class="t-b">- Native system Share</text>
+
+  <!-- Step 4 Branch B: Mark Completed -->
+  <rect x="500" y="190" width="160" height="90" rx="8" class="b-branch" />
+  <text x="515" y="215" class="t-t">Confirmed Session</text>
+  <text x="515" y="235" class="t-b">- Click MARK COMPLETE</text>
+  <text x="515" y="250" class="t-b">- Streak counts increase</text>
+  <text x="515" y="265" class="t-b">- Persists localStorage</text>
+
+  <!-- Final Terminus -->
+  <rect x="710" y="110" width="160" height="90" rx="45" class="b-term" />
+  <text x="790" y="150" class="t-t" text-anchor="middle" fill="#34d399">COMPLETE</text>
+  <text x="790" y="170" class="t-b" text-anchor="middle">Habit Loop Finished</text>
+  <text x="790" y="185" class="t-b" text-anchor="middle">HUD Flame active</text>
+
+  <!-- Connectors -->
+  <!-- 1 to 2 -->
+  <path d="M 150 155 L 180 155" class="al" marker-end="url(#arrow)" />
+
+  <!-- 2 to 3 -->
+  <path d="M 310 155 L 340 155" class="al" marker-end="url(#arrow)" />
+
+  <!-- 3 to 4A -->
+  <path d="M 470 140 L 485 140 L 485 75 L 500 75" class="al" marker-end="url(#arrow)" />
+  <text x="440" y="125" class="t-lbl">Highlighters</text>
+
+  <!-- 3 to 4B -->
+  <path d="M 470 170 L 485 170 L 485 235 L 500 235" class="al" marker-end="url(#arrow)" />
+  <text x="445" y="190" class="t-lbl">Confirm</text>
+
+  <!-- 4A to Terminus -->
+  <path d="M 660 75 L 685 75 L 685 140 L 710 140" class="al" marker-end="url(#arrow)" />
+
+  <!-- 4B to Terminus -->
+  <path d="M 660 235 L 685 235 L 685 170 L 710 170" class="al" marker-end="url(#arrow)" />
+</svg>

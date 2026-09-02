@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 460" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #020617; }
+      .bd-c { stroke: #38bdf8; stroke-width: 2; stroke-dasharray: 4,4; fill: none; }
+      .bd-s { stroke: #818cf8; stroke-width: 2; fill: none; }
+      .bd-g { stroke: #f59e0b; stroke-width: 2; fill: none; }
+      .b-c { fill: #0f172a; stroke: #38bdf8; stroke-width: 2; }
+      .b-s { fill: #1e1b4b; stroke: #818cf8; stroke-width: 2; }
+      .b-g { fill: #451a03; stroke: #f59e0b; stroke-width: 2; }
+      .b-d { fill: #064e3b; stroke: #34d399; stroke-width: 2; }
+      .t-t { font-family: system-ui, sans-serif; font-size: 14px; font-weight: bold; fill: #ffffff; }
+      .t-b { font-family: system-ui, sans-serif; font-size: 12px; fill: #cbd5e1; }
+      .t-ac { font-family: system-ui, sans-serif; font-size: 12px; font-weight: bold; fill: #38bdf8; }
+      .t-as { font-family: system-ui, sans-serif; font-size: 12px; font-weight: bold; fill: #a5b4fc; }
+      .t-ag { font-family: system-ui, sans-serif; font-size: 12px; font-weight: bold; fill: #fde047; }
+      .al { stroke: #94a3b8; stroke-width: 1.5; fill: none; }
+      .al-a { stroke: #38bdf8; stroke-width: 2; fill: none; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+    </marker>
+    <marker id="arrow-active" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" class="bg" />
+  <rect x="20" y="40" width="360" height="380" rx="8" class="bd-c" />
+  <text x="35" y="65" class="t-ac">CLIENT BROWSER RUNTIME</text>
+  <rect x="420" y="40" width="220" height="380" rx="8" class="bd-s" />
+  <text x="435" y="65" class="t-as">SERVER WORKSPACE</text>
+  <rect x="670" y="40" width="190" height="380" rx="8" class="bd-g" />
+  <text x="685" y="65" class="t-ag">EXTERNAL SERVICES</text>
+  <rect x="40" y="100" width="150" height="80" rx="6" class="b-c" />
+  <text x="55" y="125" class="t-t">React 19 SPA</text>
+  <text x="55" y="145" class="t-b">- Dashboard UI</text>
+  <text x="55" y="160" class="t-b">- State Coordinator</text>
+  <rect x="40" y="210" width="150" height="70" rx="6" class="b-c" />
+  <text x="55" y="235" class="t-t">Web Speech API</text>
+  <text x="55" y="255" class="t-b">- Text-to-Speech</text>
+  <rect x="210" y="100" width="150" height="180" rx="6" class="b-c" />
+  <text x="225" y="125" class="t-t">Service Worker</text>
+  <text x="225" y="150" class="t-b">- Cache Interceptor</text>
+  <text x="225" y="170" class="t-b">- Static Shell Cache</text>
+  <text x="225" y="190" class="t-b">- API Offline Cache</text>
+  <text x="225" y="210" class="t-b">- Local Storage API</text>
+  <rect x="440" y="100" width="180" height="110" rx="6" class="b-s" />
+  <text x="455" y="125" class="t-t">Express API Server</text>
+  <text x="455" y="150" class="t-b">- Routing Handler</text>
+  <text x="455" y="170" class="t-b">- Scraper Agent</text>
+  <text x="455" y="190" class="t-b">- GenAI Proxy Connection</text>
+  <rect x="440" y="250" width="180" height="110" rx="6" class="b-d" />
+  <text x="455" y="275" class="t-t" fill="#34d399">SQLite DB Cache</text>
+  <text x="455" y="300" class="t-b">- node:sqlite sync</text>
+  <text x="455" y="315" class="t-b">- (profile, book, day)</text>
+  <text x="455" y="330" class="t-b">- Indexed PK lookup</text>
+  <rect x="690" y="100" width="150" height="80" rx="6" class="b-g" />
+  <text x="705" y="125" class="t-t" fill="#f59e0b">Gemini 3.5 API</text>
+  <text x="705" y="145" class="t-b">- Flash Model</text>
+  <text x="705" y="160" class="t-b">- JSON Translation</text>
+  <rect x="690" y="210" width="150" height="80" rx="6" class="b-g" />
+  <text x="705" y="235" class="t-t" fill="#f59e0b">whiteestate.org</text>
+  <text x="705" y="255" class="t-b">- Devotional Scraper</text>
+  <text x="705" y="270" class="t-b">- Historic Text Sync</text>
+  <rect x="690" y="320" width="150" height="70" rx="6" class="b-g" />
+  <text x="705" y="345" class="t-t" fill="#f59e0b">Unsplash API</text>
+  <text x="705" y="365" class="t-b">- Share Card Photos</text>
+  <path d="M 115 180 L 115 210" class="al-a" marker-end="url(#arrow-active)" />
+  <path d="M 190 140 L 210 140" class="al" marker-end="url(#arrow)" />
+  <path d="M 360 140 L 440 140" class="al-a" marker-end="url(#arrow-active)" />
+  <path d="M 530 210 L 530 250" class="al-a" marker-end="url(#arrow-active)" marker-start="url(#arrow-active)" />
+  <path d="M 620 140 L 690 140" class="al" marker-end="url(#arrow)" />
+  <path d="M 620 180 L 690 225" class="al" marker-end="url(#arrow)" />
+  <path d="M 285 280 L 285 410 L 650 410 L 650 355 L 690 355" class="al" marker-end="url(#arrow)" />
+</svg>
