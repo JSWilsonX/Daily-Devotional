@@ -13,6 +13,7 @@ describe('UI Component Integration & Behavioral Contracts', () => {
         <BookCover
           title="Our High Calling"
           coverUrl="https://media2.egwwritings.org/covers/81_s.jpg"
+          active={false}
           bookId="ohc"
           isCachedOffline={false}
           isReadToday={false}
@@ -28,6 +29,7 @@ describe('UI Component Integration & Behavioral Contracts', () => {
         <BookCover
           title="Our High Calling"
           coverUrl="https://invalid-url.com/broken.jpg"
+          active={false}
           bookId="ohc"
           isCachedOffline={false}
           isReadToday={false}
@@ -45,6 +47,7 @@ describe('UI Component Integration & Behavioral Contracts', () => {
         <BookCover
           title="Our High Calling"
           coverUrl="https://media2.egwwritings.org/covers/81_s.jpg"
+          active={false}
           bookId="ohc"
           isCachedOffline={true}
           isReadToday={false}

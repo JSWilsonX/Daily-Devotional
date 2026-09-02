@@ -170,4 +170,27 @@ describe('useTTS Hook & Audio Synthesis Engine (FR-4 & Workflow 4)', () => {
     expect(result.current.selectedVoiceName).toBe('Microsoft David Desktop - English (United States)');
     expect(localStorage.getItem('egw_selected_voice_name')).toBe('Microsoft David Desktop - English (United States)');
   });
+
+  it('should auto-advance sequentially and call completion callback when finished', async () => {
+    const onCompleteReading = vi.fn();
+    const { result } = renderHook(() =>
+      useTTS({
+        content: mockDevotionalContent,
+        onCompleteReading,
+      })
+    );
+
+    act(() => {
+      result.current.startSpeech();
+    });
+
+    expect(result.current.isPlaying).toBe(true);
+
+    // Wait for setTimeouts in setup speak (10ms each paragraph) and useTTS speakParagraph (30ms start delay) to complete
+    await new Promise((r) => setTimeout(r, 150));
+
+    // After sequential execution of both paragraphs, isPlaying should become false and onCompleteReading is called
+    expect(result.current.isPlaying).toBe(false);
+    expect(onCompleteReading).toHaveBeenCalledTimes(1);
+  });
 });

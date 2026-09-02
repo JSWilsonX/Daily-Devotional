@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 500" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #020617; }
+      .b-unit { fill: #451a03; stroke: #fbbf24; stroke-width: 2; }
+      .b-api { fill: #1e1b4b; stroke: #818cf8; stroke-width: 2; }
+      .b-ui { fill: #0f172a; stroke: #38bdf8; stroke-width: 2; }
+      .b-int { fill: #064e3b; stroke: #34d399; stroke-width: 2; }
+      .t-t { font-family: system-ui, sans-serif; font-size: 13px; font-weight: bold; fill: #ffffff; }
+      .t-b { font-family: system-ui, sans-serif; font-size: 11px; fill: #cbd5e1; }
+      .t-lbl-u { font-family: system-ui, sans-serif; font-size: 11px; font-weight: bold; fill: #fbbf24; }
+      .t-lbl-api { font-family: system-ui, sans-serif; font-size: 11px; font-weight: bold; fill: #a5b4fc; }
+      .t-lbl-ui { font-family: system-ui, sans-serif; font-size: 11px; font-weight: bold; fill: #38bdf8; }
+      .t-lbl-int { font-family: system-ui, sans-serif; font-size: 11px; font-weight: bold; fill: #34d399; }
+      .al { stroke: #64748b; stroke-width: 1.5; fill: none; stroke-dasharray: 3,3; }
+      .al-a { stroke: #34d399; stroke-width: 2; fill: none; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
+    </marker>
+    <marker id="arrow-active" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#34d399" />
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" class="bg" />
+
+  <!-- Integration / E2E Level -->
+  <rect x="250" y="30" width="380" height="110" rx="8" class="b-int" />
+  <text x="265" y="55" class="t-lbl-int">INTEGRATION &amp; WORKFLOW TESTS (src/tests/integration/)</text>
+  <path d="M 265 65 L 615 65" stroke="#34d399" stroke-width="1.5" />
+  <text x="265" y="85" class="t-t">App Level User Workflows (Workflows 1 to 9)</text>
+  <text x="265" y="105" class="t-b">- Multi-step book selection, fetching, &amp; audio highlighting</text>
+  <text x="265" y="120" class="t-b">- Pre-cache batching operations &amp; interactive onboarding tour triggers</text>
+
+  <!-- Server & API Level -->
+  <rect x="30" y="210" width="380" height="110" rx="8" class="b-api" />
+  <text x="45" y="235" class="t-lbl-api">API ROUTING &amp; DATABASE CONTRACTS (src/tests/server/)</text>
+  <path d="M 45 245 L 395 245" stroke="#818cf8" stroke-width="1.5" />
+  <text x="45" y="265" class="t-t">Express Routing &amp; SQLite DB HIT/MISS Cache</text>
+  <text x="45" y="285" class="t-b">- Gemini AI translation failover resilience (429 quota / 503 load)</text>
+  <text x="45" y="300" class="t-b">- SQLite query compilations, path-traversal &amp; injection validation</text>
+
+  <!-- UI Components & Audio Hooks Level -->
+  <rect x="470" y="210" width="380" height="110" rx="8" class="b-ui" />
+  <text x="485" y="235" class="t-lbl-ui">UI COMPONENTS &amp; HOOK LIFECYCLES (src/tests/components/)</text>
+  <path d="M 485 245 L 835 245" stroke="#38bdf8" stroke-width="1.5" />
+  <text x="485" y="265" class="t-t">TTS State Machine, Tours, &amp; Canvas Sharing</text>
+  <text x="485" y="285" class="t-b">- useTTS sequential paragraph advances &amp; active glowing highlights</text>
+  <text x="485" y="300" class="t-b">- Calendar DatePicker, PWA install prompts, &amp; Canvas synthesis</text>
+
+  <!-- Core Unit Utilities Level -->
+  <rect x="250" y="360" width="380" height="110" rx="8" class="b-unit" />
+  <text x="265" y="385" class="t-lbl-u">CORE UNIT TESTING SUITE (src/tests/utils/ &amp; src/tests/config/)</text>
+  <path d="M 265 395 L 615 395" stroke="#fbbf24" stroke-width="1.5" />
+  <text x="265" y="415" class="t-t">Deterministic Scripture Verbalizer &amp; Habit Streak Math</text>
+  <text x="265" y="435" class="t-b">- numberToWords recursive numbers &amp; isSingleChapterBook checks</text>
+  <text x="265" y="450" class="t-b">- local Date YYYY-MM-DD timezone-immune streak math &amp; config schemas</text>
+
+  <!-- Connector Directed Arrows -->
+  <!-- Top level dependencies -->
+  <path d="M 350 140 L 290 198" class="al-a" marker-end="url(#arrow-active)" />
+  <path d="M 530 140 L 590 198" class="al-a" marker-end="url(#arrow-active)" />
+
+  <!-- Middle level dependencies -->
+  <path d="M 290 320 L 350 348" class="al" marker-end="url(#arrow)" />
+  <path d="M 590 320 L 530 348" class="al" marker-end="url(#arrow)" />
+</svg>
