@@ -237,7 +237,7 @@ For staging and production deployment, compile the application into fully optimi
     ```bash
     npm start
     ```
-    This runs the application in headless production mode on port `8080` (or your configured `PORT` env variable) and serves optimized static pages.
+    This runs the application in headless production mode on port `3000` (or your configured `PORT` env variable) and serves optimized static pages.
 
 ### Docker Containerized Run
 This repository includes a lightweight, secure `Dockerfile` based on `node:22-slim`:
@@ -245,8 +245,8 @@ This repository includes a lightweight, secure `Dockerfile` based on `node:22-sl
 # Build Docker Image
 docker build -t daily-devotional .
 
-# Run Containerized Server (maps default container port 8080 to host port 8080)
-docker run -d -p 8080:8080 --env-file .env daily-devotional
+# Run Containerized Server (maps default container port 3000 to host port 3000)
+docker run -d -p 3000:3000 --env-file .env daily-devotional
 ```
 
 ---

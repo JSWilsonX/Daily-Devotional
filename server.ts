@@ -97,6 +97,15 @@ const ai = new GoogleGenAI({
 
 app.use(express.json());
 
+// Lightweight health check endpoints for Cloud Run and Load Balancers
+app.get("/_health", (req, res) => {
+  res.status(200).send("OK");
+});
+
+app.get("/healthz", (req, res) => {
+  res.status(200).send("OK");
+});
+
 // List of standard devotionals exactly as provided.
 // These are real daily feature devotionals on whiteestate.org with accurate covers, titles, and descriptions.
 const DEVOTIONALS_LIST = [

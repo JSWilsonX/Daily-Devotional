@@ -18,8 +18,8 @@ RUN npm run build
 RUN npm prune --omit=dev
 
 ENV NODE_ENV=production
-ENV PORT=8080
-EXPOSE 8080
+ENV PORT=3000
+EXPOSE 3000
 
 CMD ["node", "server.js"]
 
