@@ -40,3 +40,4 @@ jobs:
           region: ${{ env.REGION }}
           image: ${{ env.IMAGE_NAME }}:${{ github.sha }}
           env_vars: GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }},NODE_ENV=production
+          flags: --port=3000 --allow-unauthenticated
