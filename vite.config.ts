@@ -3,6 +3,11 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import {defineConfig} from 'vite';
 
+const allowedHosts = [
+  'daily-devotionals-reader-267015722828.us-west1.run.app',
+  'egw-devotional.ai.studio',
+];
+
 export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss()],
@@ -17,6 +22,10 @@ export default defineConfig(() => {
       hmr: process.env.DISABLE_HMR !== 'true',
       // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
+      allowedHosts,
+    },
+    preview: {
+      allowedHosts,
     },
   };
 });
