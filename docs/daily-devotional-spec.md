@@ -8,7 +8,7 @@ The **Daily Devotionals Reader** is an immersive, high-fidelity, local-first web
 
 ### Architectural Core Principles
 1. **Local-First & Offline Resilient**: Core assets and static application shells are served via Service Workers using stale-while-revalidate strategies. Network connections are treated as an enhancement rather than a dependency.
-2. **Deterministic 4-Tier Data Pipeline**: Devotional lookups execute through a highly resilient fallback chain: SQLite DB Local Cache -> Upstream Web Scraper -> Server-Side Gemini AI Paraphrasing -> Verbatim Classic Fallback with custom runtime error warnings.
+2. **Deterministic 4-Tier Data Pipeline**: Devotional lookups execute through a highly resilient fallback chain: Cloud Firestore Database Cache -> Upstream Web Scraper -> Server-Side Gemini AI Paraphrasing -> Verbatim Classic Fallback with custom runtime error warnings.
 3. **Structured AI Paraphrasing**: Paraphrasing is performed using high-speed, server-side execution of the Google Gemini 3.5 Flash model with strong schema enforcement, structured JSON responses, custom system instructions, and dynamic pronunciation overrides.
 4. **Vocal Stream Playback**: Integrates directly with the browser's Web Speech API, featuring regex-driven scripture verbalization (converting verse citations into natural spoken words) and phonetic character-by-character replacements to bypass synthesis errors.
 5. **Interactive Onboarding Subsystem**: A conditional, multi-step onboarding and update-gated guided tour that dynamically adapts to mobile viewport constraints and nests automatically under fallback UI paths when elements are hidden.
@@ -30,10 +30,10 @@ The application resolves three classic digital reading barriers:
 ![System Context](diagrams/system-context.svg)
 
 1. **Client Sandbox**: Runs within standard modern browser runtimes (Chrome, Safari, Edge, Firefox, iOS/Android WebViews). Utilizes native HTML5 Canvas for graphics, standard localStorage for client state, and the Web Speech API for voice generation.
-2. **Backend Server Layer**: Hosted as a Node.js Express server. Responsible for initiating database connections, parsing the SQLite devotional cache, executing target web scraping requests, and proxying communication securely with the Google GenAI endpoints.
+2. **Backend Server Layer**: Hosted as a Node.js Express server. Responsible for initiating database connections, parsing the Cloud Firestore devotional cache, executing target web scraping requests, and proxying communication securely with the Google GenAI endpoints.
 3. **External Dependencies**:
    - **Google Gemini API**: Accessible only via the backend server-side proxy to protect API keys. Paraphrases raw text and supplies structured pronunciation JSON data.
-   - **Upstream Web Server (`whiteestate.org`)**: Queried on-demand when a local SQLite database cache miss occurs.
+   - **Upstream Web Server (`whiteestate.org`)**: Queried on-demand when a local Cloud Firestore database cache miss occurs.
    - **Unsplash CDN**: Serves high-resolution background photography for share card creation.
 
 ---
@@ -137,7 +137,7 @@ The application resolves three classic digital reading barriers:
 ## 4. Non-Functional Requirements Specification
 
 ### Performance & Latency
-- **Database Search Latency**: SQLite database query lookups for cached devotionals must complete in under 10ms.
+- **Database Search Latency**: Cloud Firestore database query lookups (point reads via document ID) for cached devotionals must complete in under 50ms in cloud environments, and under 10ms when using the local in-memory fallback.
 - **Canvas Processing Speed**: Graphic generation inside the Canvas Image Studio must render in less than 16ms to avoid screen flickering during configuration edits.
 - **Speech Initialization**: Native browser Speech Synthesis must start audibly within 150ms of hitting the "Play" action.
 
@@ -218,7 +218,7 @@ The application implements a decoupled, local-first Client-Server architecture. 
 
 ### Architectural Subsystems
 1. **Headless Express Backend**: Employs an Express Node.js engine that implements HTTP REST interfaces for static listings and proxying requested daily devotionals.
-2. **Local Caching Layer**: Implemented using Node's standard `DatabaseSync` on top of an optimized SQLite database file. It acts as an indexed storage engine matching translations on the exact primary key 3-tuple `(profile_id, book_id, day)`.
+2. **Local Caching Layer**: Implemented using Google Cloud Firestore (leveraging dynamic Application Default Credentials) with an automated local in-memory fallback. It acts as an indexed storage engine matching translations on the exact primary key 3-tuple document ID `${profile_id}_${book_id}_${day}`.
 3. **Google Gemini Translation Engine**: Leverages the official Google GenAI package to execute modern professional paraphrasing at the server layer, hiding API secrets and enforcing JSON structured response contracts on the client's behalf.
 4. **Service Worker Interceptor Network**: A robust client-side network interceptor (`sw.js`) utilizing static caching for UI elements and Cache Storage fallback routes for custom server API requests.
 5. **Aether UI SPA Layer**: Built with React 19, Tailwind CSS, Lucide icons, and Motion, presenting reactive interfaces for book browsing, calendar navigation, streak counters, offscreen canvas graphics generation, and vocal feedback players.
@@ -287,30 +287,38 @@ The client-side React SPA is structured as modular, reusable components with exp
 
 ## 7. Data Architecture and Persistence Contracts
 
-The application utilizes dual-persistence zones: a structured SQLite cache on the server-side, and key-value browser storage on the client-side.
+The application utilizes dual-persistence zones: a structured Cloud Firestore database cache on the server-side (with an intelligent local in-memory fallback for offline/development environments), and key-value browser storage on the client-side.
 
-### SQLite Database Cache Layout (`devotionals.db`)
-The system initializes and maintains a local cache table named `devotionals`.
+### Cloud Firestore Database Cache Layout
+The system connects to Google Cloud Firestore and maintains an indexed collection named `devotionals`.
 
-```sql
-CREATE TABLE IF NOT EXISTS devotionals (
-    profile_id TEXT NOT NULL,
-    book_id TEXT NOT NULL,
-    day TEXT NOT NULL,
-    title TEXT,
-    paragraphs TEXT NOT NULL,
-    PRIMARY KEY (profile_id, book_id, day)
-);
-
-CREATE INDEX IF NOT EXISTS idx_profile_book_day ON devotionals (profile_id, book_id, day);
+#### Document ID Strategy
+To achieve **O(1) direct point reads** (Firestore's lowest-latency and most cost-effective fetch route), document IDs are composed deterministically using the primary key 3-tuple pattern:
+```
+Document ID: ${profile_id}_${book_id}_${day}
+(e.g., "clear_modern_ohc_01_01" or "original_ag_12_31")
 ```
 
-#### Columns & Data Verification Matrix
-- `profile_id` (TEXT, PK): Active style profile mapping. Standard normalized keys are `"original"` (representing Classic/Original), `"clear_modern"`, `"easy_reading"`, `"young_adult"`, `"teens_youth"`, and `"kids_primary"`.
-- `book_id` (TEXT, PK): 3-letter, lower-cased book abbreviation (e.g., `"ohc"`, `"fh"`, `"ul"`).
-- `day` (TEXT, PK): Structured calendar day of the year formatted strictly as `MM_DD` (e.g., `"01_01"`, `"06_30"`, `"12_31"`).
-- `title` (TEXT, Nullable): Paraphrased or classic title.
-- `paragraphs` (TEXT): Double-escaped JSON text string representing an array of `DevotionalBlock` entities.
+#### Document Schema Layout
+Each document in the `devotionals` collection has the following structure:
+```json
+{
+  "profile_id": "string",       // Active style profile mapping (e.g., "clear_modern", "original")
+  "book_id": "string",          // 3-letter, lower-cased book abbreviation (e.g., "ohc", "fh")
+  "day": "string",              // Calendar day formatted strictly as "MM_DD" (e.g., "01_01")
+  "title": "string",            // Paraphrased or classic title
+  "paragraphs": "Array<Object>",// Structured paragraphs (id, type, text, pronunciationOverrides)
+  "updatedAt": "string",        // ISO timestamp
+  "createdAt": "string"         // ISO timestamp
+}
+```
+
+#### Fields & Data Verification Matrix
+- `profile_id` (string): Active style profile mapping. Standard normalized keys are `"original"` (Classic/Original), `"clear_modern"`, `"easy_reading"`, `"young_adult"`, `"teens_youth"`, and `"kids_primary"`.
+- `book_id` (string): 3-letter, lower-cased book abbreviation (e.g., `"ohc"`, `"fh"`, `"ul"`).
+- `day` (string): Structured calendar day of the year formatted strictly as `MM_DD` (e.g., `"01_01"`, `"06_30"`, `"12_31"`).
+- `title` (string): Paraphrased or classic title.
+- `paragraphs` (array of maps): Structured paragraph entries, containing properties `id`, `type` (`"scripture"` or `"body"`), `text`, and `pronunciationOverrides`. No JSON double-escape parsing required, as Firestore handles complex structures natively.
 
 ---
 
@@ -712,8 +720,9 @@ During codebase inspection, several design quirks and implementation behaviors w
 
 1. **Hardcoded AI Quota Exhaustion Message**: Inside `server.ts`, error catch blocks include hardcoded strings attributing limit issues to *"The daily AI translation quota (20 requests/day for Gemini free tier) is currently fully exhausted..."*. This specific limit is client-side messaging rather than a dynamic API limit check, meaning it will show whenever a 429 occurs regardless of the actual server account configuration.
 2. **Static Catalog Stream Endpoint**: The endpoint `GET /api/scrape-devotionals` is named as a scrape handler, but operates as a static, synchronized route returning the static `DEVOTIONALS_LIST` array. There is no active scraper logic inside this endpoint.
-3. **Python SQLite vs Node DatabaseSync Alignment**: The initial database file is built with `scripts/build_db.py` utilizing standard Python `sqlite3`, but accessed dynamically at runtime using Node.js's experimental `node:sqlite` package. Testing pipelines must confirm identical handling of serialized paragraph objects (such as matching escape character sequences).
-4. **Offline Sync Limits**: Pre-caching a book triggers 365 asynchronous API requests in quick succession. While parallelized into batches of 4, users on weak connections may experience timeout spikes, and browser service workers may throttle the pipeline due to high concurrency.
+3. **Cloud Firestore Document ID Convention**: The database uses composed document IDs of the form `${profile_id}_${book_id}_${day}` to ensure lightning-fast direct point reads and avoid unnecessary composite indexes.
+4. **Local Fallback Mode**: When running without default GCP credentials, the backend falls back to an in-memory database cache, keeping development and test pipelines functional.
+5. **Offline Sync Limits**: Pre-caching a book triggers 365 asynchronous API requests in quick succession. While parallelized into batches of 4, users on weak connections may experience timeout spikes, and browser service workers may throttle the pipeline due to high concurrency.
 
 ---
 
@@ -743,9 +752,9 @@ To guarantee codebase stability and allow future expansions, a robust three-tier
 ### 2. Integration Testing Suite (Supertest + Vitest)
 - **Catalog Route contract**: Verify that `GET /api/scrape-devotionals` returns a `200` status code with an array of exactly 22 books matching target schemas.
 - **Database Fetch chain**: Mock external network configurations to test `/api/fetch-devotional` routing logic:
-  - Cache Hit: Ensure values are pulled from SQLite without invoking scrapers or Gemini endpoints.
+  - Cache Hit: Ensure values are pulled from the Firestore Cache without invoking scrapers or Gemini endpoints.
   - Cache Miss + Scraping Failure: Ensure the engine returns verbatim original text with standard fallback notifications.
-  - Cache Miss + Scraper Success + Gemini Success: Ensure parsed texts are successfully generated, stored in the SQLite file, and returned as a clean JSON payload.
+  - Cache Miss + Scraper Success + Gemini Success: Ensure parsed texts are successfully generated, stored in Firestore, and returned as a clean JSON payload.
 
 ### 3. End-to-End Testing Suite (Playwright)
 - **Guided Onboarding Tour**:

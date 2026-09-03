@@ -64,7 +64,7 @@
 | Area | Requirement / Behavior | Risk | Test Type | Coverage Status | Implemented Automated Test |
 |---|---|---|---|---|---|
 | **GET /scrape** | returns success payload of exactly 22 books, titles, cover links, descriptions. | High | API Contract | 100% | `api.test.ts` (GET /api/scrape-devotionals) |
-| **GET /fetch** | returns cached SQLite rows immediately on DB Hit without contacting web scraper. | Critical | API / DB | 100% | `api.test.ts` (GET /api/fetch-devotional DB HIT) |
+| **GET /fetch** | returns cached Firestore documents immediately on DB Hit without contacting web scraper. | Critical | API / DB | 100% | `api.test.ts` (GET /api/fetch-devotional DB HIT) |
 | **Profile Routing** | classic/original profile parameter normalization routing. | High | API / Biz Rule | 100% | `api.test.ts` (normalize classic suite) |
 
 ---
@@ -73,7 +73,7 @@
 
 | Area | Requirement / Behavior | Risk | Test Type | Coverage Status | Implemented Automated Test |
 |---|---|---|---|---|---|
-| **SQLite PK Schema** | Composite primary key constraints on `(profile_id, book_id, day)`. | High | DB Constraint | 100% | `api.test.ts` & `server.ts` |
+| **Firestore Schema** | Document ID composition based on the primary key 3-tuple `${profile_id}_${book_id}_${day}`. | High | DB Constraint | 100% | `api.test.ts` & `server.ts` |
 | **LocalStorage State** | Namespace isolation for keys: `egw_streak_count`, `egw_last_read_date`, `egw_theme`, etc. | High | Persistence | 100% | `AppWorkflow.test.tsx` & `date.test.ts` |
 
 ---

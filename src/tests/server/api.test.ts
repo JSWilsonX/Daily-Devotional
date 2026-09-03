@@ -2,20 +2,26 @@ import { describe, it, expect } from 'vitest';
 import request from 'supertest';
 import express from 'express';
 
-// Mock in-memory database storage for testing API behavior without Node CJS sqlite bundling conflicts
-class MockDatabase {
-  rows: Map<string, { title: string; paragraphs: string }> = new Map();
+// Mock in-memory Firestore storage for testing API behavior
+class MockFirestore {
+  documents: Map<string, { profile_id: string; book_id: string; day: string; title: string; paragraphs: any[] }> = new Map();
 
-  key(profileId: string, bookId: string, day: string) {
-    return `${profileId}::${bookId}::${day}`;
+  docId(profileId: string, bookId: string, day: string) {
+    return `${profileId}_${bookId}_${day}`;
   }
 
-  insert(profileId: string, bookId: string, day: string, title: string, paragraphs: string) {
-    this.rows.set(this.key(profileId, bookId, day), { title, paragraphs });
+  setDoc(profileId: string, bookId: string, day: string, title: string, paragraphs: any[]) {
+    this.documents.set(this.docId(profileId, bookId, day), {
+      profile_id: profileId,
+      book_id: bookId,
+      day,
+      title,
+      paragraphs,
+    });
   }
 
-  get(profileId: string, bookId: string, day: string) {
-    return this.rows.get(this.key(profileId, bookId, day));
+  getDoc(profileId: string, bookId: string, day: string) {
+    return this.documents.get(this.docId(profileId, bookId, day));
   }
 }
 
@@ -24,7 +30,7 @@ function createTestApp() {
   const app = express();
   app.use(express.json());
 
-  const db = new MockDatabase();
+  const db = new MockFirestore();
 
   const DEVOTIONALS_LIST = [
     {
@@ -75,14 +81,13 @@ function createTestApp() {
 
     const profileId = normalizeProfile(profile);
 
-    // 1. Try to retrieve content from DB
+    // 1. Try to retrieve content from Firestore Cache
     if (bookId && day) {
-      const row = db.get(profileId, bookId, day);
-      if (row && row.paragraphs) {
-        const parsedParagraphs = JSON.parse(row.paragraphs);
+      const doc = db.getDoc(profileId, bookId, day);
+      if (doc && doc.paragraphs) {
         return res.json({
-          title: row.title || '',
-          paragraphs: parsedParagraphs,
+          title: doc.title || '',
+          paragraphs: doc.paragraphs,
           source: 'database',
         });
       }
@@ -111,7 +116,7 @@ function createTestApp() {
   return { app, db };
 }
 
-describe('Server API Routes & Database Persistence (FR-3, Section 7 & 8)', () => {
+describe('Server API Routes & Firestore Database Persistence (FR-3, Section 7 & 8)', () => {
   it('GET /api/scrape-devotionals should return static catalogue payload', async () => {
     const { app } = createTestApp();
     const res = await request(app).get('/api/scrape-devotionals');
@@ -123,7 +128,7 @@ describe('Server API Routes & Database Persistence (FR-3, Section 7 & 8)', () =>
     expect(res.body.data.length).toBeGreaterThan(0);
   });
 
-  it('GET /api/fetch-devotional should retrieve cached data from database on database HIT', async () => {
+  it('GET /api/fetch-devotional should retrieve cached data from Firestore on database HIT', async () => {
     const { app, db } = createTestApp();
 
     const sampleParagraphs = [
@@ -135,8 +140,8 @@ describe('Server API Routes & Database Persistence (FR-3, Section 7 & 8)', () =>
       },
     ];
 
-    // Seed database cache
-    db.insert('clear_modern', 'ohc', '01_01', 'A Clean Heart', JSON.stringify(sampleParagraphs));
+    // Seed Firestore cache with native structured arrays
+    db.setDoc('clear_modern', 'ohc', '01_01', 'A Clean Heart', sampleParagraphs);
 
     const res = await request(app).get('/api/fetch-devotional?book_id=ohc&day=01_01&profile=clear_modern');
 
@@ -159,8 +164,8 @@ describe('Server API Routes & Database Persistence (FR-3, Section 7 & 8)', () =>
       },
     ];
 
-    // Seed under normalized 'original' profile
-    db.insert('original', 'ohc', '01_01', 'Original Title', JSON.stringify(sampleParagraphs));
+    // Seed under normalized 'original' profile in Firestore cache
+    db.setDoc('original', 'ohc', '01_01', 'Original Title', sampleParagraphs);
 
     // Request with profile="classic"
     const res = await request(app).get('/api/fetch-devotional?book_id=ohc&day=01_01&profile=classic');

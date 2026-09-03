@@ -55,7 +55,7 @@ The **Daily Devotionals Reader** is tested through a highly resilient, isolated,
 
 ### Category 6: Server Routes and Gemini AI Resilience
 - **Location**: `src/tests/server/api.test.ts` and `src/tests/server/api_additional.test.ts`
-  - SQLite Cache Hit returning localized database rows.
+  - Firestore Cache Hit returning localized database rows.
   - Gemini AI quota exhaustion (`429`) failover to authentic classic text with warning.
   - Gemini AI overloaded (`503`) high-demand failover.
   - Malformed JSON schema response format corrections.
