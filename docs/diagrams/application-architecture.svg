@@ -72,14 +72,14 @@
   <text x="725" y="200" class="t-b">- DOM parser agent</text>
 
   <rect x="520" y="260" width="350" height="90" rx="6" class="b-s" />
-  <text x="535" y="285" class="t-t">SQLite Database Coordinator</text>
-  <text x="535" y="310" class="t-b">- node:sqlite DatabaseSync instance wrapper</text>
-  <text x="535" y="330" class="t-b">- Execution schema parser &amp; transactions writer</text>
+  <text x="535" y="285" class="t-t">Cloud Firestore Coordinator</text>
+  <text x="535" y="310" class="t-b">- @google-cloud/firestore client wrapper</text>
+  <text x="535" y="330" class="t-b">- In-memory map cache fallback configuration</text>
 
   <rect x="520" y="380" width="350" height="90" rx="6" class="b-d" />
-  <text x="535" y="405" class="t-t" fill="#34d399">devotionals.db file (Disk Cache Storage)</text>
-  <text x="535" y="430" class="t-b">- Pre-built via scripts/build_db.py pipeline</text>
-  <text x="535" y="450" class="t-b">- Stores paraphrased paragraphs list under indexed key</text>
+  <text x="535" y="405" class="t-t" fill="#34d399">Cloud Firestore (Cache Storage)</text>
+  <text x="535" y="430" class="t-b">- Auto-synchronized via backend server</text>
+  <text x="535" y="450" class="t-b">- Stores paraphrased paragraphs under profile_book_day</text>
 
   <!-- Connectors -->
   <!-- Hooks to UI -->

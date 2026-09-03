@@ -12,7 +12,14 @@ const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 // Initialize Cloud Firestore client (automatically resolves credentials and project ID at runtime)
-const firestore = new Firestore();
+const firestoreOptions: { projectId?: string; databaseId?: string } = {};
+if (process.env.GOOGLE_CLOUD_PROJECT) {
+  firestoreOptions.projectId = process.env.GOOGLE_CLOUD_PROJECT;
+}
+if (process.env.DATABASE_ID) {
+  firestoreOptions.databaseId = process.env.DATABASE_ID;
+}
+const firestore = new Firestore(firestoreOptions);
 const collectionName = "devotionals";
 
 const inMemoryCache = new Map<string, { title: string; paragraphs: any[] }>();

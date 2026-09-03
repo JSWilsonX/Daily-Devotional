@@ -50,10 +50,10 @@
   <text x="455" y="170" class="t-b">- Scraper Agent</text>
   <text x="455" y="190" class="t-b">- GenAI Proxy Connection</text>
   <rect x="440" y="250" width="180" height="110" rx="6" class="b-d" />
-  <text x="455" y="275" class="t-t" fill="#34d399">SQLite DB Cache</text>
-  <text x="455" y="300" class="t-b">- node:sqlite sync</text>
-  <text x="455" y="315" class="t-b">- (profile, book, day)</text>
-  <text x="455" y="330" class="t-b">- Indexed PK lookup</text>
+  <text x="455" y="275" class="t-t" fill="#34d399">Firestore Cache</text>
+  <text x="455" y="300" class="t-b">- @google-cloud/firestore</text>
+  <text x="455" y="315" class="t-b">- profile_book_day PK</text>
+  <text x="455" y="330" class="t-b">- In-memory fallback</text>
   <rect x="690" y="100" width="150" height="80" rx="6" class="b-g" />
   <text x="705" y="125" class="t-t" fill="#f59e0b">Gemini 3.5 API</text>
   <text x="705" y="145" class="t-b">- Flash Model</text>

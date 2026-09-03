@@ -29,7 +29,7 @@
   <text x="195" y="135" class="t-t">2. Select Book</text>
   <text x="195" y="155" class="t-b">- Carousel click</text>
   <text x="195" y="170" class="t-b">- Loads article</text>
-  <text x="195" y="185" class="t-b">- Query SQLite</text>
+  <text x="195" y="185" class="t-b">- Query Firestore / Cache</text>
 
   <!-- Step 3 -->
   <rect x="340" y="110" width="130" height="90" rx="8" class="b-step" />
@@ -67,11 +67,11 @@
 
   <!-- 3 to 4A -->
   <path d="M 470 140 L 485 140 L 485 75 L 500 75" class="al" marker-end="url(#arrow)" />
-  <text x="440" y="125" class="t-lbl">Highlighters</text>
+  <text x="490" y="135" class="t-lbl">Highlighters</text>
 
   <!-- 3 to 4B -->
   <path d="M 470 170 L 485 170 L 485 235 L 500 235" class="al" marker-end="url(#arrow)" />
-  <text x="445" y="190" class="t-lbl">Confirm</text>
+  <text x="490" y="180" class="t-lbl">Confirm</text>
 
   <!-- 4A to Terminus -->
   <path d="M 660 75 L 685 75 L 685 140 L 710 140" class="al" marker-end="url(#arrow)" />

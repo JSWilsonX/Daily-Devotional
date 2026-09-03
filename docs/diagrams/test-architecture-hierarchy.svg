@@ -36,9 +36,9 @@
   <rect x="30" y="210" width="380" height="110" rx="8" class="b-api" />
   <text x="45" y="235" class="t-lbl-api">API ROUTING &amp; DATABASE CONTRACTS (src/tests/server/)</text>
   <path d="M 45 245 L 395 245" stroke="#818cf8" stroke-width="1.5" />
-  <text x="45" y="265" class="t-t">Express Routing &amp; SQLite DB HIT/MISS Cache</text>
+  <text x="45" y="265" class="t-t">Express Routing &amp; Firestore HIT/MISS Cache</text>
   <text x="45" y="285" class="t-b">- Gemini AI translation failover resilience (429 quota / 503 load)</text>
-  <text x="45" y="300" class="t-b">- SQLite query compilations, path-traversal &amp; injection validation</text>
+  <text x="45" y="300" class="t-b">- Firestore client setup, path-traversal &amp; cache-key mock validation</text>
 
   <!-- UI Components & Audio Hooks Level -->
   <rect x="470" y="210" width="380" height="110" rx="8" class="b-ui" />
