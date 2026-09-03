@@ -5,7 +5,7 @@ import {defineConfig} from 'vite';
 
 const allowedHosts = [
   'daily-devotionals-reader-267015722828.us-west1.run.app',
-  'egw-devotional.ai.studio',
+  '.egw-devotional.ai.studio',
 ];
 
 export default defineConfig(() => {
