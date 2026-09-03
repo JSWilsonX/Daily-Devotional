@@ -17,6 +17,7 @@ RUN npm run build
 # Prune development dependencies to keep the final image lightweight
 RUN npm prune --omit=dev
 
+ENV NODE_ENV=production
 ENV PORT=8080
 EXPOSE 8080
 
