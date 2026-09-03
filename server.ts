@@ -1,8 +1,7 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
-import { execSync } from "child_process";
-import { DatabaseSync } from "node:sqlite";
+import { Firestore } from "@google-cloud/firestore";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
@@ -12,47 +11,73 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
-// Initialize SQLite database from zipped contents if needed
-const DB_PATH = path.join(process.cwd(), "devotionals.db");
+// Initialize Cloud Firestore client (automatically resolves credentials and project ID at runtime)
+const firestore = new Firestore();
+const collectionName = "devotionals";
 
-function initDatabase(): DatabaseSync {
-  if (!fs.existsSync(DB_PATH)) {
-    console.log(`[Database Init] Database file not found at ${DB_PATH}. Building SQLite database from uploaded zip files...`);
-    try {
-      execSync("python3 scripts/build_db.py", { stdio: "inherit" });
-    } catch (err) {
-      console.error("[Database Init] Failed to build database using scripts/build_db.py:", err);
+const inMemoryCache = new Map<string, { title: string; paragraphs: any[] }>();
+
+async function getDevotionalDoc(profileId: string, bookId: string, day: string) {
+  const docId = `${profileId}_${bookId}_${day}`;
+  try {
+    const docRef = firestore.collection(collectionName).doc(docId);
+    const docSnap = await docRef.get();
+    if (docSnap.exists) {
+      const data = docSnap.data();
+      if (data && data.paragraphs) {
+        console.log(`[Database HIT] Serving devotional for profile='${profileId}', book='${bookId}', day='${day}' from Firestore.`);
+        return {
+          title: data.title || "",
+          paragraphs: data.paragraphs,
+          source: "database"
+        };
+      }
+    } else {
+      console.log(`[Database MISS] Entry not found in Firestore for profile='${profileId}', book='${bookId}', day='${day}'.`);
+    }
+  } catch (error: any) {
+    if (error.message?.includes("Could not load the default credentials") || error.message?.includes("credentials") || error.code === 9) {
+      const cached = inMemoryCache.get(docId);
+      if (cached) {
+        console.log(`[Database HIT] Serving devotional for profile='${profileId}', book='${bookId}', day='${day}' from In-Memory Fallback.`);
+        return {
+          title: cached.title,
+          paragraphs: cached.paragraphs,
+          source: "database"
+        };
+      }
+      console.log(`[Database MISS] Entry not found in In-Memory Fallback for profile='${profileId}', book='${bookId}', day='${day}'.`);
+    } else {
+      console.error(`[Database Error] Firestore get failure for ${docId}:`, error);
     }
   }
-
-  console.log(`[Database Init] Opening SQLite database at ${DB_PATH}...`);
-  const db = new DatabaseSync(DB_PATH);
-
-  // Ensure table and index exist as requested: Index on (profile_id, book_id, day)
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS devotionals (
-      profile_id TEXT NOT NULL,
-      book_id TEXT NOT NULL,
-      day TEXT NOT NULL,
-      title TEXT,
-      paragraphs TEXT NOT NULL,
-      PRIMARY KEY (profile_id, book_id, day)
-    );
-    CREATE INDEX IF NOT EXISTS idx_profile_book_day ON devotionals (profile_id, book_id, day);
-  `);
-
-  return db;
+  return null;
 }
 
-const db = initDatabase();
+async function setDevotionalDoc(profileId: string, bookId: string, day: string, title: string, paragraphs: any[]) {
+  const docId = `${profileId}_${bookId}_${day}`;
+  inMemoryCache.set(docId, { title, paragraphs });
+  try {
+    const docRef = firestore.collection(collectionName).doc(docId);
+    await docRef.set({
+      profile_id: profileId,
+      book_id: bookId,
+      day,
+      title,
+      paragraphs,
+      updatedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString()
+    }, { merge: true });
+    console.log(`[Database Cache] Successfully saved entry to Firestore for ${docId}`);
+  } catch (error: any) {
+    if (error.message?.includes("Could not load the default credentials") || error.message?.includes("credentials") || error.code === 9) {
+      console.warn(`[Database Warning] Firestore credentials not loaded. Saved to in-memory fallback only for ${docId}`);
+    } else {
+      console.error(`[Database Error] Firestore set failure for ${docId}:`, error);
+    }
+  }
+}
 
-const getDevotionalStmt = db.prepare(
-  "SELECT title, paragraphs FROM devotionals WHERE profile_id = ? AND book_id = ? AND day = ?"
-);
-
-const insertDevotionalStmt = db.prepare(
-  "INSERT OR REPLACE INTO devotionals (profile_id, book_id, day, title, paragraphs) VALUES (?, ?, ?, ?, ?)"
-);
 
 // Initialize GoogleGenAI client for modern professional paraphrasing
 const ai = new GoogleGenAI({
@@ -614,23 +639,11 @@ app.get("/api/fetch-devotional", async (req, res) => {
 
   const profileId = normalizeProfile(profile);
 
-  // 1. Try to retrieve content from SQLite database indexed on (profile_id, book_id, day)
+  // 1. Try to retrieve content from Firestore database indexed on (profile_id, book_id, day)
   if (bookId && day) {
-    try {
-      const row = getDevotionalStmt.get(profileId, bookId, day) as { title: string; paragraphs: string } | undefined;
-      if (row && row.paragraphs) {
-        console.log(`[Database HIT] Serving devotional for profile='${profileId}', book='${bookId}', day='${day}' from SQLite database.`);
-        const parsedParagraphs = JSON.parse(row.paragraphs);
-        return res.json({
-          title: row.title || "",
-          paragraphs: parsedParagraphs,
-          source: "database"
-        });
-      } else {
-        console.log(`[Database MISS] Entry not found in SQLite DB for profile='${profileId}', book='${bookId}', day='${day}'.`);
-      }
-    } catch (dbErr) {
-      console.error("Error querying SQLite database:", dbErr);
+    const docData = await getDevotionalDoc(profileId, bookId, day);
+    if (docData) {
+      return res.json(docData);
     }
   }
 
@@ -697,12 +710,7 @@ app.get("/api/fetch-devotional", async (req, res) => {
 
     // Save newly fetched content to database if bookId and day are known
     if (bookId && day && paraphrased.title && Array.isArray(paraphrased.paragraphs) && paraphrased.paragraphs.length > 0) {
-      try {
-        insertDevotionalStmt.run(profileId, bookId, day, paraphrased.title, JSON.stringify(paraphrased.paragraphs));
-        console.log(`[Database Cache] Saved newly scraped entry to SQLite DB for profile='${profileId}', book='${bookId}', day='${day}'.`);
-      } catch (cacheErr) {
-        console.error("Failed to cache newly scraped entry into SQLite DB:", cacheErr);
-      }
+      await setDevotionalDoc(profileId, bookId, day, paraphrased.title, paraphrased.paragraphs);
     }
 
     return res.json({
