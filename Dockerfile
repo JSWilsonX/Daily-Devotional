@@ -1,5 +1,8 @@
 FROM node:22-bookworm-slim
 
+# Upgrade OS packages to remediate libgcrypt20, gnupg2, and ncurses vulnerabilities
+RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Copy package configuration files
