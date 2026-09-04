@@ -1,4 +1,5 @@
 /// <reference types="vitest" />
+process.env.NODE_ENV = 'test';
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';

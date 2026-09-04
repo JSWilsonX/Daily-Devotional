@@ -7,3 +7,5 @@ coverage/
 .env*
 !.env.example
 devotionals.db
+test-results/
+playwright-report/

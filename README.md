@@ -143,7 +143,7 @@ Daily-Devotional/
 │   ├── hooks/               # Custom modular lifecycle hooks
 │   │   ├── usePWAStatus.ts  # Manifest interceptor & installation prompts
 │   │   └── useTTS.ts        # SpeechSynthesis state-machine and queue tracker
-│   ├── tests/               # 13 Automated Vitest suites matching source folders
+│   ├── tests/               # 14 Automated Vitest suites matching source folders
 │   ├── types/               # Core global TypeScript interface definitions
 │   └── utils/               # General utility libraries
 │       ├── date.ts          # ISO formatting & streak calculations
@@ -253,7 +253,7 @@ docker run -d -p 3000:3000 --env-file .env daily-devotional
 
 ## 🧪 Automated Test Suite
 
-The project includes an extensive, fully verified automated test suite of **87 test assertions** checking all business rules, edge cases, integration workflows, and API paths.
+The project includes an extensive, fully verified automated test suite of **91 tests** checking all business rules, edge cases, integration workflows, and API paths.
 
 ### Running the Tests
 *   **Run Single Pass Execution**:

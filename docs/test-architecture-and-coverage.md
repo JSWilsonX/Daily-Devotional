@@ -9,10 +9,10 @@ The **Daily Devotionals Reader** is tested through a highly resilient, isolated,
 ![Test Architecture Hierarchy](diagrams/test-architecture-hierarchy.svg)
 
 ### 📋 Test Coverage Summary
-- **Total Automated Test Files**: `13`
-- **Total Executed Tests**: `87`
+- **Total Automated Test Files**: `14`
+- **Total Executed Tests**: `91`
 - **Execution Success Rate**: `100% (Passed)`
-- **Avg. Run Duration**: `~6.5s`
+- **Avg. Run Duration**: `~11.55s`
 
 ---
 
