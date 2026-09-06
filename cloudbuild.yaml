@@ -1,0 +1,62 @@
+steps:
+  # Step 1: Build Docker image directly from Dockerfile (deterministic, no buildpack)
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--no-cache'
+      - '--pull'
+      - '-t'
+      - 'us-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/daily-devotional/daily-devotionals-reader:$COMMIT_SHA'
+      - '-t'
+      - 'us-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/daily-devotional/daily-devotionals-reader:latest'
+      - '.'
+    id: 'build-image'
+
+  # Step 2: In-Pipeline Vulnerability Scanner (Fails build on CRITICAL or HIGH)
+  - name: 'aquasec/trivy:latest'
+    args:
+      - 'image'
+      - '--exit-code'
+      - '1'
+      - '--severity'
+      - 'CRITICAL,HIGH'
+      - 'us-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/daily-devotional/daily-devotionals-reader:$COMMIT_SHA'
+    id: 'security-scan'
+
+  # Step 3: Push Verified Container Image to Google Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'us-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/daily-devotional/daily-devotionals-reader:$COMMIT_SHA'
+    id: 'push-sha-image'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'us-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/daily-devotional/daily-devotionals-reader:latest'
+    id: 'push-latest-image'
+
+  # Step 4: Deploy Verified Image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'daily-devotionals-reader'
+      - '--image'
+      - 'us-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/daily-devotional/daily-devotionals-reader:$COMMIT_SHA'
+      - '--region'
+      - 'us-west1'
+      - '--port'
+      - '3000'
+      - '--allow-unauthenticated'
+      - '--set-env-vars'
+      - 'NODE_ENV=production'
+    id: 'deploy-cloud-run'
+
+images:
+  - 'us-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/daily-devotional/daily-devotionals-reader:$COMMIT_SHA'
+  - 'us-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/daily-devotional/daily-devotionals-reader:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

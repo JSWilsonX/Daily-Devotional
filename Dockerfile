@@ -3,6 +3,9 @@ FROM node:22-bookworm-slim
 # Upgrade OS packages to remediate libgcrypt20, gnupg2, and ncurses vulnerabilities
 RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*
 
+# Upgrade npm global toolchain to prevent base-image npm/tar legacy vulnerabilities
+RUN npm install -g npm@latest
+
 WORKDIR /app
 
 # Copy package configuration files
