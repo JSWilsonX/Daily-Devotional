@@ -24,7 +24,18 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 3. Authenticate to Google Cloud and obtain OAuth2 access token
+      # 3. Setup Node.js & Audit Dependencies (Fail on Critical/High)
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Fail on Critical or High Npm Vulnerabilities
+        run: |
+          npm audit --audit-level=high
+
+      # 4. Authenticate to Google Cloud and obtain OAuth2 access token
       - name: Authenticate to Google Cloud
         id: auth
         uses: google-github-actions/auth@v2
@@ -41,9 +52,23 @@ jobs:
         run: |
           echo "${{ steps.auth.outputs.auth_token }}" | docker login -u oauth2accesstoken --password-stdin us-west1-docker.pkg.dev
 
-      - name: Build and Push Container Image
+      - name: Build Container Image
         run: |
           docker build -t ${{ env.IMAGE_NAME }}:${{ github.sha }} -t ${{ env.IMAGE_NAME }}:latest .
+
+      # 6. Scan Built Image for High/Critical Vulnerabilities (Fail build if found)
+      - name: Scan Image for Vulnerabilities (Fail on High/Critical)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: false
+          severity: 'CRITICAL,HIGH'
+
+      # 7. Push Verified Container Image to Registry
+      - name: Push Container Image
+        run: |
           docker push ${{ env.IMAGE_NAME }}:${{ github.sha }}
           docker push ${{ env.IMAGE_NAME }}:latest
 
