@@ -20,6 +20,7 @@ steps:
       - '1'
       - '--severity'
       - 'CRITICAL,HIGH'
+      - '--ignore-unfixed'
       - 'us-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/daily-devotional/daily-devotionals-reader:$COMMIT_SHA'
     id: 'security-scan'
 

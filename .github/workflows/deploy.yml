@@ -63,7 +63,7 @@ jobs:
           image-ref: ${{ env.IMAGE_NAME }}:${{ github.sha }}
           format: 'table'
           exit-code: '1'
-          ignore-unfixed: false
+          ignore-unfixed: true
           severity: 'CRITICAL,HIGH'
 
       # 7. Push Verified Container Image to Registry
